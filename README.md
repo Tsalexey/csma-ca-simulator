@@ -1,1 +1,1 @@
-# csma-ca-simulator
+# CSMA/CA simulator
