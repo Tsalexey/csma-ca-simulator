@@ -11,6 +11,5 @@ In order to run simulation you need
 Prerequesites:
 1. install python 3.6.2+
 2. install numpy
-Execute:
-1. download source code
-2. execute command: python /simulation/sample_run.py 
+3. download source code
+4. execute command: python /simulation/sample_run.py 
