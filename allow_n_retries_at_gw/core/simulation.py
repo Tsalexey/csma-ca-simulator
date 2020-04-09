@@ -1,5 +1,5 @@
-from core.gateway import Gateway
-from core.node import Node
+from allow_n_retries_at_gw.core.gateway import Gateway
+from allow_n_retries_at_gw.core.node import Node
 
 
 class Simulation:

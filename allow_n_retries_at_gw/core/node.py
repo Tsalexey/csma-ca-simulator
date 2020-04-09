@@ -2,7 +2,7 @@ from math import sqrt
 
 import numpy
 
-from core.position import Position
+from allow_n_retries_at_gw.core.position import Position
 
 
 class Node:

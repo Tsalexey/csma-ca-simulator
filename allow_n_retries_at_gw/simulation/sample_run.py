@@ -2,7 +2,7 @@ import sys
 
 sys.path.append('../')
 
-from core.simulation import Simulation
+from allow_n_retries_at_gw.core.simulation import Simulation
 
 def main():
     enable_debug = True
