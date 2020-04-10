@@ -25,7 +25,7 @@ class Node:
         self.last_generated_rts_message = None
         self.cts_message = None
 
-        if (is_debug):
+        if (self.is_debug):
             print("Node{id=", self.id, ", x =", self.position.x, ", y = ", self.position.y, ", z = ", self.position.z, "}")
 
     def push_beacon_message(self, beacon_message):

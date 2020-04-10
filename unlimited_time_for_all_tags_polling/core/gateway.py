@@ -13,7 +13,8 @@ class Gateway:
         self.unsuccessful_processed_rts_messages = []
         self.rts_messages_to_be_processed = []
 
-        print("Gateway{x =", self.position.x, ", y = ", self.position.y, ", z = ", self.position.z, "}")
+        if self.is_debug:
+            print("Gateway{x =", self.position.x, ", y = ", self.position.y, ", z = ", self.position.z, "}")
 
     def generate_beacon_message(self, time):
         if self.is_debug:

@@ -12,14 +12,17 @@ class Simulation:
         self.collision_duration = 0.0
         self.collision_blocking_probability = 0.0
 
-        print("# Generate nodes:")
+        if self.is_debug:
+            print("# Generate nodes:")
 
         self.nodes = []
         for i in range(int(nodes_count)):
-            self.nodes.append(Node(i, self.nodes_count, True))
+            self.nodes.append(Node(i, self.nodes_count, is_debug))
 
-        print("# Generate gateway:")
-        self.gateway = Gateway(True)
+        if self.is_debug:
+            print("# Generate gateway:")
+
+        self.gateway = Gateway(is_debug)
 
     def run(self):
         if self.is_debug:
@@ -101,7 +104,8 @@ class Simulation:
                             self.gateway.successful_processed_rts_messages.append(rts)
                             cts_message = self.gateway.generate_cts_message(self.time)
                             cts_message.id = rts.id
-                            print("CTS is sent by gateway at", cts_message.sent_from_gateway_at)
+                            if self.is_debug:
+                                print("CTS is sent by gateway at", cts_message.sent_from_gateway_at)
                             for node in self.nodes:
                                 node.push_cts_message(cts_message)
                                 if self.is_debug:
@@ -135,7 +139,8 @@ class Simulation:
         if t4 is not None: times.append(t4)
 
         if not times:
-            print("It looks like all Nodes have transmitted user data, so simulation should be finished")
+            if self.is_debug:
+                print("It looks like all Nodes have transmitted user data, so simulation should be finished")
         else:
             t = min(times)
 
