@@ -2,14 +2,18 @@
 
 This is simple CSMA/CA imitation model.
 
-This program simulates Thrz radio network consisting of 1 access point (namely Gateway) and N sensor tags (namely Nodes).
+This simulation framework represents a Thrz radio network consisting of 1 access point (namely Gateway) and N sensor tags (namely Nodes).
 
-Simulation starts with beacon message transmission by Gateway. During simulation RTS messages sent by Nodes could collide, in such case only allowed 3 RTS retries.
+Simulation starts with beacon message transmission by Gateway. During simulation RTS messages sent by Nodes could collide.
 
-In order to run simulation you need
+At the moment 2 scenarios are provided:
+1) Simulation finishes when GW get 3 collisions **allow_n_retries_at_gw**
+2) Simulation lasts until all the Node doesn't send user data **unlimited_time_for_all_tags_polling**
 
 Prerequesites:
 1. install python 3.6.2+
 2. install numpy
 3. download source code
-4. execute command: python /simulation/sample_run.py 
+
+How to run simulation:
+* python sample_run.py 
