@@ -16,7 +16,7 @@ class Simulation:
             print("# Generate nodes:")
 
         self.nodes = []
-        for i in range(int(nodes_count)):
+        for i in range(1, nodes_count + 1):
             self.nodes.append(Node(i, self.nodes_count, is_debug))
 
         if self.is_debug:
@@ -70,8 +70,10 @@ class Simulation:
                             if node.cts_message.id == node.id:
                                 node.is_user_data_sent = True
                                 node.next_rts_generation_time = None
-                            node.last_generated_rts_message = None
-                            node.cts_message = None
+                                node.last_generated_rts_message = None
+                            else:
+                                node.last_generated_rts_message = None
+                                node.cts_message = None
 
                 self.gateway.order_rts_by_arriving_time()
                 for index, rts in enumerate(self.gateway.rts_messages_to_be_processed):
@@ -84,7 +86,6 @@ class Simulation:
                         collision_ids = []
                         for other_index, other_rts in enumerate(self.gateway.rts_messages_to_be_processed):
                             if index != other_index and service_end_time >= other_rts.arrived_to_gateway_at:
-                                service_end_time = other_rts.arrived_to_gateway_at + self.gateway.rts_processing_duration
                                 collision_rts_list.append(other_rts)
                                 collision_ids.append(other_rts.id)
                                 if self.is_debug:

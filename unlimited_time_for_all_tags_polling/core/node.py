@@ -11,7 +11,7 @@ class Node:
         self.is_debug = is_debug
         self.id = id
         self.position = Position(radius)
-        self.T_max = 5
+        self.T_max = 15
         self.rts_generation_intensity = 5
         self.retry_number = 0
         self.t_out = 10
@@ -38,8 +38,8 @@ class Node:
         self.cts_message = cts_message
 
     def generate_rts_message(self):
-        generated_at = self.next_rts_generation_time + numpy.random.exponential(scale=1 / self.rts_generation_intensity)
-        sent_from_node_at = generated_at + numpy.random.uniform(0, (self.retry_number + 1) * self.T_max)
+        generated_at = self.next_rts_generation_time + self.get_tau_g_RTS(self.rts_generation_intensity)
+        sent_from_node_at = generated_at + self.get_tau_w(self.retry_number, self.T_max)
         arrived_to_gateway_at = sent_from_node_at + self.get_propagation_time()
 
         rts_message = RTSMessage(self.id, generated_at)
@@ -50,20 +50,11 @@ class Node:
         self.next_rts_generation_time = sent_from_node_at + self.t_out
         self.retry_number = self.retry_number + 1
 
-    def generate_rts_message_for_beacon_message(self, beacon_message):
+    def get_tau_g_RTS(self, rts_generation_intensity):
+        return numpy.random.exponential(scale=1 / rts_generation_intensity)
 
-        generated_at = beacon_message.node_arrival_time + numpy.random.exponential(scale=1 / self.rts_generation_intensity)
-        sent_from_node_at = generated_at + numpy.random.uniform(0, (self.retry_number + 1) * self.T_max)
-        arrived_to_gateway_at = sent_from_node_at + self.get_propagation_time()
-
-        rts_message = RTSMessage(self.id, generated_at)
-        rts_message.sent_from_node_at = sent_from_node_at
-        rts_message.arrived_to_gateway_at = arrived_to_gateway_at
-
-        self.next_rts_generation_time = sent_from_node_at + self.t_out
-
-        self.rts_messages.append(rts_message)
-        return rts_message
+    def get_tau_w(self, retry_number, T_max):
+        return numpy.random.uniform(0, (retry_number + 1) * T_max)
 
     def get_propagation_time(self):
         return sqrt(pow(self.position.x, 2) + pow(self.position.y, 2) + pow(self.position.z, 2))

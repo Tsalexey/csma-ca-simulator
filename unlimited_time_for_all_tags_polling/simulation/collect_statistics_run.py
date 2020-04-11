@@ -15,7 +15,7 @@ def main():
     auto_continue = True
     nodes_number = 20
     maximum_allowed_radius = 10
-    repeats = 50
+    repeats = 500
 
     statistics = {}
 
@@ -28,6 +28,7 @@ def main():
         nodes = i
         collision_duration = 0
         collision_prob = 0
+        time_before_channel_busy = 0
 
         for j in range(0, repeats):
             simulation = Simulation(i, maximum_allowed_radius, enable_debug, auto_continue)
@@ -36,10 +37,19 @@ def main():
             collision_duration += simulation.collision_duration
             collision_prob += simulation.collision_blocking_probability
 
+            temp_time_before_channel_busy = 0
+            for node in simulation.nodes:
+                temp_time_before_channel_busy += node.cts_message.arrived_to_node_at
+            temp_time_before_channel_busy = temp_time_before_channel_busy / len(simulation.nodes)
+
+        time_before_channel_busy += temp_time_before_channel_busy
+        time_before_channel_busy = time_before_channel_busy / repeats
+
         collision_duration = collision_duration / repeats
         collision_prob = collision_prob / repeats
 
-        statistics[nodes] = [nodes, collision_duration, collision_prob]
+
+        statistics[nodes] = [nodes, collision_duration, collision_prob, time_before_channel_busy]
         t2 = time.time()
         print("     Executed in %s seconds" % (t2- t1))
     filename = "../simulation_results/nodes[" + str(1) + "-" + str(nodes_number) + "]_radius[" + str(maximum_allowed_radius) + "].dat"
@@ -47,7 +57,7 @@ def main():
     mode = 'w'
     with open(filename, mode, **kwargs) as fp:
         writer = csv.writer(fp, delimiter=' ')
-        writer.writerow(["#nodes", "collision time", "collision probability"])
+        writer.writerow(["#nodes", "collision time", "collision probability", "mean time before channel busy"])
         for keys, values in statistics.items():
             print(values)
             writer.writerow(values)

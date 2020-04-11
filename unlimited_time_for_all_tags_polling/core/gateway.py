@@ -7,7 +7,7 @@ class Gateway:
         self.is_debug = is_debug
         self.position = Position(0.0)
         self.rts_processing_duration = 1
-        self.cts_channel_busy_time = 5*self.rts_processing_duration
+        self.cts_channel_busy_time = 25*self.rts_processing_duration
 
         self.successful_processed_rts_messages = []
         self.unsuccessful_processed_rts_messages = []
