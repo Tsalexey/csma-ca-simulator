@@ -3,12 +3,30 @@ from unlimited_time_for_all_tags_polling.core.node import Node
 
 
 class Simulation:
-    def __init__(self, nodes_count, distance_to_gateway, is_debug, auto_continue):
+    def __init__(self, nodes_count,
+                 distance_to_gateway,
+                 T_max,
+                 rts_generation_intensity,
+                 t_out,
+                 retry_limit,
+                 rts_processing_duration,
+                 cts_channel_busy_time,
+                 is_debug,
+                 auto_continue):
+
         self.is_debug = is_debug
         self.nodes_count = nodes_count
         self.distance_to_gateway = distance_to_gateway
         self.auto_continue = auto_continue
-
+        # Node parameters
+        self.T_max = T_max
+        self.rts_generation_intensity = rts_generation_intensity
+        self.t_out = t_out
+        self.retry_limit = retry_limit
+        # Gateway parameters
+        self.rts_processing_duration = rts_processing_duration
+        self.cts_channel_busy_time = cts_channel_busy_time
+        # Statistics
         self.collision_duration = 0.0
         self.collision_blocking_probability = 0.0
 
@@ -17,19 +35,19 @@ class Simulation:
 
         self.nodes = []
         for i in range(1, nodes_count + 1):
-            self.nodes.append(Node(i, self.nodes_count, is_debug))
+            self.nodes.append(Node(i, self.nodes_count, self.T_max, self.rts_generation_intensity, self.t_out, self.retry_limit, self.is_debug))
 
         if self.is_debug:
             print("# Generate gateway:")
 
-        self.gateway = Gateway(is_debug)
+        self.gateway = Gateway(self.rts_processing_duration, self.cts_channel_busy_time, self.is_debug)
 
     def run(self):
         if self.is_debug:
             print("\n# Simulation started\n")
 
         self.time = 0.0
-        while not self.is_rts_transmitted_by_all_nodes():
+        while not self.is_simulation_finished():
             if self.is_debug:
                 print("[*] Time", self.time)
                 self.debug_run()
@@ -121,9 +139,32 @@ class Simulation:
             print("\n# Simulation ended at", self.time)
             self.debug_run()
 
+    def is_simulation_finished(self):
+        if self.is_debug:
+            print("Gateway has no more rts to process =", self.gateway_has_no_more_rts_to_process())
+            if self.retry_limit is None:
+                print("RTS transmitted by all the nodes =", self.is_rts_transmitted_by_all_nodes())
+            else:
+                print("All Nodes exhausted retry limit =", self.is_all_nodes_exhausted_retry_limit())
+
+        if self.retry_limit is None:
+            return self.gateway_has_no_more_rts_to_process() and self.is_rts_transmitted_by_all_nodes()
+        else:
+            return self.gateway_has_no_more_rts_to_process() and self.is_all_nodes_exhausted_retry_limit()
+
+
+    def gateway_has_no_more_rts_to_process(self):
+        return len(self.gateway.rts_messages_to_be_processed) == 0
+
     def is_rts_transmitted_by_all_nodes(self):
         for node in self.nodes:
-            if node.is_user_data_sent == False:
+            if node.is_user_data_sent == False and node.retry_limit is None:
+                return False
+        return True
+
+    def is_all_nodes_exhausted_retry_limit(self):
+        for node in self.nodes:
+            if node.is_user_data_sent == False and node.retry_limit is not None and len(node.sent_rts_messages) < node.retry_limit:
                 return False
         return True
 
@@ -141,7 +182,7 @@ class Simulation:
 
         if not times:
             if self.is_debug:
-                print("It looks like all Nodes have transmitted user data, so simulation should be finished")
+                print("It looks like all Nodes have transmitted user data or exhausted retransmision limit, so simulation should be finished")
         else:
             t = min(times)
 
@@ -159,6 +200,8 @@ class Simulation:
         for node in self.nodes:
             if node.is_user_data_sent:
                 continue
+            if node.retry_limit is not None and len(node.sent_rts_messages) >= node.retry_limit:
+                continue
             if node.next_rts_generation_time is not None and time is None:
                 time = node.next_rts_generation_time
             if node.next_rts_generation_time is not None and time > node.next_rts_generation_time:
@@ -170,6 +213,8 @@ class Simulation:
         for node in self.nodes:
             if node.is_user_data_sent:
                 continue
+            if node.retry_limit is not None and len(node.sent_rts_messages) >= node.retry_limit:
+                continue
             if node.last_generated_rts_message is not None and time is None:
                 time = node.last_generated_rts_message.sent_from_node_at
             if node.last_generated_rts_message is not None and time > node.last_generated_rts_message.sent_from_node_at:
@@ -180,6 +225,8 @@ class Simulation:
         time = None
         for node in self.nodes:
             if node.is_user_data_sent:
+                continue
+            if node.retry_limit is not None and len(node.sent_rts_messages) >= node.retry_limit:
                 continue
             if node.cts_message is not None and time is None:
                 time = node.cts_message.arrived_to_node_at
@@ -205,7 +252,7 @@ class Simulation:
                   ", collision time=", self.collision_duration,
                   ", collision prob = ", self.collision_blocking_probability)
             for node in self.nodes:
-                print("     Node", node.id, ": data sent =", node.is_user_data_sent, ",sent rts =", len(node.sent_rts_messages), ", received cts =", len(node.received_cts_messages))
+                print("     Node", node.id, ": data sent =", node.is_user_data_sent, ",sent rts =", len(node.sent_rts_messages), ", received cts =", len(node.received_cts_messages), ", retry number =", node.retry_number, ", retry limit =", node.retry_limit)
         if self.is_debug and not self.auto_continue:
             print()
             user_input = input("[?] Press Enter in order to continue or input 'True' to enabled auto continue mode: ")

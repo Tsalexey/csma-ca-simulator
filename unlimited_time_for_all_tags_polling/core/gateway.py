@@ -3,11 +3,11 @@ from unlimited_time_for_all_tags_polling.core.position import Position
 
 
 class Gateway:
-    def __init__(self, is_debug):
+    def __init__(self, rts_processing_duration, cts_channel_busy_time, is_debug):
         self.is_debug = is_debug
         self.position = Position(0.0)
-        self.rts_processing_duration = 1
-        self.cts_channel_busy_time = 25*self.rts_processing_duration
+        self.rts_processing_duration = rts_processing_duration
+        self.cts_channel_busy_time = cts_channel_busy_time
 
         self.successful_processed_rts_messages = []
         self.unsuccessful_processed_rts_messages = []

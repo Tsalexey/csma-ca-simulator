@@ -17,6 +17,15 @@ def main():
     maximum_allowed_radius = 10
     repeats = 500
 
+    # Node parameters
+    T_max = 15
+    rts_generation_intensity = 5
+    t_out = 10
+    retry_limit = None
+    # Gateway parameters
+    rts_processing_duration = 1
+    cts_channel_busy_time = 25 * rts_processing_duration
+
     statistics = {}
 
     for i in range(1, nodes_number+1):
@@ -29,75 +38,100 @@ def main():
         collision_duration = 0
         collision_prob = 0
         time_before_channel_busy = 0
+        nodes_count_that_transmitted_data = 0
 
         for j in range(0, repeats):
-            simulation = Simulation(i, maximum_allowed_radius, enable_debug, auto_continue)
+            simulation = Simulation(i,
+                                    maximum_allowed_radius,
+                                    T_max,
+                                    rts_generation_intensity,
+                                    t_out,
+                                    retry_limit,
+                                    rts_processing_duration,
+                                    cts_channel_busy_time,
+                                    enable_debug,
+                                    auto_continue)
             simulation.run()
 
             collision_duration += simulation.collision_duration
             collision_prob += simulation.collision_blocking_probability
 
             temp_time_before_channel_busy = 0
-            for node in simulation.nodes:
-                temp_time_before_channel_busy += node.cts_message.arrived_to_node_at
-            temp_time_before_channel_busy = temp_time_before_channel_busy / len(simulation.nodes)
+            temp_nodes_count_that_transmitted_data = 0
 
-        time_before_channel_busy += temp_time_before_channel_busy
+            for node in simulation.nodes:
+                if node.cts_message is not None:
+                    temp_time_before_channel_busy += node.cts_message.arrived_to_node_at
+                if node.is_user_data_sent:
+                    temp_nodes_count_that_transmitted_data += 1
+
+            time_before_channel_busy += temp_time_before_channel_busy / len(simulation.nodes)
+            nodes_count_that_transmitted_data += temp_nodes_count_that_transmitted_data / len(simulation.nodes)
+
         time_before_channel_busy = time_before_channel_busy / repeats
+        nodes_count_that_transmitted_data = nodes_count_that_transmitted_data / repeats
 
         collision_duration = collision_duration / repeats
         collision_prob = collision_prob / repeats
 
-
-        statistics[nodes] = [nodes, collision_duration, collision_prob, time_before_channel_busy]
+        statistics[nodes] = [nodes, collision_duration, collision_prob, time_before_channel_busy, nodes_count_that_transmitted_data]
         t2 = time.time()
         print("     Executed in %s seconds" % (t2- t1))
-    filename = "../simulation_results/nodes[" + str(1) + "-" + str(nodes_number) + "]_radius[" + str(maximum_allowed_radius) + "].dat"
+    filename = "../simulation_results/nodes[" + str(1) + "-" + str(nodes_number) + "]_radius[" + str(maximum_allowed_radius) + "]_retry[" + str(retry_limit) + "].dat"
     kwargs = {'newline': ''}
     mode = 'w'
     with open(filename, mode, **kwargs) as fp:
         writer = csv.writer(fp, delimiter=' ')
-        writer.writerow(["#nodes", "collision time", "collision probability", "mean time before channel busy"])
+        writer.writerow(["#nodes", "collision time", "collision probability", "mean time before channel busy", "mean number of node that transmitted data"])
         for keys, values in statistics.items():
             print(values)
             writer.writerow(values)
 
     statistics = {}
 
-    tn=10
-    for i in range(1, maximum_allowed_radius+1):
-        t1 = time.time()
-        print("Simulation run for ", tn,
-              " Nodes distributed within a sphere with a radius", i,
-              ", repeats =", repeats)
-
-        radius = i
-        collision_duration = 0
-        collision_prob = 0
-
-        for j in range(0, repeats):
-            simulation = Simulation(tn, i, enable_debug, auto_continue)
-            simulation.run()
-
-            collision_duration += simulation.collision_duration
-            collision_prob += simulation.collision_blocking_probability
-
-        collision_duration = collision_duration / repeats
-        collision_prob = collision_prob / repeats
-
-        statistics[radius] = [radius, collision_duration, collision_prob]
-        t2 = time.time()
-        print("     Executed in %s seconds" % (t2- t1))
-
-    filename = "../simulation_results/nodes[" + str(tn) + "]_radius[" + str(1) + "-" + str(maximum_allowed_radius) + "].dat"
-    kwargs = {'newline': ''}
-    mode = 'w'
-    with open(filename, mode, **kwargs) as fp:
-        writer = csv.writer(fp, delimiter=' ')
-        writer.writerow(["#radius", "collision time", "collision probability"])
-        for keys, values in statistics.items():
-            print(values)
-            writer.writerow(values)
+    # tn=10
+    # for i in range(1, maximum_allowed_radius+1):
+    #     t1 = time.time()
+    #     print("Simulation run for ", tn,
+    #           " Nodes distributed within a sphere with a radius", i,
+    #           ", repeats =", repeats)
+    #
+    #     radius = i
+    #     collision_duration = 0
+    #     collision_prob = 0
+    #
+    #     for j in range(0, repeats):
+    #         simulation = Simulation(tn,
+    #                                 i,
+    #                                 T_max,
+    #                                 rts_generation_intensity,
+    #                                 t_out,
+    #                                 retry_limit,
+    #                                 rts_processing_duration,
+    #                                 cts_channel_busy_time,
+    #                                 enable_debug,
+    #                                 auto_continue)
+    #         simulation.run()
+    #
+    #         collision_duration += simulation.collision_duration
+    #         collision_prob += simulation.collision_blocking_probability
+    #
+    #     collision_duration = collision_duration / repeats
+    #     collision_prob = collision_prob / repeats
+    #
+    #     statistics[radius] = [radius, collision_duration, collision_prob]
+    #     t2 = time.time()
+    #     print("     Executed in %s seconds" % (t2- t1))
+    #
+    # filename = "../simulation_results/nodes[" + str(tn) + "]_radius[" + str(1) + "-" + str(maximum_allowed_radius) + "].dat"
+    # kwargs = {'newline': ''}
+    # mode = 'w'
+    # with open(filename, mode, **kwargs) as fp:
+    #     writer = csv.writer(fp, delimiter=' ')
+    #     writer.writerow(["#radius", "collision time", "collision probability"])
+    #     for keys, values in statistics.items():
+    #         print(values)
+    #         writer.writerow(values)
 
     end_time = time.time()
     print("Executed in %s seconds" % (end_time - start_time))

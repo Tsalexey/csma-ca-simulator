@@ -7,14 +7,15 @@ from unlimited_time_for_all_tags_polling.core.position import Position
 
 
 class Node:
-    def __init__(self, id, radius, is_debug):
+    def __init__(self, id, radius, T_max, rts_generation_intensity, t_out, retry_limit, is_debug):
         self.is_debug = is_debug
         self.id = id
         self.position = Position(radius)
-        self.T_max = 15
-        self.rts_generation_intensity = 5
+        self.T_max = T_max
+        self.rts_generation_intensity = rts_generation_intensity
         self.retry_number = 0
-        self.t_out = 10
+        self.t_out = t_out
+        self.retry_limit = retry_limit
         self.next_rts_generation_time = None
         self.is_user_data_sent = False
 
