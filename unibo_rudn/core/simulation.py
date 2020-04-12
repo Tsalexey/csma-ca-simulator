@@ -1,5 +1,5 @@
-from unlimited_time_for_all_tags_polling.core.gateway import Gateway
-from unlimited_time_for_all_tags_polling.core.node import Node
+from unibo_rudn.core.gateway import Gateway
+from unibo_rudn.core.node import Node
 
 
 class Simulation:

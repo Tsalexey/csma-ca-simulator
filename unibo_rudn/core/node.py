@@ -2,8 +2,8 @@ from math import sqrt
 
 import numpy
 
-from unlimited_time_for_all_tags_polling.core.Messages import RTSMessage
-from unlimited_time_for_all_tags_polling.core.position import Position
+from unibo_rudn.core.Messages import RTSMessage
+from unibo_rudn.core.position import Position
 
 
 class Node:

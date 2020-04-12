@@ -2,7 +2,7 @@ import sys
 
 sys.path.append('../')
 
-from unlimited_time_for_all_tags_polling.core.simulation import Simulation
+from unibo_rudn.core.simulation import Simulation
 
 def main():
     enable_debug = True

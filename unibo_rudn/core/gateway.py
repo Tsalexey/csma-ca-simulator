@@ -1,5 +1,5 @@
-from unlimited_time_for_all_tags_polling.core.Messages import BeaconMessage, CTSMessage
-from unlimited_time_for_all_tags_polling.core.position import Position
+from unibo_rudn.core.Messages import BeaconMessage, CTSMessage
+from unibo_rudn.core.position import Position
 
 
 class Gateway:
