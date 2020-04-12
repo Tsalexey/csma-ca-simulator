@@ -15,13 +15,13 @@ def main():
     auto_continue = True
     nodes_number = 20
     maximum_allowed_radius = 10
-    repeats = 500
+    repeats = 1500
 
     # Node parameters
     T_max = 15
     rts_generation_intensity = 5
     t_out = 10
-    retry_limit = None
+    retry_limit = 3
     # Gateway parameters
     rts_processing_duration = 1
     cts_channel_busy_time = 25 * rts_processing_duration
@@ -60,10 +60,10 @@ def main():
             temp_nodes_count_that_transmitted_data = 0
 
             for node in simulation.nodes:
-                if node.cts_message is not None:
-                    temp_time_before_channel_busy += node.cts_message.arrived_to_node_at
                 if node.is_user_data_sent:
                     temp_nodes_count_that_transmitted_data += 1
+                    if node.cts_message is not None:
+                        temp_time_before_channel_busy += node.cts_message.arrived_to_node_at
 
             time_before_channel_busy += temp_time_before_channel_busy / len(simulation.nodes)
             nodes_count_that_transmitted_data += temp_nodes_count_that_transmitted_data / len(simulation.nodes)
