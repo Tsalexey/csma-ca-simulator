@@ -26,8 +26,8 @@ class Node:
         self.last_generated_rts_message = None
         self.cts_message = None
 
-        if (self.is_debug):
-            print("Node{id=", self.id, ", x =", self.position.x, ", y = ", self.position.y, ", z = ", self.position.z, "}, distance = ", self.get_distance_to_gateway())
+        # if (self.is_debug):
+        print("Node{id=", self.id, ", x =", self.position.x, ", y = ", self.position.y, ", z = ", self.position.z, "}, distance = ", self.get_distance_to_gateway())
 
     def push_beacon_message(self, beacon_message):
         beacon_message.arrived_to_node_at = beacon_message.generated_at + self.get_propagation_time()

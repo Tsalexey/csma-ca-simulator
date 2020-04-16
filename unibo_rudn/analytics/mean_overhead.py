@@ -33,6 +33,7 @@ def main():
 
     D_avg = {}
     p = {}
+    p_success = {}
 
     D_1 = {}
     for node in nodes:
@@ -92,6 +93,8 @@ def main():
         D_avg[i] += D_1_avg
         print("D_avg=", D_avg[i])
 
+        p_success[i] = cts_channel_busy_time / (cts_channel_busy_time + D_avg[i])
+
         t2 = time.time()
         print("     Executed in %s seconds" % (t2 - t1))
 
@@ -100,12 +103,12 @@ def main():
     mode = 'w'
     with open(filename, mode, **kwargs) as fp:
         writer = csv.writer(fp, delimiter=' ')
-        writer.writerow(["#nodes", "collision probability", "mean time before channel busy"])
+        writer.writerow(["#nodes", "collision probability", "mean time before channel busy", "P{success}"])
         for i in range(1, nodes_number+1):
             if i == 1:
                 writer.writerow([i, 0, D_1[i]])
             else:
-                writer.writerow([i, p[i], D_avg[i]])
+                writer.writerow([i, p[i], D_avg[i], p_success[i]])
 
     end_time = time.time()
     print("Executed in %s seconds" % (end_time - start_time))

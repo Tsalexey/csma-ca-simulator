@@ -4,7 +4,7 @@ from unibo_rudn.core.node import Node
 
 class Simulation:
     def __init__(self, nodes_count,
-                 distance_to_gateway,
+                 radius,
                  T_max,
                  rts_generation_intensity,
                  t_out,
@@ -16,7 +16,7 @@ class Simulation:
 
         self.is_debug = is_debug
         self.nodes_count = nodes_count
-        self.distance_to_gateway = distance_to_gateway
+        self.radius = radius
         self.auto_continue = auto_continue
         # Node parameters
         self.T_max = T_max
@@ -35,7 +35,7 @@ class Simulation:
 
         self.nodes = []
         for i in range(1, nodes_count + 1):
-            self.nodes.append(Node(i, self.nodes_count, self.T_max, self.rts_generation_intensity, self.t_out, self.retry_limit, self.is_debug))
+            self.nodes.append(Node(i, self.radius, self.T_max, self.rts_generation_intensity, self.t_out, self.retry_limit, self.is_debug))
 
         if self.is_debug:
             print("# Generate gateway:")
