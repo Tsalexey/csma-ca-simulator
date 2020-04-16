@@ -27,7 +27,7 @@ class Node:
         self.cts_message = None
 
         if (self.is_debug):
-            print("Node{id=", self.id, ", x =", self.position.x, ", y = ", self.position.y, ", z = ", self.position.z, "}")
+            print("Node{id=", self.id, ", x =", self.position.x, ", y = ", self.position.y, ", z = ", self.position.z, "}, distance = ", self.get_distance_to_gateway())
 
     def push_beacon_message(self, beacon_message):
         beacon_message.arrived_to_node_at = beacon_message.generated_at + self.get_propagation_time()
@@ -58,4 +58,7 @@ class Node:
         return numpy.random.uniform(0, (retry_number + 1) * T_max)
 
     def get_propagation_time(self):
+        return sqrt(pow(self.position.x, 2) + pow(self.position.y, 2) + pow(self.position.z, 2))
+
+    def get_distance_to_gateway(self):
         return sqrt(pow(self.position.x, 2) + pow(self.position.y, 2) + pow(self.position.z, 2))
