@@ -21,7 +21,7 @@ def main():
     T_max = 15
     rts_generation_intensity = 5
     t_out = 10
-    retry_limit = 3
+    retry_limit = None
     # Gateway parameters
     rts_processing_duration = 1
     cts_channel_busy_time = 25 * rts_processing_duration
