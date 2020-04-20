@@ -3,18 +3,23 @@ from unibo_rudn.core.position import Position
 
 
 class Gateway:
-    def __init__(self, rts_processing_duration, cts_channel_busy_time, is_debug):
+    def __init__(self, cts_transmision_time, ack_transmition_time, cts_channel_busy_time, is_debug):
         self.is_debug = is_debug
         self.position = Position(0.0)
-        self.rts_processing_duration = rts_processing_duration
+
+        self.cts_transmision_time = cts_transmision_time
         self.cts_channel_busy_time = cts_channel_busy_time
+        self.ack_transmition_time = ack_transmition_time
+
+        self.send_ack_at = None
+        self.send_ack_to = None
 
         self.successful_processed_rts_messages = []
         self.unsuccessful_processed_rts_messages = []
         self.rts_messages_to_be_processed = []
 
         if self.is_debug:
-            print("Gateway{x =", self.position.x, ", y = ", self.position.y, ", z = ", self.position.z, "}")
+            print("# Generate gateway{x =", self.position.x, ", y = ", self.position.y, ", z = ", self.position.z, "}")
 
     def generate_beacon_message(self, time):
         if self.is_debug:
@@ -25,7 +30,7 @@ class Gateway:
         return CTSMessage("Gateway", time, self.cts_channel_busy_time)
 
     def push_rts(self, rts_message):
-        rts_message.processed_at_gateway_at = rts_message.arrived_to_gateway_at + self.rts_processing_duration
+        rts_message.processed_at_gateway_at = rts_message.arrived_to_gateway_at
         self.rts_messages_to_be_processed.append(rts_message)
         self.order_rts_by_arriving_time()
 
