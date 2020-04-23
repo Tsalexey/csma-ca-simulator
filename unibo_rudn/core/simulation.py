@@ -17,8 +17,10 @@ class Simulation:
 
         # statistics
         self.collision_duration = 0.0
-        self.collision_blocking_probability = 0.0
+        self.collision_time_blocking_probability = 0.0
+        self.collision_call_blocking_probability = 0.0
         self.time_before_channel_busy = 0
+        self.mean_node_finished_at = 0
         self.nodes_count_that_transmitted_data = 0
         self.mean_sent_rts_count = 0
 
@@ -231,12 +233,13 @@ class Simulation:
 
             # update statistics
             if self.time != 0.0:
-                self.collision_blocking_probability = self.collision_duration / self.time
+                self.collision_time_blocking_probability = self.collision_duration / self.time
             # find next event and update system time
             self.update_time()
 
         # calculate statistics
         temp_time_before_channel_busy = 0
+        temp_finished_at = 0
         temp_nodes_count_that_transmitted_data = 0
         temp_sent_rts = 0
 
@@ -246,10 +249,12 @@ class Simulation:
                 temp_nodes_count_that_transmitted_data += 1
                 if node.cts_message is not None:
                     temp_time_before_channel_busy += node.cts_message.arrived_to_node_at
-
+                    temp_finished_at+= node.finished_at
         self.time_before_channel_busy += temp_time_before_channel_busy / len(self.nodes)
+        self.mean_node_finished_at += temp_finished_at / len(self.nodes)
         self.nodes_count_that_transmitted_data += temp_nodes_count_that_transmitted_data / len(self.nodes)
         self.mean_sent_rts_count += temp_sent_rts / len(self.nodes)
+        self.collision_call_blocking_probability = 1 - temp_nodes_count_that_transmitted_data / temp_sent_rts
 
         if self.input.is_debug:
             print("\n# Simulation ended at", self.time)
@@ -417,7 +422,7 @@ class Simulation:
                   ", rts success=", len(self.gateway.successful_processed_rts_messages),
                   ", rts failure =", len(self.gateway.unsuccessful_processed_rts_messages),
                   ", collision time=", self.collision_duration,
-                  ", collision prob = ", self.collision_blocking_probability)
+                  ", collision prob = ", self.collision_time_blocking_probability)
             for node in self.nodes:
                 print("     Node", node.id, ": data sent =", node.is_user_data_sent, ",sent rts =",
                       len(node.sent_rts_messages), ", received cts =", len(node.received_cts_messages),

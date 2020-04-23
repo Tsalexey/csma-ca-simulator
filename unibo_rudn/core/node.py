@@ -66,3 +66,6 @@ class Node:
 
     def get_distance_to_gateway(self):
         return sqrt(pow(self.position.x, 2) + pow(self.position.y, 2) + pow(self.position.z, 2))
+
+def get_tau_w(retry_number, T_max):
+    return numpy.random.uniform(0, (retry_number + 1) * T_max)

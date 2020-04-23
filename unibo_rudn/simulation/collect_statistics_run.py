@@ -25,13 +25,14 @@ def main():
         nodes = i
         collision_duration = 0
         collision_prob = 0
+        collision_call_prob = 0
         time_before_channel_busy = 0
         nodes_count_that_transmitted_data = 0
         total_simulation_time = 0
         mean_sent_rts_count = 0
 
         D_ave_with_tau_data = 0
-        ratio_tau_data_to_D_ave_plus_tau_data = 0
+        one_minus_ratio_tau_to_D_ave_plus_tau_data = 0
 
         for j in range(0, repeats):
             input.nodes_number = i
@@ -40,7 +41,8 @@ def main():
 
             # statistics gathering
             collision_duration += simulation.collision_duration
-            collision_prob += simulation.collision_blocking_probability
+            collision_prob += simulation.collision_time_blocking_probability
+            collision_call_prob += simulation.collision_call_blocking_probability
             total_simulation_time += simulation.time
             time_before_channel_busy += simulation.time_before_channel_busy
             nodes_count_that_transmitted_data += simulation.nodes_count_that_transmitted_data
@@ -50,11 +52,13 @@ def main():
         total_simulation_time = total_simulation_time / repeats
         collision_duration = collision_duration / repeats
         collision_prob = collision_prob / repeats
+        collision_call_prob = collision_call_prob /repeats
         mean_sent_rts_count = mean_sent_rts_count / repeats
         time_before_channel_busy = time_before_channel_busy / repeats
         nodes_count_that_transmitted_data = nodes_count_that_transmitted_data / repeats
         D_ave_with_tau_data = D_ave_with_tau_data / repeats
         ratio_tau_data_to_D_ave_plus_tau_data = input.tau_g_data / D_ave_with_tau_data
+        one_minus_ratio_tau_to_D_ave_plus_tau_data = 1.0 - ratio_tau_data_to_D_ave_plus_tau_data
 
         statistics[nodes] = [nodes,
                              collision_duration,
@@ -64,7 +68,9 @@ def main():
                              total_simulation_time,
                              mean_sent_rts_count,
                              D_ave_with_tau_data,
-                             ratio_tau_data_to_D_ave_plus_tau_data]
+                             ratio_tau_data_to_D_ave_plus_tau_data,
+                             collision_call_prob,
+                             one_minus_ratio_tau_to_D_ave_plus_tau_data]
         t2 = time.time()
         print("     Executed in %s seconds" % (t2- t1))
     filename = "../simulation_results/nodes[" + str(1) + "-" + str(input.nodes_number) + "]_radius[" + str(input.sphere_radius) + "]_retry[" + str(input.N_retry) + "].dat"
@@ -80,7 +86,9 @@ def main():
                          "total simulation time",
                          "mean sent rts count,"
                          "D_ave + tau_data",
-                         "tau_data/(D_ave+tau_data)"])
+                         "tau_data/(D_ave+tau_data)",
+                         "collision call probability",
+                         "1 - tau_data/(D_ave+tau_data)"])
         for keys, values in statistics.items():
             print(values)
             writer.writerow(values)

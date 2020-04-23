@@ -48,7 +48,7 @@ def main():
                                     is_debug,
                                     auto_continue)
             simulation.run()
-            collision_prob += simulation.collision_blocking_probability
+            collision_prob += simulation.collision_time_blocking_probability
         collision_prob = collision_prob / repeats
 
         statistics[nodes] = [nodes,
