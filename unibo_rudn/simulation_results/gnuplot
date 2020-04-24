@@ -175,7 +175,7 @@ plot 'nodes[1-20]_radius[2]_retry[3].dat' u 1:3 w l t 'Collision by Time, Retry=
 'nodes[1-20]_radius[2]_retry[3].dat' u 1:10 w l t 'Collision by call, Retry=3' lc rgb 'green',\
 'nodes[1-20]_radius[2]_retry[None].dat' u 1:10 w l t 'Collision by call, Retry=Inf' lc rgb 'yellow'
 
-set title 'Mean overhead (time to start data transmission)'
+set title 'Time before data transmission'
 set xlabel 'Nodes'
 set ylabel 'Time, sec'
 plot 'nodes[1-20]_radius[2]_retry[3].dat' u 1:4 w l t 'Retry=3' lc rgb 'red',\
@@ -183,32 +183,32 @@ plot 'nodes[1-20]_radius[2]_retry[3].dat' u 1:4 w l t 'Retry=3' lc rgb 'red',\
 
 set key bot left
 set yrange[0:1.05]
-set title 'Percentage of nodes, that successful send data'
+set title 'Ratio between nodes that send data and doesnt send'
 set xlabel 'Nodes'
 set ylabel '%, 1 = 100%'
 plot 'nodes[1-20]_radius[2]_retry[3].dat' u 1:5 w l t 'Retry=3' lc rgb 'red',\
 'nodes[1-20]_radius[2]_retry[None].dat' u 1:5 w l t 'Retry=Inf' lc rgb 'blue'
 
 set key top left
-set title 'Simulation time'
+set title 'Time from first beacon to last ack (simulation time)'
 set xlabel 'Nodes'
 set ylabel 'Time, sec'
 plot 'nodes[1-20]_radius[2]_retry[3].dat' u 1:6 w l t 'Retry=3' lc rgb 'red',\
 'nodes[1-20]_radius[2]_retry[None].dat' u 1:6 w l t 'Retry=Inf' lc rgb 'blue'
 
-set title 'Mean count of sent RTS'
+set title 'Mean number of sent RTS for nodes that transmitted data'
 set xlabel 'Nodes'
 set ylabel 'Msg'
 plot 'nodes[1-20]_radius[2]_retry[3].dat' u 1:7 w l t 'Retry=3' lc rgb 'red',\
 'nodes[1-20]_radius[2]_retry[None].dat' u 1:7 w l t 'Retry=Inf' lc rgb 'blue'
 
-set title 'D_{ave} + tau_{data}'
+set title 'D_{total}'
 set xlabel 'Nodes'
 set ylabel 'Time, sec'
 plot 'nodes[1-20]_radius[2]_retry[3].dat' u 1:8 w l t 'Retry=3' lc rgb 'red',\
 'nodes[1-20]_radius[2]_retry[None].dat' u 1:8 w l t 'Retry=Inf' lc rgb 'blue'
 
-set title 'tau_{data} / (D_{ave} + tau_{data})'
+set title 'tau_{data} / D_{total}'
 set xlabel 'Nodes'
 set ylabel 'Ratio'
 plot 'nodes[1-20]_radius[2]_retry[3].dat' u 1:9 w l t 'Retry=3' lc rgb 'red',\
@@ -218,8 +218,8 @@ set title ''
 set key bot right
 set xlabel 'Nodes'
 set ylabel 'Probability'
-plot 'nodes[1-20]_radius[2]_retry[3].dat' u 1:11 w l t 'Retry=3, 1-tau_{data}/(D_{ave}+tau_{data})' lc rgb 'blue',\
-     'nodes[1-20]_radius[2]_retry[None].dat' u 1:11 w l t 'Retry=Inf, 1-tau_{data}/(D_{ave}+tau_{data})' lc rgb 'red',\
+plot 'nodes[1-20]_radius[2]_retry[3].dat' u 1:11 w l t 'Retry=3, 1-tau_{data}/D_{total}' lc rgb 'blue',\
+     'nodes[1-20]_radius[2]_retry[None].dat' u 1:11 w l t 'Retry=Inf, 1-tau_{data}/D_{total}' lc rgb 'red',\
      'nodes[1-20]_radius[2]_retry[3].dat' u 1:10 w l t 'Retry=3, p block by calls' lc rgb 'green',\
      'nodes[1-20]_radius[2]_retry[None].dat' u 1:10 w l t 'Retry=Inf,  p block by calls' lc rgb 'yellow'
 

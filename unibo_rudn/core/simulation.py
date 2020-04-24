@@ -209,7 +209,7 @@ class Simulation:
                         # we got a collision
                         if collision_rts_list:
                             collision_rts_list.append(rts)
-                            self.collision_duration += possible_collision_end_time - collision_start_time
+                            self.collision_duration += self.input.tau_g_rts
                             if self.input.is_debug:
                                 print("There is a collision between RTS from node", rts.id, "and", collision_ids)
                                 print("Collision time", possible_collision_end_time - possible_collision_start_time)

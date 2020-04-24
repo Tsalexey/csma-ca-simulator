@@ -69,7 +69,7 @@ def main():
             for m in range(1, n+1):
                 if m > 1:
                     temp_tau += data.tau_out
-                temp_tau += (get_tau_w(n, data.T_max) + data.tau_p_max + data.tau_g_rts)
+                temp_tau += (get_tau_w(m, data.T_max) + data.tau_p_max + data.tau_g_rts)
             D[i] += (data.tau_p_max + temp_tau + tau_data) * ((pow(p[i], n-1) * (1 - p[i]))/(1-pow(p[i], rts_retry)))
 
         D_total[i] = D[i]
