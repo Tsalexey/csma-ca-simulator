@@ -7,7 +7,7 @@ class RealisticInput1:
         self.nodes_number = 20
 
         self.sphere_radius = 2 # meter
-        self.N_retry = None # allowed rts retransmission count, None = unlimited
+        self.N_retry = 5 # allowed rts retransmission count, None = unlimited
 
         self.R_b = 53687091200 # 50Gbit/sec - channel bandwidth
         self.c = 3 * pow(10, 8) # meters/second - light speed

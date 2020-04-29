@@ -2,6 +2,7 @@ import csv
 import sys
 import time
 
+from unibo_rudn.analytics.D_n_analytic import D_n_analytic
 from unibo_rudn.core.node import get_tau_w
 from unibo_rudn.core.simulation import Simulation
 from unibo_rudn.input.realistic_input1 import RealisticInput1
@@ -48,30 +49,7 @@ def main():
     for key in D_sim.keys():
         D_sim[key] = D_sim[key] / D_sim_counter[key]
 
-    D_analytic = {}
-    # just limiting N_retry with a big number because of summing to Inf is impossible
-    rts_retry = data.N_retry
-    if rts_retry is None:
-        rts_retry = 25
-
-    for n in range(1, rts_retry + 1):
-        t1 = time.time()
-        sum_t_w = 0.0
-
-        for m in range(1, n + 1):
-            sum_t_w += data.T_max / 2  # mean value for uniform random distribution
-
-        D_analytic[n] = data.tau_g_beacon + \
-                        data.tau_p_max + \
-                        (n - 1) * data.tau_out + \
-                        n * (data.tau_g_rts + data.tau_p_max) + \
-                        sum_t_w + \
-                        data.tau_g_cts + data.tau_p_max + \
-                        data.tau_g_data + data.tau_p_max + \
-                        data.tau_g_ack + data.tau_p_max
-
-        t2 = time.time()
-        print("     ", n, "retry, D(", n, ")=", D_analytic[n], ", executed in %s seconds" % (t2 - t1))
+    D_analytic = D_n_analytic(data, 25).calculate()
 
     filename = "../simulation_results/D_n_test_nodes[" + str(1) + "-" + str(data.nodes_number) + "]_radius[" + str(
         data.sphere_radius) + "]_retry[" + str(data.N_retry) + "].dat"
