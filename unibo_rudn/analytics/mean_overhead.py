@@ -19,7 +19,7 @@ def main():
     # Node parameters
     T_max = 15
     rts_generation_intensity = 5
-    t_out = 10
+    tau_out = 10
     retry_limit = 3
     # Gateway parameters
     rts_processing_duration = 1
@@ -29,7 +29,7 @@ def main():
 
     nodes = []
     for i in range(1, nodes_number + 1):
-        nodes.append(Node(i, nodes_number, T_max, rts_generation_intensity, t_out, retry_limit, is_debug))
+        nodes.append(Node(i, nodes_number, T_max, rts_generation_intensity, tau_out, retry_limit, is_debug))
 
     D_avg = {}
     p = {}
@@ -56,7 +56,7 @@ def main():
                                     maximum_allowed_radius,
                                     T_max,
                                     rts_generation_intensity,
-                                    t_out,
+                                    tau_out,
                                     retry_limit,
                                     rts_processing_duration,
                                     cts_channel_busy_time,
@@ -86,7 +86,7 @@ def main():
             sum_l = 0
             for l in range(0, n+1):
                 sum_l += l
-            D_avg[i] += D_avg[i] + pow(p[i], n-1)*(n*(t_out+rts_processing_duration)+(T_max/2)*sum_l)
+            D_avg[i] += D_avg[i] + pow(p[i], n-1)*(n*(tau_out+rts_processing_duration)+(T_max/2)*sum_l)
             print("n=", n, ", D_avg = ", D_avg[i])
         D_avg[i] = D_avg[i] * (p[i]/sum_p)
         print("D_avg=", D_avg[i])

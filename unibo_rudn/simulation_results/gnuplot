@@ -57,56 +57,25 @@ plot 'analytical_overhead_nodes[1-20]_radius[10]_retry[3].dat' u 1:3 w l
 # D_total_test
 #
 
-set title 'Collision probability'
-plot 'D_total_test_nodes[1-20]_radius[2]_retry[3].dat' u 1:2 w l t 'Retry=3' lc rgb 'red', 'D_total_test_nodes[1-20]_radius[2]_retry[None].dat' u 1:2 w l t 'Retry=Inf' lc rgb 'blue'
-
-plot 'D_total_test_nodes[1-20]_radius[2]_retry[3].dat' u 1:4 w l t 'Simulation, Retry=3' lc rgb 'green', \
-'D_total_test_nodes[1-20]_radius[2]_retry[None].dat' u 1:4 w l t 'Simulation, Retry=Inf' lc rgb 'brown'
-
-set title 'mean D total(simulation)'
-set key top left
-plot 'D_total_test_nodes[1-20]_radius[2]_retry[3].dat' u 1:4 w l t 'Retry=3' lc rgb 'red', \
-     'D_total_test_nodes[1-20]_radius[2]_retry[None].dat' u 1:4 w l t 'Retry=Inf' lc rgb 'blue'
-
-set title 'D total'
-set key top left
-plot 'D_total_test_nodes[1-20]_radius[2]_retry[3].dat' u 1:3 w l t 'Retry=3' lc rgb 'red', \
-     'D_total_test_nodes[1-20]_radius[2]_retry[None].dat' u 1:3 w l t 'Retry=Inf' lc rgb 'blue'
-
-set title 'D total'
-set key top left
-plot 'D_total_test_nodes[1-20]_radius[2]_retry[3].dat' u 1:3 w l t 'Retry=3' lc rgb 'blue', \
-'D_total_test_nodes[1-20]_radius[2]_retry[3].dat' u 1:3 w p t '' lc rgb 'blue', \
-'D_total_test_nodes[1-20]_radius[2]_retry[3].dat' u 1:5 w l t 'Norm., Retry=3' lc rgb 'red', \
-'D_total_test_nodes[1-20]_radius[2]_retry[3].dat' u 1:5 w p t '' lc rgb 'red'
-
-set title 'D total'
-set key top left
-plot 'D_total_test_nodes[1-20]_radius[2]_retry[None].dat' u 1:3 w l t 'Retry=Inf' lc rgb 'blue', \
-'D_total_test_nodes[1-20]_radius[2]_retry[None].dat' u 1:3 w p t '' lc rgb 'blue', \
-'D_total_test_nodes[1-20]_radius[2]_retry[None].dat' u 1:5 w l t 'Norm., Retry=Inf' lc rgb 'red', \
-'D_total_test_nodes[1-20]_radius[2]_retry[None].dat' u 1:5 w p t '' lc rgb 'red'
+set title 'D_{total}'
+set key inside top left
+set ylabel 'Time, s'
+plot 'D_total_test_nodes[1-20]_radius[2]_retry[3].dat' u 1:4 w l t 'Simulation, Retry=3' lc rgb 'red', \
+     'D_total_test_nodes[1-20]_radius[2]_retry[None].dat' u 1:4 w l t 'Simulation, Retry=Inf' lc rgb 'blue',\
+     'D_total_test_nodes[1-20]_radius[2]_retry[3].dat' u 1:5 w l t 'Analytic, Retry=3' lc rgb 'green', \
+     'D_total_test_nodes[1-20]_radius[2]_retry[None].dat' u 1:5 w l t 'Analytic, Retry=Inf' lc rgb 'yellow',\
 
 
-set key bot left
-set title 'p tx rts'
-set xrange[1:20]
-plot 'D_total_test_nodes[1-20]_radius[2]_retry[3].dat' u 1:6 w l t 'Retry=3' lc rgb 'red', \
-     'D_total_test_nodes[1-20]_radius[2]_retry[3].dat' u 1:6 w p t '' lc rgb 'red', \
-     'D_total_test_nodes[1-20]_radius[2]_retry[None].dat' u 1:6 w l t 'Retry=Inf' lc rgb 'blue', \
-     'D_total_test_nodes[1-20]_radius[2]_retry[None].dat' u 1:6 w p t '' lc rgb 'blue', \
-     'D_total_test_nodes[1-20]_radius[2]_retry[3].dat' u 1:7 w l t 'Normalized, Retry=3' lc rgb 'green', \
-     'D_total_test_nodes[1-20]_radius[2]_retry[None].dat' u 1:7 w l t 'Normalized, Retry=Inf' lc rgb 'yellow'
-
-set key top right
+set key outside top right
 set title 'p{ success}'
+set ylabel 'Probability'
 set key top left
-plot 'D_total_test_nodes[1-20]_radius[2]_retry[3].dat' u 1:8 w l t 'Retry=3' lc rgb 'red', \
-     'D_total_test_nodes[1-20]_radius[2]_retry[3].dat' u 1:8 w p t '' lc rgb 'red', \
-     'D_total_test_nodes[1-20]_radius[2]_retry[None].dat' u 1:8 w l t 'Retry=Inf' lc rgb 'blue', \
-     'D_total_test_nodes[1-20]_radius[2]_retry[None].dat' u 1:8 w p t '' lc rgb 'blue', \
-     'D_total_test_nodes[1-20]_radius[2]_retry[3].dat' u 1:9 w l t 'Normalized, Retry=3' lc rgb 'green', \
-     'D_total_test_nodes[1-20]_radius[2]_retry[None].dat' u 1:9 w l t 'Normalized, Retry=Inf' lc rgb 'yellow'
+plot 'D_total_test_nodes[1-20]_radius[2]_retry[3].dat' u 1:9 w l t 'Analytic, Retry=3' lc rgb 'red', \
+     'D_total_test_nodes[1-20]_radius[2]_retry[None].dat' u 1:9 w l t 'Analytic, Retry=Inf' lc rgb 'blue', \
+     'D_total_test_nodes[1-20]_radius[2]_retry[3].dat' u 1:2 w l t 'Simulation, Retry=3' lc rgb 'green', \
+     'D_total_test_nodes[1-20]_radius[2]_retry[None].dat' u 1:2 w l t 'Simulation, Retry=Inf' lc rgb 'black',\
+     'D_total_test_nodes[1-20]_radius[2]_retry[3].dat' u 1:3 w l t 'Simulation  on gw, Retry=3' lc rgb 'purple', \
+     'D_total_test_nodes[1-20]_radius[2]_retry[None].dat' u 1:3 w l t 'Simulation on gw, Retry=Inf' lc rgb 'light-blue'
 
 
 #
@@ -155,79 +124,127 @@ plot 'D_total_test2_nodes[1-20]_radius[2]_retry[3].dat' u 1:6 w l t 'Retry=3' lc
      'D_total_test2_nodes[1-20]_radius[2]_retry[None].dat' u 1:6 w l t 'Retry=Inf' lc rgb 'blue', \
      'D_total_test2_nodes[1-20]_radius[2]_retry[None].dat' u 1:6 w p t '' lc rgb 'blue'
 
+
+#
+# p test
+#
+
+plot 'p_test_nodes[1-20]_radius[2]_retry[3].dat' u 1:2 w l
+plot 'p_test_nodes[1-20]_radius[2]_retry[3].dat' u 1:3 w l
+
+
+#
+# Compare with ALOHA
+#
+
+set key inside bot right
+set title 'Collision probability'
+set xlabel 'Nodes'
+set ylabel 'Probability'
+plot 'nodes[1-100]_radius[3]_retry[0]_N[3].dat' u 1:2 w l t 'T_{max}=3*tau_{g}^{RTS}' lc rgb 'red', \
+'nodes[1-100]_radius[3]_retry[0]_N[3].dat' u 1:2 t '' lc rgb 'red' lt 7,\
+'nodes[1-100]_radius[3]_retry[0]_N[6].dat' u 1:2 w l t 'T_{max}=6*tau_{g}^{RTS}' lc rgb 'green', \
+'nodes[1-100]_radius[3]_retry[0]_N[6].dat' u 1:2 t '' lc rgb 'green' lt 6,\
+'nodes[1-100]_radius[3]_retry[0]_N[9].dat' u 1:2 w l t 'T_{max}=9*tau_{g}^{RTS}' lc rgb 'black', \
+'nodes[1-100]_radius[3]_retry[0]_N[9].dat' u 1:2 t '' lc rgb 'black' lt 4,\
+'nodes[1-100]_radius[3]_retry[0]_N[12].dat' u 1:2 w l t 'T_{max}=12*tau_{g}^{RTS}' lc rgb 'blue', \
+'nodes[1-100]_radius[3]_retry[0]_N[12].dat' u 1:2 t '' lc rgb 'blue' lt 5
+
+
+#
+# D(n) test
+#
+
+set title 'D(n)'
+set xlabel 'n, Attempt number'
+set ylabel 'D(n)' rotate by 0
+plot 'D_n_test_nodes[1-20]_radius[2]_retry[3].dat' u 1:2 w l t 'D(n) analytical' lc rgb 'red',\
+'D_n_test_nodes[1-20]_radius[2]_retry[3].dat' u 1:2 t '' lc rgb 'red' lt 4
+
+set title 'D(n)'
+set xtics 0,2000,10000
+set xlabel 'n, Attempt number'
+set ylabel 'D(n)' rotate by 0
+plot 'D_n_test_nodes[1-20]_radius[2]_retry[None].dat' u 1:2 w l t 'D(n)' lc rgb 'red'
+
+set datafile missing "?"
+set key bot right
+set title 'D(n)'
+set xlabel 'n, Attempt number'
+set ylabel 'D(n)' rotate by 0
+set xrange[0:20]
+plot 'D_n_test_nodes[1-20]_radius[2]_retry[None].dat' u 1:2 w l t 'D(n) analytical' lc rgb 'red',\
+'D_n_test_nodes[1-20]_radius[2]_retry[None].dat' u 1:2 t '' lc rgb 'red' lt 4,\
+'D_n_test_nodes[1-20]_radius[2]_retry[None].dat' u 1:3 w l t 'D(n) simulation, retry = Inf' lc rgb 'blue',\
+'D_n_test_nodes[1-20]_radius[2]_retry[None].dat' u 1:3 t '' lc rgb 'blue'
+
+
+
 #
 # Compare None with 3 retries
 #
 
-set key left top
 
-set title 'Mean collision duration'
-set xlabel 'Nodes'
-set ylabel 'Time, sec'
-plot 'nodes[1-20]_radius[2]_retry[3].dat' u 1:2 w l t 'Retry=3' lc rgb 'red',\
-'nodes[1-20]_radius[2]_retry[None].dat' u 1:2 w l t 'Retry=Inf' lc rgb 'blue'
-
+set key inside left top
 set title 'Collision probability'
 set xlabel 'Nodes'
 set ylabel 'Probability'
-plot 'nodes[1-20]_radius[2]_retry[3].dat' u 1:3 w l t 'Collision by Time, Retry=3' lc rgb 'red',\
-'nodes[1-20]_radius[2]_retry[None].dat' u 1:3 w l t 'Collision by Time, Retry=Inf' lc rgb 'blue',\
-'nodes[1-20]_radius[2]_retry[3].dat' u 1:10 w l t 'Collision by call, Retry=3' lc rgb 'green',\
-'nodes[1-20]_radius[2]_retry[None].dat' u 1:10 w l t 'Collision by call, Retry=Inf' lc rgb 'yellow'
+plot 'nodes[1-20]_radius[2]_retry[3].dat' u 1:2 w l t 'by Time, Retry=3' lc rgb 'red',\
+'nodes[1-20]_radius[2]_retry[3].dat' u 1:2 t '' lc rgb 'red' lt 6,\
+'nodes[1-20]_radius[2]_retry[None].dat' u 1:2 w l t 'by Time, Retry=Inf' lc rgb 'blue',\
+'nodes[1-20]_radius[2]_retry[None].dat' u 1:2 t '' lc rgb 'blue' lt 9,\
+'nodes[1-20]_radius[2]_retry[3].dat' u 1:3 w l t 'by call, Retry=3' lc rgb 'green',\
+'nodes[1-20]_radius[2]_retry[None].dat' u 1:3 w l t 'by call, Retry=Inf' lc rgb 'black'
 
-set title 'Time before data transmission'
+set key inside top left
+set title 'D_{total}'
 set xlabel 'Nodes'
-set ylabel 'Time, sec'
-plot 'nodes[1-20]_radius[2]_retry[3].dat' u 1:4 w l t 'Retry=3' lc rgb 'red',\
-'nodes[1-20]_radius[2]_retry[None].dat' u 1:4 w l t 'Retry=Inf' lc rgb 'blue'
-
-set key bot left
-set yrange[0:1.05]
-set title 'Ratio between nodes that send data and doesnt send'
-set xlabel 'Nodes'
-set ylabel '%, 1 = 100%'
+set ylabel 'Time, s'
 plot 'nodes[1-20]_radius[2]_retry[3].dat' u 1:5 w l t 'Retry=3' lc rgb 'red',\
 'nodes[1-20]_radius[2]_retry[None].dat' u 1:5 w l t 'Retry=Inf' lc rgb 'blue'
 
-set key top left
-set title 'Time from first beacon to last ack (simulation time)'
+set key inside top left
+set title 'Nodes that transmitted data'
 set xlabel 'Nodes'
-set ylabel 'Time, sec'
+set ylabel 'Nodes count'
 plot 'nodes[1-20]_radius[2]_retry[3].dat' u 1:6 w l t 'Retry=3' lc rgb 'red',\
 'nodes[1-20]_radius[2]_retry[None].dat' u 1:6 w l t 'Retry=Inf' lc rgb 'blue'
 
-set title 'Mean number of sent RTS for nodes that transmitted data'
+set title '(tau_{data} / D_{total}) * (transmitted nodes/all nodes)'
 set xlabel 'Nodes'
-set ylabel 'Msg'
+set ylabel 'Ratio'
 plot 'nodes[1-20]_radius[2]_retry[3].dat' u 1:7 w l t 'Retry=3' lc rgb 'red',\
 'nodes[1-20]_radius[2]_retry[None].dat' u 1:7 w l t 'Retry=Inf' lc rgb 'blue'
 
-set title 'D_{total}'
+set title '1 - (tau_{data} / D_{total}) * (transmitted nodes/all nodes)'
 set xlabel 'Nodes'
-set ylabel 'Time, sec'
+set ylabel 'Ratio'
 plot 'nodes[1-20]_radius[2]_retry[3].dat' u 1:8 w l t 'Retry=3' lc rgb 'red',\
 'nodes[1-20]_radius[2]_retry[None].dat' u 1:8 w l t 'Retry=Inf' lc rgb 'blue'
 
-set title 'tau_{data} / D_{total}'
+
+set title 'Number of calls'
+set xlabel 'Nodes'
+set ylabel 'Calls number'
+plot 'nodes[1-20]_radius[2]_retry[3].dat' u 1:9 w l t 'Total, Retry=3' lc rgb 'blue',\
+'nodes[1-20]_radius[2]_retry[3].dat' u 1:10 w l t 'Correct, Retry=3' lc rgb 'green',\
+'nodes[1-20]_radius[2]_retry[3].dat' u 1:11 w l t 'Not correct, Retry=3' lc rgb 'red'
+
+set title 'Number of calls'
+set xlabel 'Nodes'
+set ylabel 'Calls number'
+plot 'nodes[1-20]_radius[2]_retry[None].dat' u 1:9 w l t 'Total, Retry=Inf' lc rgb 'blue',\
+'nodes[1-20]_radius[2]_retry[None].dat' u 1:10 w l t 'Correct, Retry=Inf' lc rgb 'green',\
+'nodes[1-20]_radius[2]_retry[None].dat' u 1:11 w l t 'Not correct, Retry=Inf' lc rgb 'red'
+
+set title 'Number of transmitted rts (by node)'
 set xlabel 'Nodes'
 set ylabel 'Ratio'
-plot 'nodes[1-20]_radius[2]_retry[3].dat' u 1:9 w l t 'Retry=3' lc rgb 'red',\
-'nodes[1-20]_radius[2]_retry[None].dat' u 1:9 w l t 'Retry=Inf' lc rgb 'blue'
+plot 'nodes[1-20]_radius[2]_retry[3].dat' u 1:12 w l t 'Retry=3' lc rgb 'red',\
+'nodes[1-20]_radius[2]_retry[None].dat' u 1:12 w l t 'Retry=Inf' lc rgb 'blue'
 
-set title ''
-set key bot right
+set title 'Number of retransmitted rts (by node)'
 set xlabel 'Nodes'
-set ylabel 'Probability'
-plot 'nodes[1-20]_radius[2]_retry[3].dat' u 1:11 w l t 'Retry=3, 1-tau_{data}/D_{total}' lc rgb 'blue',\
-     'nodes[1-20]_radius[2]_retry[None].dat' u 1:11 w l t 'Retry=Inf, 1-tau_{data}/D_{total}' lc rgb 'red',\
-     'nodes[1-20]_radius[2]_retry[3].dat' u 1:10 w l t 'Retry=3, p block by calls' lc rgb 'green',\
-     'nodes[1-20]_radius[2]_retry[None].dat' u 1:10 w l t 'Retry=Inf,  p block by calls' lc rgb 'yellow'
-
-set title ''
-set xlabel 'Nodes'
-set ylabel 'Time, sec'
-plot 'nodes[1-20]_radius[2]_retry[3].dat' u 1:4 w l t 'Mean overhead, limit=3' lc rgb 'red',\
-'nodes[1-20]_radius[2]_retry[3].dat' u 1:6 w l t 'Total simulation time, limit=3' lc rgb 'green',\
-'nodes[1-20]_radius[2]_retry[None].dat' u 1:4 w l t 'Mean overhead, limit=None' lc rgb 'blue',\
-'nodes[1-20]_radius[2]_retry[None].dat' u 1:6 w l t 'Total simulation time, limit=None' lc rgb 'brown'
-
+set ylabel 'Ratio'
+plot 'nodes[1-20]_radius[2]_retry[3].dat' u 1:13 w l t 'Retry=3' lc rgb 'red',\
+'nodes[1-20]_radius[2]_retry[None].dat' u 1:13 w l t 'Retry=Inf' lc rgb 'blue'

@@ -19,7 +19,7 @@ def main():
     # Node parameters
     T_max = 15
     rts_generation_intensity = 5
-    t_out = 10
+    tau_out = 10
     retry_limit = 3
     # Gateway parameters
     rts_processing_duration = 1
@@ -41,7 +41,7 @@ def main():
                                     maximum_allowed_radius,
                                     T_max,
                                     rts_generation_intensity,
-                                    t_out,
+                                    tau_out,
                                     retry_limit,
                                     rts_processing_duration,
                                     cts_channel_busy_time,
