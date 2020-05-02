@@ -24,8 +24,9 @@ class Node:
         self.ack_message = None
 
         # statistics
-        self.transmitted_rts_messages = []
-        self.received_cts_messages = []
+        self.ready_to_transmit_rts = {}
+        self.transmitted_rts_messages = {}
+        self.received_cts_messages = {}
 
         self.finished_at = None
 

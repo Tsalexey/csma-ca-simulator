@@ -18,7 +18,7 @@ class BeaconMessage:
 
 class RTSMessage:
     def __init__(self, id, generated_at):
-        self.rts_id = uuid.uuid4()
+        self.rts_id = "#" + str(id) + "_" + str(generated_at)
         self.id = id
         self.attempt_number = None
         self.type = MessageType.rts

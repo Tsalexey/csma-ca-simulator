@@ -15,7 +15,7 @@ def main():
 
     data = RealisticInput1()
 
-    repeats = 500
+    repeats = 2500
 
     t1 = time.time()
     print("Simulation run for ", data.nodes_number, " Nodes distributed within a sphere with a radius",

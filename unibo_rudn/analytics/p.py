@@ -8,12 +8,14 @@ from unibo_rudn.input.realistic_input1 import RealisticInput1
 
 def main():
     data = RealisticInput1()
-    repeats = 500
+    repeats = 2500
 
     D_analytic = D_n_analytic(data, data.N_retry + 1).calculate()
 
     p_sim = {}
+    p2_sim = {}
     p = {}
+    p2={}
 
     for nodes in range(1, data.nodes_number + 1):
 
@@ -23,12 +25,20 @@ def main():
               ", repeats =", repeats)
 
         p_temp = 0.0
+        p2_temp = 0.0
+
         for j in range(0, repeats):
             data.nodes_number = nodes
             simulation = Simulation(data)
             simulation.run()
-            p_temp += simulation.collision_time_blocking_probability
+            p_temp += simulation.collision_call_blocking_probability
+
+            if simulation.nodes_count_that_transmitted_data == len(simulation.nodes):
+                p2_temp +=1
+
         p_sim[nodes] = p_temp / repeats
+        p2_sim[nodes] = p2_temp / repeats
+
         t2 = time.time()
         print("     Executed in %s seconds" % (t2 - t1))
 
@@ -38,7 +48,7 @@ def main():
             sum += i / D_analytic[i]
 
         p[nodes] = 1 - pow(1 - data.tau_g_rts * sum, nodes - 1)
-
+        p2[nodes] = pow(data.tau_g_rts * sum, nodes)
         filename = "../simulation_results/p_test_nodes[" + str(1) + "-" + str(nodes) + "]_radius[" + str(
             data.sphere_radius) + "]_retry[" + str(data.N_retry) + "].dat"
         kwargs = {'newline': ''}
@@ -55,7 +65,9 @@ def main():
             writer.writerow([key,
                              p[key],
                              p_sim[key],
-                             1 - p[key]
+                             1 - p[key],
+                             p2[key],
+                             p2_sim[key]
                              ])
 
 
