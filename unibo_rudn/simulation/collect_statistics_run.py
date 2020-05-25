@@ -13,7 +13,7 @@ def main():
     start_time = time.time()
 
     input = RealisticInput1()
-    repeats = 2500
+    repeats = 1500
 
     statistics = {}
 
@@ -29,6 +29,8 @@ def main():
 
         collision_by_time_prob = 0
         collision_by_call_prob = 0
+        collision_gw_time_blocking_probability = 0
+
         D_total = 0
         tau_data_divided_by_D_total = 0
         kpi_tau_data_divided_by_D_total = 0
@@ -38,6 +40,7 @@ def main():
         number_of_correctly_received_calls = 0
         number_of_not_correctly_received_calls = 0
         number_of_calls_received_after_cts = 0
+        number_of_false_success_received_calls = 0
 
         transmitted_rts_messages = 0
         retransmitted_rts_messages = 0
@@ -52,6 +55,8 @@ def main():
             # statistics gathering
             collision_by_time_prob += simulation.collision_time_blocking_probability
             collision_by_call_prob += simulation.collision_call_blocking_probability
+            collision_gw_time_blocking_probability += simulation.collision_gw_time_blocking_probability
+
             D_total += simulation.D_total
             tau_data_divided_by_D_total += simulation.tau_data_divided_by_D_total
             kpi_tau_data_divided_by_D_total += input.tau_g_data * simulation.tau_data_divided_by_D_total / input.T_beam
@@ -64,6 +69,7 @@ def main():
             number_of_correctly_received_calls += len(simulation.gateway.successful_processed_rts_messages)
             number_of_not_correctly_received_calls += len(simulation.gateway.unsuccessful_processed_rts_messages)
             number_of_calls_received_after_cts += len(simulation.gateway.rts_messages_to_be_processed)
+            number_of_false_success_received_calls += len(simulation.gateway.successful_processed_rts_messages) - simulation.nodes_count_that_transmitted_data
 
             transmitted_rts_messages += simulation.transmitted_rts_messages
             retransmitted_rts_messages += simulation.retransmitted_rts_messages
@@ -72,6 +78,8 @@ def main():
 
         collision_by_time_prob = collision_by_time_prob / repeats
         collision_by_call_prob = collision_by_call_prob / repeats
+        collision_gw_time_blocking_probability = collision_gw_time_blocking_probability /repeats
+
         D_total = D_total / repeats
         tau_data_divided_by_D_total = tau_data_divided_by_D_total / repeats
         kpi_tau_data_divided_by_D_total = kpi_tau_data_divided_by_D_total / repeats
@@ -81,6 +89,7 @@ def main():
         number_of_correctly_received_calls = number_of_correctly_received_calls / repeats
         number_of_not_correctly_received_calls = number_of_not_correctly_received_calls / repeats
         number_of_calls_received_after_cts = number_of_calls_received_after_cts / repeats
+        number_of_false_success_received_calls = number_of_false_success_received_calls / repeats
 
         transmitted_rts_messages = transmitted_rts_messages / repeats
         retransmitted_rts_messages = retransmitted_rts_messages / repeats
@@ -97,7 +106,9 @@ def main():
                              number_of_not_correctly_received_calls,
                              number_of_calls_received_after_cts,
                              transmitted_rts_messages,
-                             retransmitted_rts_messages
+                             retransmitted_rts_messages,
+                             number_of_false_success_received_calls,
+                             collision_gw_time_blocking_probability
                              ]
         t2 = time.time()
         print("     Executed in %s seconds" % (t2 - t1))
@@ -119,7 +130,9 @@ def main():
                          "number_of_correctly_received_calls",
                          "number_of_not_correctly_received_calls",
                          "transmitted_rts_messages",
-                         "retransmitted_rts_messages"
+                         "retransmitted_rts_messages",
+                         "number_of_false_success_received_calls",
+                         "collision_gw_time_blocking_probability"
                          ])
         for keys, values in statistics.items():
             print(values)

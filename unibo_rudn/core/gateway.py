@@ -15,6 +15,8 @@ class Gateway:
         self.send_ack_at = None
         self.send_ack_to = None
 
+        self.last_ack_time = None
+
         self.total_processed_rts_messages = {}
         self.successful_processed_rts_messages = {}
         self.unsuccessful_processed_rts_messages = {}
@@ -27,8 +29,14 @@ class Gateway:
 
         self.number_of_collisions = 0
 
+        self.stat_hidden_block = []
+
         self.blocked_time = 0.0;
         self.total_working_time = 0.0;
+
+        self.start_serving_time = 0.0
+        self.end_serving_time = 0.0
+        self.busy_time = 0.0
 
         if self.is_debug:
             print("# Generate gateway{x =", self.position.x, ", y = ", self.position.y, ", z = ", self.position.z, "}")

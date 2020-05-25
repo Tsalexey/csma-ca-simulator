@@ -1,0 +1,4 @@
+#nodes "collision by time" "collision by call" "collision by call on GW" "D total" "Nodes count that transmitted data" "(tau_data / D_total) * (transmitted_nodes/all nodes)" "1 - (tau_data / D_total) * (transmitted_nodes/all nodes)" number_of_generated_calls number_of_correctly_received_calls number_of_not_correctly_received_calls transmitted_rts_messages retransmitted_rts_messages number_of_false_success_received_calls collision_gw_time_blocking_probability
+1 0.0 0.0 7.595600701861509e-08 1.0 0.2083677237372299 1.5524605195017896e-09 1.0 1.0 0.0 0.0 1.0 0.0 0.0 0.0
+2 0.03166666666666666 0.048 1.1426370191184739e-07 2.0 0.14007978943547963 1.04367576118916e-09 2.38 2.18 0.2 0.0 1.19 0.19 0.18 0.0014883189037158944
+3 0.068 0.10942857142857144 1.4345341890475365e-07 3.0 0.11010101645419415 8.203164968952101e-10 3.92 3.34 0.58 0.0 1.3066666666666669 0.30666666666666664 0.34 0.003618408614248739

@@ -7,7 +7,7 @@ class RealisticInput1:
         self.nodes_number = 20
 
         self.sphere_radius = 2 # meter
-        self.N_retry = 5 # allowed rts retransmission count, None = unlimited
+        self.N_retry = None # allowed rts retransmission count, None = unlimited
         self.T_beam = 2 # sec - time of time slot
 
         self.R_b = 53687091200 # 50Gbit/sec - channel bandwidth
@@ -34,7 +34,7 @@ class RealisticInput1:
         # else :
         #     N = self.N_retry / 2.0;
 
-        self.N = 18
+        self.N = 12
 
         self.T_max = self.N * self.tau_g_rts # sec - delay before sending RTS
         self.tau_p_max = self.sphere_radius / self.c # sec - maximal propagation time

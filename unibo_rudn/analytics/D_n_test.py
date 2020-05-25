@@ -15,7 +15,7 @@ def main():
 
     data = RealisticInput1()
 
-    repeats = 2500
+    repeats = 500
 
     t1 = time.time()
     print("Simulation run for ", data.nodes_number, " Nodes distributed within a sphere with a radius",
@@ -25,7 +25,7 @@ def main():
     D_sim = {}
     D_sim_counter = {}
 
-    for i in range(1, data.nodes_number + 1):
+    for i in range(data.nodes_number, data.nodes_number + 1):
         t1 = time.time()
         print("Simulation run for ", i, " Nodes distributed within a sphere with a radius", data.sphere_radius,
               ", repeats =", repeats)
@@ -49,7 +49,7 @@ def main():
     for key in D_sim.keys():
         D_sim[key] = D_sim[key] / D_sim_counter[key]
 
-    D_analytic = D_n_analytic(data, 25).calculate()
+    D_analytic = D_n_analytic(data, 8).calculate()
 
     filename = "../simulation_results/D_n_test_nodes[" + str(1) + "-" + str(data.nodes_number) + "]_radius[" + str(
         data.sphere_radius) + "]_retry[" + str(data.N_retry) + "].dat"

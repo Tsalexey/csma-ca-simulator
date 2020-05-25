@@ -27,7 +27,7 @@ class D_n_analytic:
             D_analytic[n] = self.data.tau_g_beacon + \
                             self.data.tau_p_max + \
                             (n - 1) * self.data.tau_out + \
-                            n * (self.data.tau_g_rts + self.data.tau_p_max) + \
+                            self.data.tau_g_rts + self.data.tau_p_max + \
                             sum_t_w + \
                             self.data.tau_g_cts + self.data.tau_p_max + \
                             self.data.tau_g_data + self.data.tau_p_max + \

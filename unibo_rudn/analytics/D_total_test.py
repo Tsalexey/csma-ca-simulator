@@ -19,9 +19,11 @@ def main():
 
     rts_retry = data.N_retry
 
+    nodes_that_transmited_data = {}
+
     p_time = {}
     p_call = {}
-    p_call_gw= {}
+    p_time_gw = {}
     D_total_sim = {}
 
     for i in range(1, data.nodes_number + 1):
@@ -32,8 +34,9 @@ def main():
         nodes = i
 
         collision_prob_by_time = 0
+        collision_prob_by_time_gw = 0
         collision_prob_by_call = 0
-        collision_prob_by_call_on_gw = 0
+        transmitted_data = 0
 
         temp_D_total = 0
 
@@ -44,18 +47,23 @@ def main():
 
             # statistics gathering
             collision_prob_by_time += simulation.collision_time_blocking_probability
+            collision_prob_by_time_gw += simulation.collision_gw_time_blocking_probability
             collision_prob_by_call += simulation.collision_call_blocking_probability
-            collision_prob_by_call_on_gw += simulation.collision_call_blocking_probability_on_gw
             temp_D_total += simulation.D_total
 
+            transmitted_data += simulation.nodes_count_that_transmitted_data
+
         collision_prob_by_time = collision_prob_by_time / repeats
+        collision_prob_by_time_gw = collision_prob_by_time_gw / repeats
         collision_prob_by_call = collision_prob_by_call / repeats
-        collision_prob_by_call_on_gw = collision_prob_by_call_on_gw / repeats
-        temp_D_total = temp_D_total / repeats
+
+        nodes_that_transmited_data = transmitted_data / repeats
+
+        temp_D_total = (temp_D_total / repeats) / nodes_that_transmited_data
 
         p_time[nodes] = collision_prob_by_time
+        p_time_gw[nodes] = collision_prob_by_time_gw
         p_call[nodes] = collision_prob_by_call
-        p_call_gw[nodes] = collision_prob_by_call_on_gw
         D_total_sim[nodes] = temp_D_total
 
         t2 = time.time()
@@ -63,7 +71,6 @@ def main():
 
     D_1 = data.tau_g_beacon \
           + data.tau_p_max \
-          + get_tau_w(0, data.T_max) \
           + data.tau_g_rts \
           + data.tau_p_max \
           + data.tau_g_cts \
@@ -84,7 +91,7 @@ def main():
     if rts_retry is None:
         rts_retry = 500
 
-    p = p_call_gw
+    p = p_time_gw
 
     # D_total depends on p_collision, p_collision depends on nodes number
     for i in range(1, data.nodes_number + 1):
@@ -98,11 +105,8 @@ def main():
             for m in range(1, n):
                 sum_t_w += get_tau_w(m, data.T_max)
 
-            temp += (D_1 + n * (data.tau_out + data.tau_g_rts) + sum_t_w) * pow(p[i], n) * (1 - p[i])
-            temp_normalized += (D_1 + n * (data.tau_out + data.tau_g_rts) + sum_t_w) * ((
-                                                                                            pow(p[i], n) * (
-                                                                                                1 - p[i])) / (
-                                                                                            1 - pow(p[i], rts_retry)))
+            temp += (D_1 + (n-1) * data.tau_out + sum_t_w) * pow(p[i], n) * (1 - p[i])
+            temp_normalized += (D_1 + (n-1) * data.tau_out + sum_t_w) * ((pow(p[i], n) * (1 - p[i])) / (1 - pow(p[i], rts_retry)))
 
         D_total[i] += temp
         D_total_normalized[i] += temp_normalized
@@ -140,7 +144,7 @@ def main():
         for key, values in p_call.items():
             writer.writerow([key,
                              p_call[key],
-                             p_call_gw[key],
+                             p_time[key],
                              D_total_sim[key],
                              D_total[key],
                              D_total_normalized[key],

@@ -28,6 +28,12 @@ class Node:
         self.transmitted_rts_messages = {}
         self.received_cts_messages = {}
 
+        self. waiting_for_other_data_transmission_finished = None
+        self.is_active = True
+
+        self.stat_collision = []
+        self.stat_success = []
+
         self.finished_at = None
 
         if (self.is_debug):
