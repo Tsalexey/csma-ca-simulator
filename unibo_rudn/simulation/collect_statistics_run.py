@@ -13,7 +13,7 @@ def main():
     start_time = time.time()
 
     input = RealisticInput1()
-    repeats = 1500
+    repeats = 500
 
     statistics = {}
 
@@ -47,6 +47,10 @@ def main():
 
         p_rts_collision_to_data = 0.0
 
+        E_tc = 0.0
+        T_RTS = 0.0
+        node_p_success = 0.0
+
         for j in range(0, repeats):
             input.nodes_number = i
             simulation = Simulation(input)
@@ -76,6 +80,10 @@ def main():
 
             p_rts_collision_to_data += simulation.p_rts_collision_to_data
 
+            E_tc += simulation.E_tc
+            T_RTS += simulation.T_rts
+            node_p_success += simulation.nodes_p_success
+
         collision_by_time_prob = collision_by_time_prob / repeats
         collision_by_call_prob = collision_by_call_prob / repeats
         collision_gw_time_blocking_probability = collision_gw_time_blocking_probability /repeats
@@ -94,6 +102,10 @@ def main():
         transmitted_rts_messages = transmitted_rts_messages / repeats
         retransmitted_rts_messages = retransmitted_rts_messages / repeats
 
+        E_tc = E_tc / repeats
+        T_RTS = T_RTS / repeats
+        node_p_success = node_p_success / repeats
+
         statistics[nodes] = [nodes,
                              collision_by_time_prob,
                              collision_by_call_prob,
@@ -108,7 +120,10 @@ def main():
                              transmitted_rts_messages,
                              retransmitted_rts_messages,
                              number_of_false_success_received_calls,
-                             collision_gw_time_blocking_probability
+                             collision_gw_time_blocking_probability,
+                             E_tc,
+                             T_RTS,
+                             node_p_success
                              ]
         t2 = time.time()
         print("     Executed in %s seconds" % (t2 - t1))
@@ -132,7 +147,10 @@ def main():
                          "transmitted_rts_messages",
                          "retransmitted_rts_messages",
                          "number_of_false_success_received_calls",
-                         "collision_gw_time_blocking_probability"
+                         "collision_gw_time_blocking_probability",
+                         "E_tc",
+                         "T_RTS",
+                         "node_p_success"
                          ])
         for keys, values in statistics.items():
             print(values)

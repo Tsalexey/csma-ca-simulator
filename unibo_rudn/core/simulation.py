@@ -1,6 +1,7 @@
 from unibo_rudn.core.Messages import BeaconMessage, RTSMessage, ACKMessage, CTSMessage
 from unibo_rudn.core.gateway import Gateway
 from unibo_rudn.core.node import Node
+from unibo_rudn.core.simulation_type import SimulationType
 
 
 class Simulation:
@@ -42,6 +43,20 @@ class Simulation:
         exception_message = ""
         is_valid = True
 
+        if input.mode is None:
+            is_valid = False
+            exception_message += "You should provide simulation mode!\n"
+
+        if input.mode == SimulationType.CYCLIC:
+            if input.simulation_time is None:
+                is_valid = False
+                exception_message += "You should provide simulation time for cyclic mode!\n"
+
+        if input.mode == SimulationType.ABSORBING:
+            if input.N_retry is not None and input.N_retry < 0:
+                is_valid = False
+                exception_message += "You should provide valid RTS retry limit (N_retry variable) for absorbing mode!\n"
+
         if input.nodes_number is None:
             is_valid = False
             exception_message += "You should provide number of nodes (nodes_number variable)!\n"
@@ -49,10 +64,6 @@ class Simulation:
         if input.sphere_radius is None or input.sphere_radius < 0:
             is_valid = False
             exception_message += "You should provide valid sphere radius more then 0 (sphere_radius variable)!\n"
-
-        if input.N_retry is not None and input.N_retry < 0:
-            is_valid = False
-            exception_message += "You should provide valid RTS retry limit (N_retry variable)!\n"
 
         if input.tau_g_rts is not None and input.tau_g_rts < 0:
             is_valid = False
@@ -158,6 +169,9 @@ class Simulation:
                                 node.next_rts_generation_time = rts.sent_from_node_at + node.tau_out
 
                                 node.transmission_attempt += 1
+
+                                node.T_rts += self.input.tau_g_rts
+                                node.E_tc = self.time
 
                                 self.gateway.rts_messages_to_be_processed[rts.rts_id] = rts
                                 self.gateway.received_rts_count += 1
@@ -404,6 +418,23 @@ class Simulation:
         # false success
         self.gateway.stat_hidden_block = len(self.gateway.successful_processed_rts_messages) - self.nodes_count_that_transmitted_data
 
+        # mean time in transmitting state
+        self.T_rts = 0.0
+        for node in self.nodes:
+            self.T_rts += node.T_rts
+        self.T_rts = self.T_rts / len(self.nodes)
+
+        # mean time for cycle
+        self.E_tc = 0
+        for node in self.nodes:
+            self.E_tc += node.E_tc
+        self.E_tc = self.E_tc / len(self.nodes)
+
+        self.nodes_p_success = 0.0
+        for node in self.nodes:
+            if node.ack_message is not None:
+                self.nodes_p_success += 1.0
+        self.nodes_p_success = self.nodes_p_success / len(self.nodes)
 
     def is_simulation_finished(self):
         """

@@ -27,8 +27,10 @@ class Node:
         self.ready_to_transmit_rts = {}
         self.transmitted_rts_messages = {}
         self.received_cts_messages = {}
+        self.T_rts = 0.0
+        self.E_tc = 0.0
 
-        self. waiting_for_other_data_transmission_finished = None
+        self.waiting_for_other_data_transmission_finished = None
         self.is_active = True
 
         self.stat_collision = []

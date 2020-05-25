@@ -369,3 +369,21 @@ set xlabel 'Nodes'
 set ylabel 'Ratio'
 plot 'nodes[1-20]_radius[2]_retry[3].dat' u 1:13 w l t 'Retry=3' lc rgb 'red',\
 'nodes[1-20]_radius[2]_retry[None].dat' u 1:13 w l t 'Retry=Inf' lc rgb 'blue'
+
+set title 'E[Tc]'
+set xlabel 'Nodes'
+set ylabel 'Time, s'
+plot 'nodes[1-20]_radius[2]_retry[3].dat' u 1:16 w l t 'Retry=3' lc rgb 'red',\
+'nodes[1-20]_radius[2]_retry[None].dat' u 1:16 w l t 'Retry=Inf' lc rgb 'blue'
+
+set title 'Tx RTS state time'
+set xlabel 'Nodes'
+set ylabel 'Time, s'
+plot 'nodes[1-20]_radius[2]_retry[3].dat' u 1:17 w l t 'Retry=3' lc rgb 'red',\
+'nodes[1-20]_radius[2]_retry[None].dat' u 1:17 w l t 'Retry=Inf' lc rgb 'blue'
+
+set title 'Node P{success}'
+set xlabel 'Nodes'
+set ylabel 'Percent'
+plot 'nodes[1-20]_radius[2]_retry[3].dat' u 1:18 w l t 'Retry=3' lc rgb 'red',\
+'nodes[1-20]_radius[2]_retry[None].dat' u 1:18 w l t 'Retry=Inf' lc rgb 'blue'

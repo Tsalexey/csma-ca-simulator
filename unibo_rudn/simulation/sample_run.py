@@ -18,15 +18,6 @@ def main():
     print()
     print("hidden block: ", sim.gateway.stat_hidden_block)
 
-    delta_data = data.tau_g_cts + data.tau_p_max + \
-                 data.tau_g_data + data.tau_p_max + \
-                 data.tau_g_ack + data.tau_p_max
-
-    print()
-    print("delta_data=", delta_data)
-    print("tau_g_rts=", data.tau_g_rts)
-    print()
-
     g_t = 0
     for node in sim.nodes:
         g_t += len(node.transmitted_rts_messages)
@@ -43,12 +34,6 @@ def main():
           len(sim.gateway.unsuccessful_processed_rts_messages) / len(sim.gateway.total_processed_rts_messages))
     print()
 
-    # print("all processed rts / potential number of RTS")
-    # print("P{call2} =", len(sim.gateway.successful_processed_rts_messages)-sim.gateway.stat_hidden_block, "/",
-    #       "=",
-    #       (len(sim.gateway.successful_processed_rts_messages)-sim.gateway.stat_hidden_block) / (len(sim.nodes) * (data.N_retry+1)))
-    # print()
-
     print("time of all rts processing / last ack time")
     print("P{time1} =", sim.gateway.total_working_time, "/",
           sim.gateway.last_ack_time, "=", sim.gateway.total_working_time / sim.gateway.last_ack_time)
@@ -59,13 +44,9 @@ def main():
           sim.gateway.busy_time, "=", sim.gateway.total_working_time / sim.gateway.busy_time)
     print()
 
-    # print("time for blocked / time for all processed")
-    # print("P{time4} = ",
-    #       data.tau_g_rts * len(sim.gateway.unsuccessful_processed_rts_messages), "/",
-    #       (data.tau_g_rts * len(sim.gateway.total_processed_rts_messages)), "=",
-    #       (data.tau_g_rts * len(sim.gateway.unsuccessful_processed_rts_messages)) / (
-    #       data.tau_g_rts * len(sim.gateway.total_processed_rts_messages)))
-    # print()
+    print("E[Tc]=", sim.E_tc)
+    print("P{success}=", sim.nodes_p_success)
+    print("Time for Tx RTS state=", sim.T_rts)
 
 
 if __name__ == '__main__':
