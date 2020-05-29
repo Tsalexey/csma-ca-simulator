@@ -5,8 +5,9 @@ class RealisticInput1:
     def __init__(self):
         self.is_debug = False
         self.auto_continue = True
+        self.sensing = False
         self.mode = SimulationType.CYCLIC
-        self.simulation_time = 1000
+        self.simulation_time = 0.00001
 
         self.nodes_number = 20
 

@@ -15,7 +15,11 @@ class Gateway:
         self.send_ack_at = None
         self.send_ack_to = None
 
+        self.data_transmission_to = None
+
         self.last_ack_time = None
+
+        self.is_busy_transmitting_data = False
 
         self.total_processed_rts_messages = {}
         self.successful_processed_rts_messages = {}

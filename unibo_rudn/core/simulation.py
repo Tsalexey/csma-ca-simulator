@@ -57,6 +57,10 @@ class Simulation:
                 is_valid = False
                 exception_message += "You should provide valid RTS retry limit (N_retry variable) for absorbing mode!\n"
 
+        if input.sensing is None:
+            is_valid = False
+            exception_message += "You should provide sensing (True ot False)!\n"
+
         if input.nodes_number is None:
             is_valid = False
             exception_message += "You should provide number of nodes (nodes_number variable)!\n"
@@ -108,7 +112,13 @@ class Simulation:
         if self.input.is_debug:
             print("\n# Simulation started\n")
 
+        iter_counter = 0
         while not self.is_simulation_finished():
+            iter_counter += 1
+            if ( int(iter_counter / 25000) ):
+                print("Time =", self.time)
+                iter_counter = 0
+
             if self.input.is_debug:
                 print("[*] Time =", self.time)
                 self.debug_run()
@@ -117,7 +127,7 @@ class Simulation:
             # it is time to send beacon message
             if self.time == 0.0:
                 if self.input.is_debug:
-                    print("It is time to generate Beacon at gateway")
+                    print("Beacon generated")
                 beacon_message = BeaconMessage("Gateway", self.time, self.input.tau_g_beacon)
                 for node in self.nodes:
                     node.beacon_message = beacon_message
@@ -125,7 +135,7 @@ class Simulation:
                     node.next_rts_generation_time = node.beacon_message.node_arrival_time
                     if self.input.is_debug:
                         print("     Node", node.id, "will receive beacon at", node.beacon_message.node_arrival_time)
-                self.gateway.start_serving_time = self.input.tau_g_beacon
+                self.gateway.start_serving_time = self.time + self.input.tau_g_beacon
             else:
                 for node in self.nodes:
                     # if node did't receive ack message
@@ -135,8 +145,6 @@ class Simulation:
                         if node.is_active \
                                 and node.next_rts_generation_time is not None \
                                 and self.time == node.next_rts_generation_time:
-                            if self.input.is_debug:
-                                print("It is time to generate RTS for Node", node.id)
 
                             rts_message = RTSMessage(node.id, self.time)
                             rts_message.sent_from_node_at = self.time + node.get_tau_w(node.transmission_attempt,
@@ -150,7 +158,7 @@ class Simulation:
                             node.waiting_for_other_data_transmission_finished = None
 
                             if self.input.is_debug:
-                                print("Node", node.id, "has generated RTS at", self.time, ", RTS will be sent at",
+                                print("Node", node.id, "has generated RTS, RTS will be sent at",
                                       rts_message.sent_from_node_at, ", RTS will arrive to Gateway at",
                                       rts_message.arrived_to_gateway_at)
 
@@ -158,8 +166,6 @@ class Simulation:
                         delete_rts_id_from_ready_to_transmit = []
                         for key, rts in node.ready_to_transmit_rts.items():
                             if rts.sent_from_node_at == self.time:
-                                if self.input.is_debug:
-                                    print("It is time to transmit RTS for Node", rts.id)
 
                                 delete_rts_id_from_ready_to_transmit.append(rts.rts_id)
 
@@ -171,17 +177,23 @@ class Simulation:
                                 node.transmission_attempt += 1
 
                                 node.T_rts += self.input.tau_g_rts
-                                node.E_tc = self.time
+                                node.E_tc_end = self.time
 
                                 self.gateway.rts_messages_to_be_processed[rts.rts_id] = rts
                                 self.gateway.received_rts_count += 1
 
                                 if self.input.is_debug:
-                                    print("Node", node.id, "has transmitted RTS at", self.time,
-                                          ", RTS will arrive to Gateway at", rts.arrived_to_gateway_at)
+                                    print("Node", node.id, "has transmitted RTS, RTS will arrive to Gateway at", rts.arrived_to_gateway_at)
 
                                 if self.input.N_retry is not None and self.input.N_retry + 1 == node.transmission_attempt - 1:
+                                    # print("Exceeded transmission attempts")
                                     node.is_active = False
+                                    node.cycles_count += 1
+                                    node.cycle_p_success += 0
+                                    node.cycle_T_rts += node.T_rts
+                                    node.cycle_E_tc += node.E_tc_end - node.E_tc_start
+                                    if self.input.mode == SimulationType.CYCLIC:
+                                        node.init_for_new_cycle(self.time)
 
                         for msg in delete_rts_id_from_ready_to_transmit:
                             node.ready_to_transmit_rts.pop(msg, None)
@@ -189,8 +201,11 @@ class Simulation:
                         # it is time to receive cts from gateway
                         if node.cts_message is not None and self.time == node.cts_message.arrived_at:
                             if self.input.is_debug:
-                                print("It is time to process CTS for Node", node.cts_message.id
-                                      , "by Node", node.id, ", CTS arrived at ", node.cts_message.arrived_at)
+                                print("Node", node.id, "process CTS for Node", node.cts_message.id, "at", node.cts_message.arrived_at)
+
+                            if self.gateway.data_transmission_to is not None and self.gateway.data_transmission_to != node.id:
+                                continue
+
                             node.waiting_for_other_data_transmission_finished = True
 
                             node.ready_to_transmit_rts = {}
@@ -206,6 +221,7 @@ class Simulation:
                             node.received_cts_messages[node.cts_message.id] = node.cts_message
 
                             if node.cts_message.id == node.id:
+                                # print("Got cts, start data TX")
                                 node.stat_success.append(cts_message.rts_attempt_number)
                                 node.next_rts_generation_time = None
                                 node.waiting_for_other_data_transmission_finished = None
@@ -231,6 +247,13 @@ class Simulation:
 
                                 self.gateway.last_ack_time = self.time
 
+                                node.cycles_count += 1
+                                node.cycle_p_success += 1
+                                node.cycle_T_rts += node.T_rts
+                                node.cycle_E_tc += node.E_tc_end - node.E_tc_start
+                                if self.input.mode == SimulationType.CYCLIC:
+                                    node.init_for_new_cycle(self.time)
+
                             node.cts_message = None
 
                 # time to process rts by gateway and send cts to node
@@ -244,7 +267,7 @@ class Simulation:
                         delete_rts_ids_from_gateway_rts_messages_to_be_processed.append(rts.rts_id)
 
                         if self.input.is_debug:
-                            print("It is time to process RTS at Gateway from Node", rts.id, " with id ", rts.rts_id)
+                            print("Gateway processes RTS from Node", rts.id, " with id ", rts.rts_id)
 
                         collision_rts_list = []
                         collision_rts_ids = []
@@ -293,18 +316,25 @@ class Simulation:
                             # for node in self.nodes:
                             #     if node.id == rts.id:
                             #         node.stat_success.append(rts.attempt_number)
-                            self.gateway.end_serving_time = self.time
-                            self.gateway.busy_time += self.gateway.end_serving_time - self.gateway.start_serving_time
+
 
                             self.gateway.successful_processed_rts_messages[rts.rts_id] = rts
                             self.gateway.cts_transmitted_to[rts.id] = True
-
-                            if self.input.is_debug:
-                                print("CTS is sent by gateway at", self.time, ", node.cts_message=", node.cts_message)
-
-                            # temp = False
                             for node in self.nodes:
+                                if self.gateway.data_transmission_to is not None:
+                                    break
+
+                                if not self.input.sensing:
+                                    if rts.id != node.id:
+                                        continue
+
                                 if node.cts_message is None:
+                                    if rts.id == node.id:
+                                        self.gateway.data_transmission_to = rts.id
+
+                                        self.gateway.end_serving_time = self.time
+                                        self.gateway.busy_time += self.gateway.end_serving_time - self.gateway.start_serving_time
+
                                     node.next_rts_generation_time = None
 
                                     cts_message = CTSMessage("Gateway", self.time, self.input.tau_g_cts)
@@ -377,15 +407,18 @@ class Simulation:
         self.transmitted_rts_messages = temp_transmitted_rts_messages / len(self.nodes)
         self.retransmitted_rts_messages = temp_retransmitted_rts_messages / len(self.nodes)
 
+        # false success
+        self.gateway.stat_hidden_block = len(self.gateway.successful_processed_rts_messages) - self.nodes_count_that_transmitted_data
+
         # collision probability by time
         if self.gateway.total_working_time == 0:
             self.collision_time_blocking_probability = 0
         else:
-            self.collision_time_blocking_probability = self.gateway.blocked_time / self.gateway.total_working_time
+            self.collision_time_blocking_probability = self.gateway.total_working_time / self.gateway.busy_time
 
         # collision probability by call on gw
         if len(self.gateway.total_processed_rts_messages) != 0:
-            self.collision_call_blocking_probability = len(self.gateway.unsuccessful_processed_rts_messages) / len(self.gateway.total_processed_rts_messages)
+            self.collision_call_blocking_probability = (self.gateway.stat_hidden_block + len(self.gateway.unsuccessful_processed_rts_messages)) / len(self.gateway.total_processed_rts_messages)
         else:
             self.collision_call_blocking_probability = 0
 
@@ -415,46 +448,57 @@ class Simulation:
         else:
             self.p_rts_collision_to_data = 0
 
-        # false success
-        self.gateway.stat_hidden_block = len(self.gateway.successful_processed_rts_messages) - self.nodes_count_that_transmitted_data
+        for node in self.nodes:
+            if node.cycles_count == 0:
+                node.cycles_count = 1
+            # print("node", node.id, ", cycle_p_success=", node.cycle_p_success)
+            node.cycle_T_rts = node.cycle_T_rts / node.cycles_count
+            node.cycle_E_tc = node.cycle_E_tc / node.cycles_count
+            node.cycle_p_success = node.cycle_p_success / node.cycles_count
 
         # mean time in transmitting state
         self.T_rts = 0.0
         for node in self.nodes:
-            self.T_rts += node.T_rts
+            self.T_rts += node.cycle_T_rts
         self.T_rts = self.T_rts / len(self.nodes)
 
         # mean time for cycle
         self.E_tc = 0
         for node in self.nodes:
-            self.E_tc += node.E_tc
+            self.E_tc += node.cycle_E_tc
         self.E_tc = self.E_tc / len(self.nodes)
 
         self.nodes_p_success = 0.0
         for node in self.nodes:
-            if node.ack_message is not None:
-                self.nodes_p_success += 1.0
+            self.nodes_p_success += node.cycle_p_success
         self.nodes_p_success = self.nodes_p_success / len(self.nodes)
 
     def is_simulation_finished(self):
         """
         Check if it is time to stop simulation.
         Simulation will be stopped:
+            Mode ABSORBING:
             1) if input has no RTS retry limit - when all the nodes transmit user data
             2) if input has RTS retry limit - when all the nodes exceed RTS retry limit or send user data
+            Mode CYCLIC:
+            1) If simulation time exceed
         """
 
         if self.input.is_debug:
+            print("Simulation mode:", self.input.mode)
             print("Check if gateway has no more rts to process =", self.gateway_has_no_more_rts_to_process())
             if self.input.N_retry is None:
                 print("Check if RTS is transmitted by all the nodes =", self.is_rts_transmitted_by_all_nodes())
             else:
                 print("Check if all the Nodes exceeded retry limit =", self.is_all_nodes_exceeded_retry_limit())
 
-        if self.input.N_retry is None:
-            return self.gateway_has_no_more_rts_to_process() and self.is_rts_transmitted_by_all_nodes()
-        else:
-            return self.gateway_has_no_more_rts_to_process() and self.is_all_nodes_exceeded_retry_limit()
+        if self.input.mode == SimulationType.ABSORBING:
+            if self.input.N_retry is None:
+                return self.gateway_has_no_more_rts_to_process() and self.is_rts_transmitted_by_all_nodes()
+            else:
+                return self.gateway_has_no_more_rts_to_process() and self.is_all_nodes_exceeded_retry_limit()
+        if self.input.mode == SimulationType.CYCLIC:
+            return self.time > self.input.simulation_time
 
     def gateway_has_no_more_rts_to_process(self):
         """
@@ -596,15 +640,16 @@ class Simulation:
 
         if self.input.is_debug:
             print("[*] System state is:")
-            print("     Gateway: rts to handle =", len(self.gateway.rts_messages_to_be_processed),
-                  ", rts success=", len(self.gateway.successful_processed_rts_messages),
-                  ", rts failure =", len(self.gateway.unsuccessful_processed_rts_messages))
+            print("     Gateway: rts =", len(self.gateway.rts_messages_to_be_processed),
+                  ", success=", len(self.gateway.successful_processed_rts_messages),
+                  ", failure =", len(self.gateway.unsuccessful_processed_rts_messages))
             for node in self.nodes:
-                print("     Node", node.id, ": data sent =", node.ack_message is not None, ",ready to sent rts =",
-                      len(node.ready_to_transmit_rts), ",sent rts =",
+                print("     Node", node.id, ", sent rts =",
                       len(node.transmitted_rts_messages), ", received cts =", len(node.received_cts_messages),
-                      ", transmission attempt =", node.transmission_attempt, ", retry limit =", self.input.N_retry,
-                      ", waiting for other data transmission finished=", node.waiting_for_other_data_transmission_finished)
+                      ", cycle =", node.cycles_count,
+                      ", attempt =", node.transmission_attempt, ", retry limit =", self.input.N_retry,
+                      ", p_success =", node.cycle_p_success,
+                      ", waiting for other Tx =", node.waiting_for_other_data_transmission_finished)
         if self.input.is_debug and not self.input.auto_continue:
             print()
             user_input = input("[?] Press Enter in order to continue or input 'True' to enabled auto continue mode: ")
@@ -638,7 +683,7 @@ class Simulation:
                     rts.id) + " processing  will be finished at " + str(rts.processed_at_gateway_at)
 
             if rts_generation_map:
-                print("     RTS generating:")
+                print("\n     RTS generating:")
                 for elem in sorted(rts_generation_map.items()):
                     print("         ", elem[1])
             if rts_sending_map:

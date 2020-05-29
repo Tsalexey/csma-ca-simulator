@@ -13,7 +13,7 @@ def main():
     start_time = time.time()
 
     input = RealisticInput1()
-    repeats = 500
+    repeats = 3
 
     statistics = {}
 
@@ -123,11 +123,12 @@ def main():
                              collision_gw_time_blocking_probability,
                              E_tc,
                              T_RTS,
-                             node_p_success
+                             node_p_success,
+                             1-node_p_success
                              ]
         t2 = time.time()
         print("     Executed in %s seconds" % (t2 - t1))
-    filename = "../simulation_results/nodes[" + str(1) + "-" + str(input.nodes_number) + "]_radius[" + str(
+    filename = "../simulation_results/"+ input.mode.value +"_nodes[" + str(1) + "-" + str(input.nodes_number) + "]_radius[" + str(
         input.sphere_radius) + "]_retry[" + str(input.N_retry) + "].dat"
     kwargs = {'newline': ''}
     mode = 'w'
@@ -150,7 +151,8 @@ def main():
                          "collision_gw_time_blocking_probability",
                          "E_tc",
                          "T_RTS",
-                         "node_p_success"
+                         "node_p_success",
+                         "1-node_p_success"
                          ])
         for keys, values in statistics.items():
             print(values)

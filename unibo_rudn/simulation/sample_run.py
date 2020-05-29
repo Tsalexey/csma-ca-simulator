@@ -14,6 +14,7 @@ def main():
 
     for node in sim.nodes:
         print("     node", node.id, ", collision:", node.stat_collision, ", success:", node.stat_success)
+        print("         cycles:", node.cycles_count, ", P{success}=", node.cycle_p_success, ", E[Tc]=", node.cycle_E_tc, ", Tx RTS state time=", node.cycle_T_rts)
 
     print()
     print("hidden block: ", sim.gateway.stat_hidden_block)

@@ -28,7 +28,14 @@ class Node:
         self.transmitted_rts_messages = {}
         self.received_cts_messages = {}
         self.T_rts = 0.0
-        self.E_tc = 0.0
+        self.E_tc_start = 0.0
+        self.E_tc_end = 0.0
+
+        self.cycles_count = 0
+        self.cycle_T_rts = 0.0
+        self.cycle_E_tc = 0.0
+        self.cycle_p_success = 0.0
+
 
         self.waiting_for_other_data_transmission_finished = None
         self.is_active = True
@@ -48,10 +55,24 @@ class Node:
         """
         Propagation time = distance / speed og light
         """
-        return self.get_distance_to_gateway() / (3 * pow(10,8))
+        return 0.0 #self.get_distance_to_gateway() / (3 * pow(10,8))
 
     def get_distance_to_gateway(self):
         return sqrt(pow(self.position.x, 2) + pow(self.position.y, 2) + pow(self.position.z, 2))
+
+    def init_for_new_cycle(self, time):
+        self.transmission_attempt = 1
+        self.next_rts_generation_time = time
+        self.beacon_message = None
+        self.cts_message = None
+        self.ack_message = None
+        self.waiting_for_other_data_transmission_finished = None
+        self.is_active = True
+        self.finished_at = None
+        self.T_rts = 0.0
+        self.E_tc_start = time
+        self.E_tc_end = time
+
 
 def get_tau_w(transmission_attempt, T_max):
     return numpy.random.uniform(0, (transmission_attempt) * T_max)
