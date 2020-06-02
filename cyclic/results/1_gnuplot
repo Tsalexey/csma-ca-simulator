@@ -1,0 +1,81 @@
+
+set size square
+
+
+set title 'Cycles count'
+set ylabel 'Count'
+set xlabel 'Nodes'
+plot 'absorbing_sensing[False]_nodes[1-20]_radius[2]_retry[3].dat' u 1:2 w l t 'No cycles, Retry=3' lc rgb 'red' dt 4,\
+     'absorbing_sensing[False]_nodes[1-20]_radius[2]_retry[None].dat' u 1:2 w l t 'No cycles, Retry = Inf' lc rgb 'blue' dt 5,\
+     'cyclic_sensing[False]_nodes[1-20]_radius[2]_retry[3].dat' u 1:2 w l t 'Cycles, Retry=3' lc rgb 'green' dt 4
+     
+ 
+set title 'Nodes failure rate'
+set ylabel 'Rate'
+set xlabel 'Nodes'
+plot 'absorbing_sensing[False]_nodes[1-20]_radius[2]_retry[3].dat' u 1:3 w l t 'No cycles, Retry=3' lc rgb 'red' dt 4,\
+     'absorbing_sensing[False]_nodes[1-20]_radius[2]_retry[None].dat' u 1:3 w l t 'No cycles, Retry = Inf' lc rgb 'blue' dt 4,\
+     'cyclic_sensing[False]_nodes[1-20]_radius[2]_retry[3].dat' u 1:3 w l t 'Cycles, Retry=3' lc rgb 'green' dt 4,\
+     'result_case2_absorbing.txt' u 1:2 w l t 'an. abs' lc rgb 'pink',\
+     'result_case2_cyclic.txt' u 1:2 w l t 'an. cycle' lc rgb 'yellow'
+     
+set title 'Nodes success rate'
+set ylabel 'Rate'
+set xlabel 'Nodes'
+plot 'absorbing_sensing[False]_nodes[1-20]_radius[2]_retry[3].dat' u 1:4 w l t 'No cycles, Retry=3' lc rgb 'red' dt 4,\
+     'absorbing_sensing[False]_nodes[1-20]_radius[2]_retry[None].dat' u 1:4 w l t 'No cycles, Retry = Inf' lc rgb 'blue' dt 4,\
+     'cyclic_sensing[False]_nodes[1-20]_radius[2]_retry[3].dat' u 1:4 w l t 'Cycles, Retry=3' lc rgb 'green' dt 4,\
+     'result_case2_absorbing.txt' u 1:3 w l t 'an. abs' lc rgb 'pink',\
+     'result_case2_cyclic.txt' u 1:3 w l t 'an. cycle' lc rgb 'yellow'
+     
+set title 'Cycle time'
+set ylabel 'E[Tc], s'
+set xlabel 'Nodes'
+plot 'absorbing_sensing[False]_nodes[1-20]_radius[2]_retry[3].dat' u 1:5 w l t 'No cycles, Retry=3' lc rgb 'red' dt 4,\
+     'absorbing_sensing[False]_nodes[1-20]_radius[2]_retry[None].dat' u 1:5 w l t 'No cycles, Retry = Inf' lc rgb 'blue' dt 4,\
+     'cyclic_sensing[False]_nodes[1-20]_radius[2]_retry[3].dat' u 1:5 w l t 'Cycles, Retry=3' lc rgb 'green' dt 4,\
+     'result_case2_absorbing.txt' u 1:5 w l t 'an. abs' lc rgb 'pink',\
+     'result_case2_cyclic.txt' u 1:5 w l t 'an. cycle' lc rgb 'yellow'
+
+     
+set title 'TX RTS time'
+set ylabel 'Tx rts, s'
+set xlabel 'Nodes'
+plot 'absorbing_sensing[False]_nodes[1-20]_radius[2]_retry[3].dat' u 1:6 w l t 'No cycles, Retry=3' lc rgb 'red' dt 4,\
+     'absorbing_sensing[False]_nodes[1-20]_radius[2]_retry[None].dat' u 1:6 w l t 'No cycles, Retry = Inf' lc rgb 'blue' dt 4,\
+     'cyclic_sensing[False]_nodes[1-20]_radius[2]_retry[3].dat' u 1:6 w l t 'Cycles, Retry=3' lc rgb 'green' dt 4,\
+     'result_case2_absorbing.txt' u 1:4 w l t 'an. abs' lc rgb 'pink',\
+     'result_case2_cyclic.txt' u 1:4 w l t 'an. cycle' lc rgb 'yellow'
+
+set title 'Blocked RTS / Received RTS'
+set ylabel 'Ratio'
+set xlabel 'Nodes'
+plot 'absorbing_sensing[False]_nodes[1-20]_radius[2]_retry[3].dat' u 1:11 w l t 'No cycles, Retry=3' lc rgb 'red' dt 4,\
+     'absorbing_sensing[False]_nodes[1-20]_radius[2]_retry[None].dat' u 1:11 w l t 'No cycles, Retry = Inf' lc rgb 'blue' dt 4,\
+     'cyclic_sensing[False]_nodes[1-20]_radius[2]_retry[3].dat' u 1:11 w l t 'Cycles, Retry=3' lc rgb 'green' dt 4,\
+     'result_case2_absorbing.txt' u 1:2 w l t 'an. abs' lc rgb 'pink',\
+     'result_case2_cyclic.txt' u 1:2 w l t 'an. cycle' lc rgb 'yellow'
+
+set title 'RTS msg statistic, No cycles, Retry = 3'
+set ylabel 'Msg'
+set xlabel 'Nodes'
+plot 'absorbing_sensing[False]_nodes[1-20]_radius[2]_retry[3].dat' u 1:7 w l t 'received' lc rgb 'blue' dt 4,\
+     'absorbing_sensing[False]_nodes[1-20]_radius[2]_retry[3].dat' u 1:8 w l t 'blocked' lc rgb 'red' dt 4,\
+     'absorbing_sensing[False]_nodes[1-20]_radius[2]_retry[3].dat' u 1:9 w l t 'not blocked' lc rgb 'green' dt 4,\
+     'absorbing_sensing[False]_nodes[1-20]_radius[2]_retry[3].dat' u 1:10 w l t 'ignored' lc rgb 'black' dt 4
+
+set title 'RTS msg statistic, No cycles, Retry = Inf'
+set ylabel 'Msg'
+set xlabel 'Nodes'
+plot 'absorbing_sensing[False]_nodes[1-20]_radius[2]_retry[None].dat' u 1:7 w l t 'received' lc rgb 'blue' dt 4,\
+     'absorbing_sensing[False]_nodes[1-20]_radius[2]_retry[None].dat' u 1:8 w l t 'blocked' lc rgb 'red' dt 4,\
+     'absorbing_sensing[False]_nodes[1-20]_radius[2]_retry[None].dat' u 1:9 w l t 'not blocked' lc rgb 'green' dt 4,\
+     'absorbing_sensing[False]_nodes[1-20]_radius[2]_retry[None].dat' u 1:10 w l t 'ignored' lc rgb 'black' dt 4
+
+set title 'RTS msg statistic, Cycles, Retry = 3'
+set ylabel 'Msg'
+set xlabel 'Nodes'
+plot 'cyclic_sensing[False]_nodes[1-20]_radius[2]_retry[3].dat' u 1:7 w l t 'received' lc rgb 'blue' dt 4,\
+     'cyclic_sensing[False]_nodes[1-20]_radius[2]_retry[3].dat' u 1:8 w l t 'blocked' lc rgb 'red' dt 4,\
+     'cyclic_sensing[False]_nodes[1-20]_radius[2]_retry[3].dat' u 1:9 w l t 'not blocked' lc rgb 'green' dt 4,\
+     'cyclic_sensing[False]_nodes[1-20]_radius[2]_retry[3].dat' u 1:10 w l t 'ignored' lc rgb 'black' dt 4
