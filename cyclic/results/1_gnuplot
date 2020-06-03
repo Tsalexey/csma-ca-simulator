@@ -47,6 +47,13 @@ plot 'absorbing_sensing[False]_nodes[1-20]_radius[2]_retry[3].dat' u 1:6 w l t '
      'result_case2_absorbing.txt' u 1:4 w l t 'an. abs' lc rgb 'pink',\
      'result_case2_cyclic.txt' u 1:4 w l t 'an. cycle' lc rgb 'yellow'
 
+set title 'TX RTS time / Cycle time'
+set ylabel '%' rotate by 0
+set xlabel 'Nodes'
+plot 'absorbing_sensing[False]_nodes[1-20]_radius[2]_retry[3].dat' u 1:12 w l t 'No cycles, Retry=3' lc rgb 'red' dt 4,\
+     'absorbing_sensing[False]_nodes[1-20]_radius[2]_retry[None].dat' u 1:12 w l t 'No cycles, Retry = Inf' lc rgb 'blue' dt 4,\
+     'cyclic_sensing[False]_nodes[1-20]_radius[2]_retry[3].dat' u 1:12 w l t 'Cycles, Retry=3' lc rgb 'green' dt 4
+
 set title 'Blocked RTS / Received RTS'
 set ylabel 'Ratio'
 set xlabel 'Nodes'

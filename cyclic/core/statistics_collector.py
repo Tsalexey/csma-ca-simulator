@@ -80,7 +80,8 @@ class StatisticCollector:
                 blocked_rts,
                 not_blocked_rts,
                 ignored_rts,
-                blocking_probability_by_call
+                blocking_probability_by_call,
+                (100* rts_time) / cycle_time
             ]
 
             t2 = time.time()

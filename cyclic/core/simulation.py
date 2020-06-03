@@ -458,7 +458,11 @@ class Simulation:
 
     def find_gateway_statistic_values(self):
         self.gateway.statistics.received_rts += self.gateway.statistics.ignored_rts
-        self.gateway.statistics.blocking_probability_by_call = (self.gateway.statistics.blocked_rts + self.gateway.statistics.ignored_rts) / self.gateway.statistics.received_rts
+
+        if self.gateway.statistics.received_rts == 0:
+            self.gateway.statistics.blocking_probability_by_call = 0.0
+        else:
+            self.gateway.statistics.blocking_probability_by_call = (self.gateway.statistics.blocked_rts + self.gateway.statistics.ignored_rts) / self.gateway.statistics.received_rts
 
     def internal_debug(self):
         if self.input.is_debug and not self.input.auto_continue:

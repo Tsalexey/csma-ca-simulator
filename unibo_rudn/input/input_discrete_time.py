@@ -1,21 +1,21 @@
 from unibo_rudn.core.simulation_type import SimulationType
 
 
-class RealisticInput1:
+class InputDiscreteTime:
     def __init__(self):
         self.is_debug = False
         self.auto_continue = True
         self.sensing = False
-        self.repeats = 500
-        self.mode = SimulationType.ABSORBING
-        self.simulation_time = 0.0001
+        self.repeats = 1
+        self.mode = SimulationType.CYCLIC
+        self.simulation_time = 5000
 
         self.nodes_number = 20
 
         self.p_a = 1 # probability that node has RTS message to transmit
 
         self.sphere_radius = 2 # meter
-        self.N_retry = None  # allowed rts retransmission count, None = unlimited
+        self.N_retry = 3  # allowed rts retransmission count, None = unlimited
         self.T_beam = 2 # sec - time of time slot
 
         self.R_b = 53687091200 # 50Gbit/sec - channel bandwidth
@@ -29,11 +29,11 @@ class RealisticInput1:
         self.N_data = 100*8 # bit - length of user data messsage
 
         # message transmission time
-        self.tau_g_beacon = self.N_beacon / self.R_b # sec - transmission time of BEACON message
-        self.tau_g_rts = self.N_rts / self.R_b # sec - transmission time of RTS message
-        self.tau_g_cts = self.N_cts / self.R_b # sec - transmission time of CTS message
-        self.tau_g_ack = self.N_ack / self.R_b # sec - transmission time of ACK message
-        self.tau_g_data = self.N_data / self.R_b # sec - transmission time of user data message
+        self.tau_g_beacon = 1 # sec - transmission time of BEACON message
+        self.tau_g_rts = 1 # sec - transmission time of RTS message
+        self.tau_g_cts = 1 # sec - transmission time of CTS message
+        self.tau_g_ack = 1 # sec - transmission time of ACK message
+        self.tau_g_data = 1 # sec - transmission time of user data message
 
         # other timing estimations
 
@@ -44,7 +44,7 @@ class RealisticInput1:
 
         self.N = 12
 
-        self.T_max = self.N * self.tau_g_rts # sec - delay before sending RTS
+        self.T_max = self.N #* self.tau_g_rts # sec - delay before sending RTS
         self.tau_p_max = self.sphere_radius / self.c # sec - maximal propagation time
         self.tau_out = 2 * self.tau_p_max + self.tau_g_cts # sec - window contention time
         self.tau_channel_busy = self.tau_g_data \
