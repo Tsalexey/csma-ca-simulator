@@ -152,7 +152,7 @@ class Simulation:
                 node.state = NodeState.BO
                 node.cycle += 1
                 node.attempt = 1
-                node.event_time = self.time + numpy.random.uniform(0, node.attempt * self.input.T_max)
+                node.event_time = self.time + self.generate_backoff_time(node)
 
                 if self.input.is_debug:
                     print("     Node", node.id, " goes to BACKOFF until", node.event_time)
@@ -215,7 +215,7 @@ class Simulation:
             if self.input.N_retry is None:
                 node.state = NodeState.BO
                 node.attempt += 1
-                node.event_time = self.time + numpy.random.uniform(0, node.attempt * self.input.T_max)
+                node.event_time = self.time + self.generate_backoff_time(node)
 
                 if self.input.is_debug:
                     print("     Node", node.id, " goes to BACKOFF #", node.attempt, "until", node.event_time)
@@ -229,7 +229,7 @@ class Simulation:
                 else:
                     node.state = NodeState.BO
                     node.attempt += 1
-                    node.event_time = self.time + numpy.random.uniform(0, node.attempt * self.input.T_max)
+                    node.event_time = self.time + self.generate_backoff_time(node)
 
                     if self.input.is_debug:
                         print("     Node", node.id, " goes to BACKOFF #", node.attempt, "until", node.event_time)
@@ -279,7 +279,7 @@ class Simulation:
                 print("     Node", node.id, ":", node.state.value, ", cycle ", node.cycle, ", attempt ", node.attempt)
 
             node.state = NodeState.BO
-            node.event_time = self.time + numpy.random.uniform(0, node.attempt * self.input.T_max)
+            node.event_time = self.time + self.generate_backoff_time(node)
 
             if self.input.is_debug:
                 print("     Node", node.id, " goes to BACKOFF #", node.attempt, "until", node.event_time)
@@ -446,6 +446,10 @@ class Simulation:
 
             if self.input.is_debug:
                 print("     Gateway goes to RX RTS")
+
+    def generate_backoff_time(self, node):
+        return numpy.random.uniform(0, node.attempt * self.input.T_max)
+
 
     def find_mean_node_statistic_values(self):
         for node in self.nodes:

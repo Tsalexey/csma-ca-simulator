@@ -8,7 +8,7 @@ class InputDiscreteTime:
         self.sensing = False
         self.repeats = 1
         self.mode = SimulationType.CYCLIC
-        self.simulation_time = 5000
+        self.simulation_time = 50000
 
         self.nodes_number = 20
 
