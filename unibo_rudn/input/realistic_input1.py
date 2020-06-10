@@ -8,9 +8,9 @@ class RealisticInput1:
         self.sensing = False
         self.repeats = 1
         self.mode = SimulationType.CYCLIC
-        self.simulation_time = 0.0005
+        self.simulation_time = 0.00001
 
-        self.nodes_number = 20
+        self.nodes_number = 50
 
         self.p_a = 1.0 # probability that node has RTS message to transmit
 

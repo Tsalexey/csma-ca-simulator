@@ -89,3 +89,20 @@ class StatisticCollector:
 
         end_time = time.time()
         print("Executed in %s seconds" % (end_time - start_time))
+
+    def debug(self):
+
+        for i in self.statistics.keys():
+            print("Nodes = ", i)
+            print("     cycles =", self.statistics[i][1])
+            print("     failure =", self.statistics[i][2])
+            print("     success =", self.statistics[i][3])
+            print("     E[tc] =", self.statistics[i][4])
+            print("     RTS time =", self.statistics[i][5])
+            print("     received rts= ", self.statistics[i][6])
+            print("     blocked rts =", self.statistics[i][7])
+            print("     not blocked rts =", self.statistics[i][8])
+            print("     ignored rts =", self.statistics[i][9])
+            print("     p =", self.statistics[i][10])
+            print("     tau =", self.statistics[i][11])
+
