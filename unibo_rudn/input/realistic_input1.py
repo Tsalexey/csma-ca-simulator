@@ -6,16 +6,16 @@ class RealisticInput1:
         self.is_debug = False
         self.auto_continue = True
         self.sensing = False
-        self.repeats = 500
-        self.mode = SimulationType.ABSORBING
-        self.simulation_time = 0.0001
+        self.repeats = 1
+        self.mode = SimulationType.CYCLIC
+        self.simulation_time = 0.0005
 
         self.nodes_number = 20
 
-        self.p_a = 1 # probability that node has RTS message to transmit
+        self.p_a = 1.0 # probability that node has RTS message to transmit
 
         self.sphere_radius = 2 # meter
-        self.N_retry = None  # allowed rts retransmission count, None = unlimited
+        self.N_retry = 3  # allowed rts retransmission count, None = unlimited
         self.T_beam = 2 # sec - time of time slot
 
         self.R_b = 53687091200 # 50Gbit/sec - channel bandwidth

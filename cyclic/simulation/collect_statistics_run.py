@@ -18,7 +18,7 @@ def main():
                + "_sensing[" + str(input.sensing) + "]" \
                + "_nodes[" + str(1) + "-" + str(input.nodes_number) + "]" \
                + "_radius[" + str(input.sphere_radius) + "]" \
-               + "_retry[" + str(input.N_retry) + "].dat"
+               + "_retry[" + str(input.N_retry) + "]_pa[" + str(input.p_a) + "].dat"
 
     kwargs = {'newline': ''}
     mode = 'w'

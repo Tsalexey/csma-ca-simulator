@@ -158,7 +158,11 @@ class Simulation:
                     print("     Node", node.id, " goes to BACKOFF until", node.event_time)
             else:
                 node.state = NodeState.IDLE
-                node.event_time = self.time + self.input.tau_g_cts + self.input.tau_g_data + self.input.tau_g_ack
+                #  for discrete case: node.event_time = self.time + 1.0
+                # node.event_time = self.time + 1.0
+                node.event_time = self.time + self.input.tau_g_cts \
+                                  + self.input.tau_g_data \
+                                  + self.input.tau_g_ack
 
                 if self.input.is_debug:
                     print("     Node", node.id, " keep staying IDLE")
@@ -189,6 +193,9 @@ class Simulation:
 
             node.state = NodeState.OUT
             node.event_time = self.time + self.input.tau_out
+            # node.state = NodeState.BO
+            # node.attempt += 1
+            # node.event_time = self.time + self.generate_backoff_time(node)
 
             rts_msg = RTSMessage(node.id)
             rts_msg.id = str(node.id) + "_" + str(self.time)
@@ -245,6 +252,8 @@ class Simulation:
 
             if node.cts.node_id != node.id:
                 node.state = NodeState.WAIT
+                # for discrete case: self.time + 1.0
+                # node.event_time = self.time + 1.0
                 node.event_time = self.time \
                                     + self.input.tau_g_data \
                                     + self.input.tau_p_max \
@@ -256,6 +265,8 @@ class Simulation:
             else:
                 node.cts = None
                 node.state = NodeState.TX_DATA
+                # for discrete case: self.time + 1.0
+                # node.event_time = self.time + 1.0
                 node.event_time = self.time \
                                   + self.input.tau_g_data \
                                   + node.get_propagation_time() \
@@ -263,6 +274,8 @@ class Simulation:
                                   + node.get_propagation_time()
 
                 self.gateway.state = GatewayState.RX_DATA
+                # for discrete case: self.gateway.event_time = self.time + 1.0
+                # self.gateway.event_time = self.time + 1.0
                 self.gateway.event_time = self.time \
                                   + self.input.tau_g_data \
                                   + node.get_propagation_time() \
@@ -448,6 +461,10 @@ class Simulation:
                 print("     Gateway goes to RX RTS")
 
     def generate_backoff_time(self, node):
+        """
+            For discrete case use: int(numpy.random.uniform(0, node.attempt * self.input.T_max))
+            For time durations use: numpy.random.uniform(0, node.attempt * self.input.T_max)
+        """
         return numpy.random.uniform(0, node.attempt * self.input.T_max)
 
 

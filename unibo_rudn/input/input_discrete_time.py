@@ -8,11 +8,11 @@ class InputDiscreteTime:
         self.sensing = False
         self.repeats = 1
         self.mode = SimulationType.CYCLIC
-        self.simulation_time = 50000
+        self.simulation_time = 10000
 
         self.nodes_number = 20
 
-        self.p_a = 1 # probability that node has RTS message to transmit
+        self.p_a = 1.0 # probability that node has RTS message to transmit
 
         self.sphere_radius = 2 # meter
         self.N_retry = 3  # allowed rts retransmission count, None = unlimited
