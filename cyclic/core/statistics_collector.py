@@ -20,6 +20,7 @@ class StatisticCollector:
             failure_count = 0.0
             success_count = 0.0
             cycle_time = 0.0
+            cycle_time2 = 0.0
             rts_time = 0.0
             received_rts = 0.0
             blocked_rts = 0.0
@@ -36,6 +37,7 @@ class StatisticCollector:
                 temp_failure_count = 0.0
                 temp_success_count = 0.0
                 temp_cycle_time = 0.0
+                temp_cycle_time2 = 0.0
                 temp_rts_time = 0.0
 
                 for node in simulation.nodes:
@@ -43,12 +45,14 @@ class StatisticCollector:
                     temp_failure_count += node.statistics.failure_count
                     temp_success_count += node.statistics.success_count
                     temp_cycle_time += node.statistics.cycle_time
+                    temp_cycle_time2 += node.statistics.cycle_time2
                     temp_rts_time += node.statistics.rts_time
 
                 total_cycle_count += temp_total_cycle_count / len(simulation.nodes)
                 failure_count += temp_failure_count / len(simulation.nodes)
                 success_count += temp_success_count / len(simulation.nodes)
                 cycle_time += temp_cycle_time / len(simulation.nodes)
+                cycle_time2 += temp_cycle_time2 / len(simulation.nodes)
                 rts_time += temp_rts_time / len(simulation.nodes)
 
                 received_rts += simulation.gateway.statistics.received_rts
@@ -75,13 +79,15 @@ class StatisticCollector:
                 failure_count,
                 success_count,
                 cycle_time,
+                cycle_time2,
                 rts_time,
                 received_rts,
                 blocked_rts,
                 not_blocked_rts,
                 ignored_rts,
                 blocking_probability_by_call,
-                (rts_time) / cycle_time
+                (rts_time) / cycle_time,
+                0 if cycle_time2 == 0 else (rts_time) / cycle_time2
             ]
 
             t2 = time.time()
@@ -98,11 +104,13 @@ class StatisticCollector:
             print("     failure =", self.statistics[i][2])
             print("     success =", self.statistics[i][3])
             print("     E[tc] =", self.statistics[i][4])
-            print("     RTS time =", self.statistics[i][5])
-            print("     received rts= ", self.statistics[i][6])
-            print("     blocked rts =", self.statistics[i][7])
-            print("     not blocked rts =", self.statistics[i][8])
-            print("     ignored rts =", self.statistics[i][9])
-            print("     p =", self.statistics[i][10])
-            print("     tau =", self.statistics[i][11])
+            print("     E[tc] 2 =", self.statistics[i][5])
+            print("     RTS time =", self.statistics[i][6])
+            print("     received rts= ", self.statistics[i][7])
+            print("     blocked rts =", self.statistics[i][8])
+            print("     not blocked rts =", self.statistics[i][9])
+            print("     ignored rts =", self.statistics[i][10])
+            print("     p =", self.statistics[i][11])
+            print("     tau =", self.statistics[i][12])
+            print("     tau2 =", self.statistics[i][13])
 

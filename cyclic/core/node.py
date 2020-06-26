@@ -19,6 +19,7 @@ class Node:
 
         self.cts = None
 
+        self.cycle_times = []
         self.cycle_start_time = None
         self.cycle_end_time = None
 
@@ -51,6 +52,7 @@ class NodeStatistics:
         self.failure_count = 0.0
         self.success_count = 0.0
 
+        self.cycle_time2 = 0.0
         self.cycle_time = 0.0
         self.rts_time = 0.0
 
