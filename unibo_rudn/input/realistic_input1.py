@@ -8,11 +8,11 @@ class RealisticInput1:
         self.sensing = False
         self.repeats = 1
         self.mode = SimulationType.CYCLIC
-        self.simulation_time = 0.00001
+        self.simulation_time = 0.00005
 
-        self.nodes_number = 5
+        self.nodes_number = 50
 
-        self.p_a = 1.0 # probability that node has RTS message to transmit
+        self.p_a = 0.1 # probability that node has RTS message to transmit
 
         self.sphere_radius = 2 # meter
         self.N_retry = 3  # allowed rts retransmission count, None = unlimited
