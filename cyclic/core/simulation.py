@@ -512,7 +512,8 @@ class Simulation:
                             cts_message.transmission_time = self.input.tau_g_cts
                             cts_message.propagation_time = node.get_propagation_time()
 
-                            if node.state == NodeState.OUT and cts_message.reached_node_at <= node.event_time:
+                            if cts_message.reached_node_at <= node.event_time and node.state == NodeState.OUT \
+                                    or (self.input.sensing == True and node.state == NodeState.BO):
                                 # if message arrives during back off then serve it
                                 node.state = NodeState.RX_CTS
                                 node.event_time = cts_message.reached_node_at
