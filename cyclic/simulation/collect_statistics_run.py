@@ -1,10 +1,10 @@
-import csv
-import sys
 
+import sys
+sys.path.append("..")
+
+import csv
 from cyclic.core.statistics_collector import StatisticCollector
 from unibo_rudn.input.realistic_input1 import RealisticInput1
-
-sys.path.append('../')
 
 
 def main():
