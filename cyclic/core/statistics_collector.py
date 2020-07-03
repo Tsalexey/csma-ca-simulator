@@ -22,6 +22,7 @@ class StatisticCollector:
             cycle_time = 0.0
             cycle_time2 = 0.0
             rts_time = 0.0
+            data_time = 0.0
             received_rts = 0.0
             blocked_rts = 0.0
             not_blocked_rts = 0.0
@@ -39,6 +40,7 @@ class StatisticCollector:
                 temp_cycle_time = 0.0
                 temp_cycle_time2 = 0.0
                 temp_rts_time = 0.0
+                temp_data_time = 0.0
 
                 for node in simulation.nodes:
                     temp_total_cycle_count += node.statistics.total_cycle_count
@@ -47,6 +49,7 @@ class StatisticCollector:
                     temp_cycle_time += node.statistics.cycle_time
                     temp_cycle_time2 += node.statistics.cycle_time2
                     temp_rts_time += node.statistics.rts_time
+                    temp_data_time += node.statistics.data_time
 
                 total_cycle_count += temp_total_cycle_count / len(simulation.nodes)
                 failure_count += temp_failure_count / len(simulation.nodes)
@@ -54,6 +57,7 @@ class StatisticCollector:
                 cycle_time += temp_cycle_time / len(simulation.nodes)
                 cycle_time2 += temp_cycle_time2 / len(simulation.nodes)
                 rts_time += temp_rts_time / len(simulation.nodes)
+                data_time += temp_data_time / len(simulation.nodes)
 
                 received_rts += simulation.gateway.statistics.received_rts
                 blocked_rts += simulation.gateway.statistics.blocked_rts
@@ -66,6 +70,7 @@ class StatisticCollector:
             success_count = success_count / self.input.repeats
             cycle_time = cycle_time / self.input.repeats
             rts_time = rts_time / self.input.repeats
+            data_time = data_time / self.input.repeats
 
             received_rts = received_rts / self.input.repeats
             blocked_rts = blocked_rts / self.input.repeats
@@ -78,16 +83,19 @@ class StatisticCollector:
                 total_cycle_count,
                 failure_count,
                 success_count,
-                cycle_time,
-                cycle_time2,
-                rts_time,
+                pow(10,9)*cycle_time,
+                pow(10, 9) *cycle_time2,
+                pow(10, 9) *rts_time,
                 received_rts,
                 blocked_rts,
                 not_blocked_rts,
                 ignored_rts,
                 blocking_probability_by_call,
                 (rts_time) / cycle_time,
-                0 if cycle_time2 == 0 else (rts_time) / cycle_time2
+                0 if cycle_time2 == 0 else (rts_time) / cycle_time2,
+                pow(10, 9) * data_time,
+                data_time / cycle_time,
+                data_time / cycle_time2
             ]
 
             t2 = time.time()
@@ -103,9 +111,9 @@ class StatisticCollector:
             print("     cycles =", self.statistics[i][1])
             print("     failure =", self.statistics[i][2])
             print("     success =", self.statistics[i][3])
-            print("     E[tc] =", self.statistics[i][4])
-            print("     E[tc] 2 =", self.statistics[i][5])
-            print("     RTS time =", self.statistics[i][6])
+            print("     E[tc] =", pow(10,9) * self.statistics[i][4])
+            print("     E[tc] 2 =", pow(10,9) * self.statistics[i][5])
+            print("     RTS time =", pow(10,9) * self.statistics[i][6])
             print("     received rts= ", self.statistics[i][7])
             print("     blocked rts =", self.statistics[i][8])
             print("     not blocked rts =", self.statistics[i][9])
@@ -113,4 +121,7 @@ class StatisticCollector:
             print("     p =", self.statistics[i][11])
             print("     tau =", self.statistics[i][12])
             print("     tau2 =", self.statistics[i][13])
+            print("     data time =", pow(10,9) * self.statistics[i][14])
+            print("     tau packet =", self.statistics[i][15])
+            print("     tau packet 2 =", self.statistics[i][16])
 

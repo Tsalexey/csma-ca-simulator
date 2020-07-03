@@ -4,6 +4,7 @@ from unibo_rudn.core.simulation_type import SimulationType
 class InputDiscreteTime:
     def __init__(self):
         self.is_debug = False
+        self.is_debug_cycle_info = False
         self.auto_continue = True
         self.sensing = False
         self.repeats = 1

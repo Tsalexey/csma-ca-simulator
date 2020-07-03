@@ -5,12 +5,18 @@ class RealisticInput1:
     def __init__(self):
         self.is_debug = False
         self.auto_continue = True
+        self.is_debug_cycle_info = False
+        self.is_debug_cycle_error = False
+
+        self.time_limit = True # if False then run simulation until the error between cycle time of all nodes is greater then self.precision
+        self.precision = 0.001
+
         self.sensing = False
         self.repeats = 1
         self.mode = SimulationType.CYCLIC
         self.simulation_time = 0.000001
 
-        self.nodes_number = 5
+        self.nodes_number = 1
 
         self.p_a = 1.0 # probability that node has RTS message to transmit
 

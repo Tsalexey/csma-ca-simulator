@@ -15,6 +15,7 @@ class Simulation:
 
         # simulation parameters
         self.time = 0
+        self.iter_counter = 0
 
         # gateway
         self.gateway = Gateway(self.input)
@@ -36,6 +37,8 @@ class Simulation:
             if self.input.is_debug:
                 print("Time =", self.time, "is_simulation_finished:", self.is_simulation_finished())
 
+            self.validate_run()
+
             self.serve_nodes()
             self.serve_gateway()
             self.update_time()
@@ -49,6 +52,7 @@ class Simulation:
             print("\n# Simulation finished\n")
 
     def is_simulation_finished(self):
+        self.iter_counter +=1
         if self.input.mode == SimulationType.ABSORBING:
             if self.input.N_retry is None:
                 for node in self.nodes:
@@ -60,7 +64,37 @@ class Simulation:
                         return False
             return True
         if self.input.mode == SimulationType.CYCLIC:
-            return self.time > self.input.simulation_time
+            if self.input.time_limit == True:
+                return self.time > self.input.simulation_time
+            else:
+                if len(self.nodes) > 1:
+                    for i in self.nodes:
+                        for j in self.nodes:
+                            if i == j:
+                                continue
+
+                            if i.cycle == 0 or j.cycle == 0:
+                                return False
+
+                            etc_i = i.statistics.cycle_time2 / i.cycle
+                            etc_j = j.statistics.cycle_time2 / j.cycle
+
+                            if etc_i == 0 or etc_j == 0:
+                                return False
+
+                            error = abs(etc_i - etc_j)/etc_i
+                            # if self.input.is_debug or self.input.is_debug_cycle_error:
+                            #     print("i=", i.id, ", j=", j.id, ", etc_i=", etc_i, ", etc_j=", etc_i, ", error", error)
+                            #     print("Error between nodes cycle time ", error, " between nodes ", i.id, " and ", j.id, "; cycles:", i.cycle)
+                            if error > self.input.precision:
+                                if self.iter_counter % 100000 == 0 and (self.input.is_debug or self.input.is_debug_cycle_error):
+                                    print("Error between nodes cycle time ", error, " between nodes ", i.id, " and ",
+                                          j.id, "; cycles:", i.cycle)
+
+                                return False
+                    return True
+                else:
+                    return self.time > self.input.simulation_time
 
     def serve_nodes(self):
         for node in self.nodes:
@@ -134,6 +168,17 @@ class Simulation:
 
         self.time = event_time
 
+    def validate_run(self):
+        has_transmiting_node = False
+        transmitting_node = None
+
+        for node in self.nodes:
+            if has_transmiting_node and node.state == NodeState.TX_DATA:
+                raise ValueError('Multiples transmitting nodes found:', node.id, ' and ', transmitting_node.id)
+            if node.state == NodeState.TX_DATA:
+                has_transmiting_node = True
+                transmitting_node = node
+
     def serve_node_idle(self, node):
         """
             Check if node has RTS to transmit.
@@ -144,19 +189,25 @@ class Simulation:
             temp = node.cycle_times
             s = 0.0
             for e in node.cycle_times:
-                if e.__contains__("out"):
-                    s += e["out"]["end"] - e["out"]["start"]
+                if e.__contains__("out") or e.__contains__("backoff"):
+                    if e.__contains__("out"):
+                        s += e["out"]["end"] - e["out"]["start"]
+                    else:
+                        s += e["backoff"]["end"] - e["backoff"]["start"]
                 else:
                     for v in e.values():
                         s+= v
 
             node.statistics.cycle_time2 +=s
             node.cycle_times = []
-            if self.input.is_debug:
+
+            if self.input.is_debug or self.input.is_debug_cycle_info:
                 print("Node", node.id, " cycle with duration", s, "cleared! \nDeleted cycle:")
                 for item in temp:
                     for key, value in item.items():
                         if key.__contains__("out"):
+                            print("     ", key, ": start[", value["start"], "] end[", value["end"], "] = ", (value["end"] - value["start"]))
+                        elif key.__contains__("backoff"):
                             print("     ", key, ": start[", value["start"], "] end[", value["end"], "] = ", (value["end"] - value["start"]))
                         else:
                             print("     ", key, ":", value)
@@ -176,7 +227,8 @@ class Simulation:
 
                 if self.input.is_debug:
                     print("     Node", node.id, " goes to BACKOFF until", node.event_time)
-                node.cycle_times.append({"backoff #" + str(node.attempt) : node.event_time - self.time})
+                node.cycle_times.append({"backoff": {"start": self.time, "end": node.event_time}})
+
                 if self.input.is_debug:
                     print("Node", node.id, " cycle states: ", node.cycle_times)
             else:
@@ -262,7 +314,7 @@ class Simulation:
                 if self.input.is_debug:
                     print("     Node", node.id, " goes to BACKOFF #", node.attempt, "until", node.event_time)
 
-                node.cycle_times.append({"backoff #" + str(node.attempt) : node.event_time - self.time })
+                node.cycle_times.append({"backoff": {"start": self.time, "end": node.event_time}})
                 if self.input.is_debug:
                     print("Node", node.id, " cycle states: ", node.cycle_times)
             else:
@@ -284,8 +336,8 @@ class Simulation:
                     if self.input.is_debug:
                         print("     Node", node.id, " goes to BACKOFF #", node.attempt, "until", node.event_time)
 
-
-                    node.cycle_times.append({"backoff #" + str(node.attempt) : node.event_time - self.time })
+                    node.cycle_times.append(
+                        {"backoff": {"start": self.time, "end": node.event_time}})
                     if self.input.is_debug:
                         print("Node", node.id, " cycle states: ", node.cycle_times)
 
@@ -301,9 +353,13 @@ class Simulation:
 
             if node.cts.node_id != node.id:
                 for n, i in enumerate(reversed(node.cycle_times)):
-                    if i.keys().__contains__("out"):
-                        node.cycle_times[len(node.cycle_times) - n - 1]["out"]["end"] = self.time
-                        break
+                    if i.keys().__contains__("out") or i.keys().__contains__("backoff"):
+                        if i.keys().__contains__("out"):
+                            node.cycle_times[len(node.cycle_times) - n - 1]["out"]["end"] = self.time
+                            break
+                        elif i.keys().__contains__("backoff"):
+                            node.cycle_times[len(node.cycle_times) - n - 1]["backoff"]["end"] = self.time
+                            break
 
                 node.state = NodeState.WAIT
                 # for discrete case: self.time + 1.0
@@ -364,7 +420,7 @@ class Simulation:
             if self.input.is_debug:
                 print("     Node", node.id, " goes to BACKOFF #", node.attempt, "until", node.event_time)
 
-            node.cycle_times.append({ "backoff #" + str(node.attempt) : node.event_time - self.time })
+            node.cycle_times.append({"backoff": {"start": self.time, "end": node.event_time}})
             if self.input.is_debug:
                 print("Node", node.id, " cycle states: ", node.cycle_times)
 
@@ -372,6 +428,14 @@ class Simulation:
         if node.event_time == self.time and node.state == NodeState.TX_DATA:
             if self.input.is_debug:
                 print("     Node", node.id, ":", node.state.value, ", cycle ", node.cycle, ", attempt ", node.attempt)
+
+            node.statistics.data_time += self.input.tau_g_data
+            data_tx_nodes_count = 0.0
+            for n in self.nodes:
+                if n.state == NodeState.TX_DATA:
+                    data_tx_nodes_count += 1
+            node.statistics.data_transmissions_count += 1
+            node.statistics.parallel_transmitting_nodes += data_tx_nodes_count
 
             node.state = NodeState.SUCCESS
             node.event_time = self.time
@@ -570,6 +634,7 @@ class Simulation:
             node.statistics.cycle_time = node.statistics.cycle_time / cycles_count
             node.statistics.cycle_time2 = node.statistics.cycle_time2 / cycles_count
             node.statistics.rts_time = node.statistics.rts_time / cycles_count
+            node.statistics.data_time = node.statistics.data_time / cycles_count
             node.statistics.failure_count = node.statistics.failure_count / cycles_count
             node.statistics.success_count = node.statistics.success_count / cycles_count
 
@@ -597,6 +662,8 @@ class Simulation:
         cycle_time = 0.0
         cycle_time2 = 0.0
         rts_time = 0.0
+        data_time = 0.0
+        parallel_data_tx = 0.0
 
         temp_total_cycle_count = 0.0
         temp_failure_count = 0.0
@@ -604,6 +671,8 @@ class Simulation:
         temp_cycle_time = 0.0
         temp_cycle_time2 = 0.0
         temp_rts_time = 0.0
+        temp_data_time = 0.0
+        temp_parallel_data_tx = 0.0
 
         for node in self.nodes:
             temp_total_cycle_count += node.statistics.total_cycle_count
@@ -612,6 +681,12 @@ class Simulation:
             temp_cycle_time += node.statistics.cycle_time
             temp_cycle_time2 += node.statistics.cycle_time2
             temp_rts_time += node.statistics.rts_time
+            temp_data_time += node.statistics.data_time
+
+            if node.statistics.data_transmissions_count == 0:
+                temp_parallel_data_tx += 0
+            else:
+                temp_parallel_data_tx += node.statistics.parallel_transmitting_nodes / node.statistics.data_transmissions_count
 
         total_cycle_count += temp_total_cycle_count / len(self.nodes)
         failure_count += temp_failure_count / len(self.nodes)
@@ -619,12 +694,18 @@ class Simulation:
         cycle_time += temp_cycle_time / len(self.nodes)
         cycle_time2 += temp_cycle_time2 / len(self.nodes)
         rts_time += temp_rts_time / len(self.nodes)
+        data_time += temp_data_time / len(self.nodes)
+        parallel_data_tx += temp_parallel_data_tx / len(self.nodes)
 
         tau = rts_time / cycle_time
+        tau_data = data_time / cycle_time
+
         if cycle_time2 == 0:
             tau2 = 0.0
+            tau_data2 = 0.0
         else :
             tau2 = rts_time / cycle_time2
+            tau_data2 = data_time / cycle_time2
 
         print("Summary:")
         print("     cycles:", total_cycle_count)
@@ -635,6 +716,13 @@ class Simulation:
         print("     cycle time2:", cycle_time2)
         print("     tau:", tau)
         print("     tau2:", tau2)
+        print("     tau_data:", tau_data)
+        print("     tau_data2:", tau_data2)
+
+        print("     tau/tau_data:", tau/tau_data)
+        print("     tau2/tau_data2:", tau2/tau_data2)
+        print("     t_rts/(t_packet*(1-p)):", self.input.tau_g_rts/(self.input.tau_g_data*(1-failure_count)))
+        print("     parallel data transmissions number: ", parallel_data_tx)
         print("")
 
         print("Gateway:")
@@ -652,3 +740,7 @@ class Simulation:
             print("     rts state time:", node.statistics.rts_time)
             print("     cycle time:", node.statistics.cycle_time)
             print("     cycle time2:", node.statistics.cycle_time2)
+            if node.statistics.data_transmissions_count == 0:
+                print("     parallel data transmissions count:", 0)
+            else:
+                print("     parallel data transmissions count:", node.statistics.parallel_transmitting_nodes / node.statistics.data_transmissions_count)
