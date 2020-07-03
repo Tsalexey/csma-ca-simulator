@@ -380,7 +380,7 @@ class Simulation:
             else:
                 for n, i in enumerate(reversed(node.cycle_times)):
                     if i.keys().__contains__("out"):
-                        node.cycle_times[len(node.cycle_times) - n - 1]["out"]["end"] = self.time
+                        node.cycle_times.remove(i)
                         break
 
                 node.cts = None
