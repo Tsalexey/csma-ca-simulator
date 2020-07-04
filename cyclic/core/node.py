@@ -14,8 +14,19 @@ class Node:
         self.position = Position(radius)
         self.event_time = 0.0
         self.cycle = 0
+        self.idle_cycle = 0
         self.attempt = 0
         self.statistics = NodeStatistics()
+
+        self.statistics.trajectory_times["idle"] = 0.0
+        for i in range(1, input.N_retry+2):
+            self.statistics.trajectory_times["success with " + str(i) + " rts"] = 0.0
+        self.statistics.trajectory_times["failure"] = 0.0
+
+        self.statistics.trajectory_cycle_count["idle"] = 0
+        for i in range(1, input.N_retry+2):
+            self.statistics.trajectory_cycle_count["success with " + str(i) + " rts"] = 0
+        self.statistics.trajectory_cycle_count["failure"] = 0
 
         self.cts = None
 
@@ -60,3 +71,5 @@ class NodeStatistics:
         self.data_transmissions_count = 0.0
         self.parallel_transmitting_nodes = 0.0
 
+        self.trajectory_times = {}
+        self.trajectory_cycle_count = {}

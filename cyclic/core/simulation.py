@@ -186,9 +186,23 @@ class Simulation:
             Otherwise stay idle for some time
         """
         if node.event_time == self.time and node.state == NodeState.IDLE:
+
             temp = node.cycle_times
+
             s = 0.0
+            sent_rts_count = 0
+            has_idle = False
+            finished_in_success = False
+            finished_in_failure = False
             for e in node.cycle_times:
+                if "idle" in e:
+                    has_idle = True
+                if "success" in e:
+                    finished_in_success = True
+                if "failure" in e:
+                    finished_in_failure = True
+                if "rts" in e:
+                    sent_rts_count += 1
                 if e.__contains__("out") or e.__contains__("backoff"):
                     if e.__contains__("out"):
                         s += e["out"]["end"] - e["out"]["start"]
@@ -199,18 +213,46 @@ class Simulation:
                         s+= v
 
             node.statistics.cycle_time2 +=s
+
+            if not node.cycle_times:
+                if self.input.is_debug or self.input.is_debug_cycle_error:
+                    print("Note, cycle is empty:", node.cycle_times)
+                    print("It is ok if this occurs at the start, otherwise this is strange")
+            else:
+                if len(node.cycle_times) == 1:
+                    if has_idle:
+                        node.statistics.trajectory_times["idle"] += s
+                        node.statistics.trajectory_cycle_count["idle"] += 1
+                    else:
+                        raise ValueError('Found cycle time with length 1 and it is not idle loop. That is incorrect. Cycle:', node.cycle_times)
+                else:
+                    if not(finished_in_success or finished_in_failure):
+                        print(finished_in_success)
+                        print(finished_in_failure)
+                        print(not(finished_in_success or finished_in_failure))
+                        raise ValueError('Incorrect cycle. Cycle should contain success or failure state:', node.cycle_times)
+                    if finished_in_success and finished_in_failure:
+                        raise ValueError('Incorrect cycle. Cycle cannot contain success and failure state:', node.cycle_times)
+                    if finished_in_failure:
+                        node.statistics.trajectory_times["failure"] += s
+                        node.statistics.trajectory_cycle_count["failure"] += 1
+                    if finished_in_success:
+                        node.statistics.trajectory_times["success with " + str(sent_rts_count) + " rts"] += s
+                        node.statistics.trajectory_cycle_count["success with " + str(sent_rts_count) + " rts"] += 1
+
+
             node.cycle_times = []
 
             if self.input.is_debug or self.input.is_debug_cycle_info:
-                print("Node", node.id, " cycle with duration", s, "cleared! \nDeleted cycle:")
+                print("Node", node.id, " cycle with duration", f'{s * pow(10, 9) :.4f}', "cleared! \nDeleted cycle:")
                 for item in temp:
                     for key, value in item.items():
                         if key.__contains__("out"):
-                            print("     ", key, ": start[", value["start"], "] end[", value["end"], "] = ", (value["end"] - value["start"]))
+                            print("     ", key, ": start[", value["start"], "] end[", value["end"], "] = ", f'{(value["end"] - value["start"]) * pow(10, 9) :.4f}', "ns")
                         elif key.__contains__("backoff"):
-                            print("     ", key, ": start[", value["start"], "] end[", value["end"], "] = ", (value["end"] - value["start"]))
+                            print("     ", key, ": start[", value["start"], "] end[", value["end"], "] = ", f'{(value["end"] - value["start"]) * pow(10, 9) :.4f}', "ns")
                         else:
-                            print("     ", key, ":", value)
+                            print("     ", key, ":", f'{value * pow(10, 9) :.4f}', "ns")
                 print()
 
             if self.input.is_debug:
@@ -232,6 +274,9 @@ class Simulation:
                 if self.input.is_debug:
                     print("Node", node.id, " cycle states: ", node.cycle_times)
             else:
+                node.cycle += 1
+                node.idle_cycle += 1
+
                 node.state = NodeState.IDLE
                 #  for discrete case: node.event_time = self.time + 1.0
                 # node.event_time = self.time + 1.0
@@ -242,7 +287,7 @@ class Simulation:
                 if self.input.is_debug:
                     print("     Node", node.id, " keep staying IDLE")
 
-                node.cycle_times.append({"idle:" : node.event_time - self.time})
+                node.cycle_times.append({"idle" : node.event_time - self.time})
                 if self.input.is_debug:
                     print("Node", node.id, " cycle states: ", node.cycle_times)
 
@@ -260,7 +305,7 @@ class Simulation:
             if self.input.is_debug:
                 print("     Node", node.id, " goes to TX RTS until", node.event_time)
 
-            node.cycle_times.append({"tx rts:" : node.event_time - self.time})
+            node.cycle_times.append({"rts" : node.event_time - self.time})
             if self.input.is_debug:
                 print("node", node.id, " cycle states: ", node.cycle_times)
 
@@ -325,7 +370,7 @@ class Simulation:
                     if self.input.is_debug:
                         print("     Node", node.id, " goes to FAILURE in ", node.attempt, "attempt")
 
-                    node.cycle_times.append({"failure:" : node.event_time - self.time })
+                    node.cycle_times.append({"failure" : node.event_time - self.time })
                     if self.input.is_debug:
                         print("Node", node.id, " cycle states: ", node.cycle_times)
                 else:
@@ -374,7 +419,7 @@ class Simulation:
                           node.event_time)
                 node.cts = None
 
-                node.cycle_times.append({"wait:"  : node.event_time - self.time})
+                node.cycle_times.append({"wait"  : node.event_time - self.time})
                 if self.input.is_debug:
                     print("Node", node.id, " cycle states: ", node.cycle_times)
             else:
@@ -405,7 +450,7 @@ class Simulation:
                     print("     Node", node.id, " goes to TX DATA until", node.event_time)
                     print("     Gateway goes to RX DATA until", self.gateway.event_time)
 
-                node.cycle_times.append({"data tx:" : node.event_time - self.time} )
+                node.cycle_times.append({"data tx" : node.event_time - self.time} )
                 if self.input.is_debug:
                     print("Node", node.id, " cycle states: ", node.cycle_times)
 
@@ -443,7 +488,7 @@ class Simulation:
             if self.input.is_debug:
                 print("     Node", node.id, " goes to SUCCESS in ", node.attempt, "attempt")
 
-            node.cycle_times.append({"success:" : node.event_time - self.time })
+            node.cycle_times.append({"success" : node.event_time - self.time })
             if self.input.is_debug:
                 print("Node", node.id, " cycle states: ", node.cycle_times)
 
@@ -471,7 +516,7 @@ class Simulation:
                 node.state = NodeState.IDLE
                 node.event_time = self.time + numpy.math.pow(10, -20)
 
-                # node.cycle_times.append({"idle:" : node.event_time - self.time} )
+                # node.cycle_times.append({"idle" : node.event_time - self.time} )
                 # print("Node", node.id, " cycle states: ", node.cycle_times)
 
             if self.input.mode not in list(map(lambda c: c, SimulationType)):
@@ -501,7 +546,7 @@ class Simulation:
                 node.state = NodeState.IDLE
                 node.event_time = self.time + numpy.math.pow(10, -20)
 
-                # node.cycle_times.append({"idle:" : node.event_time - self.time})
+                # node.cycle_times.append({"idle" : node.event_time - self.time})
                 # print("Node", node.id, " cycle states: ", node.cycle_times)
             if self.input.mode not in list(map(lambda c: c, SimulationType)):
                 raise ValueError("Unsupported simulation mode:", self.input.mode)
@@ -587,7 +632,7 @@ class Simulation:
                                     print("     CTS sent to node", node.id, " and will reach it at",
                                           cts_message.reached_node_at)
 
-                                node.cycle_times.append({"rx cts:": node.event_time - self.time})
+                                node.cycle_times.append({"cts": node.event_time - self.time})
                                 if self.input.is_debug:
                                     print("Node", node.id, " cycle states: ", node.cycle_times)
                             # otherwise let's consider such CTS as lost
@@ -630,13 +675,20 @@ class Simulation:
     def find_mean_node_statistic_values(self):
         for node in self.nodes:
             cycles_count = 1 if node.cycle == 0 else node.cycle
+            idle_cycles_count = 1 if node.idle_cycle == 0 else node.idle_cycle
             node.statistics.total_cycle_count = node.cycle
             node.statistics.cycle_time = node.statistics.cycle_time / cycles_count
             node.statistics.cycle_time2 = node.statistics.cycle_time2 / cycles_count
             node.statistics.rts_time = node.statistics.rts_time / cycles_count
             node.statistics.data_time = node.statistics.data_time / cycles_count
-            node.statistics.failure_count = node.statistics.failure_count / cycles_count
-            node.statistics.success_count = node.statistics.success_count / cycles_count
+            node.statistics.failure_count = node.statistics.failure_count / (cycles_count - idle_cycles_count)
+            node.statistics.success_count = node.statistics.success_count / (cycles_count - idle_cycles_count)
+
+            for key in node.statistics.trajectory_times.keys():
+                if node.statistics.trajectory_cycle_count[key] == 0:
+                    node.statistics.trajectory_times[key] = 0.0
+                else:
+                    node.statistics.trajectory_times[key] = node.statistics.trajectory_times[key] / node.statistics.trajectory_cycle_count[key]
 
     def find_gateway_statistic_values(self):
         self.gateway.statistics.received_rts += self.gateway.statistics.ignored_rts
@@ -665,6 +717,9 @@ class Simulation:
         data_time = 0.0
         parallel_data_tx = 0.0
 
+        trajectory_times = {}
+        trajectory_cycle_count = {}
+
         temp_total_cycle_count = 0.0
         temp_failure_count = 0.0
         temp_success_count = 0.0
@@ -673,6 +728,8 @@ class Simulation:
         temp_rts_time = 0.0
         temp_data_time = 0.0
         temp_parallel_data_tx = 0.0
+        temp_trajectory_times = {}
+        temp_trajectory_cycle_count = {}
 
         for node in self.nodes:
             temp_total_cycle_count += node.statistics.total_cycle_count
@@ -688,6 +745,16 @@ class Simulation:
             else:
                 temp_parallel_data_tx += node.statistics.parallel_transmitting_nodes / node.statistics.data_transmissions_count
 
+            for k,v in node.statistics.trajectory_times.items():
+                if k not in temp_trajectory_times:
+                    temp_trajectory_times[k] = 0.0
+                temp_trajectory_times[k] += v
+
+            for k,v in node.statistics.trajectory_cycle_count.items():
+                if k not in temp_trajectory_cycle_count:
+                    temp_trajectory_cycle_count[k] = 0.0
+                temp_trajectory_cycle_count[k] += v
+
         total_cycle_count += temp_total_cycle_count / len(self.nodes)
         failure_count += temp_failure_count / len(self.nodes)
         success_count += temp_success_count / len(self.nodes)
@@ -697,8 +764,18 @@ class Simulation:
         data_time += temp_data_time / len(self.nodes)
         parallel_data_tx += temp_parallel_data_tx / len(self.nodes)
 
-        tau = rts_time / cycle_time
-        tau_data = data_time / cycle_time
+        for k in temp_trajectory_times.keys():
+            trajectory_times[k] = temp_trajectory_times[k] / len(self.nodes)
+
+        for k in temp_trajectory_cycle_count.keys():
+            trajectory_cycle_count[k] = temp_trajectory_cycle_count[k] / len(self.nodes)
+
+        if cycle_time == 0:
+            tau = None
+            tau_data = None
+        else:
+            tau = rts_time / cycle_time
+            tau_data = data_time / cycle_time
 
         if cycle_time2 == 0:
             tau2 = 0.0
@@ -708,21 +785,33 @@ class Simulation:
             tau_data2 = data_time / cycle_time2
 
         print("Summary:")
-        print("     cycles:", total_cycle_count)
-        print("     p{failure}:", failure_count)
-        print("     p{success}", success_count)
-        print("     rts time:", rts_time)
-        print("     cycle time:", cycle_time)
-        print("     cycle time2:", cycle_time2)
-        print("     tau:", tau)
-        print("     tau2:", tau2)
-        print("     tau_data:", tau_data)
-        print("     tau_data2:", tau_data2)
-
-        print("     tau/tau_data:", tau/tau_data)
-        print("     tau2/tau_data2:", tau2/tau_data2)
-        print("     t_rts/(t_packet*(1-p)):", self.input.tau_g_rts/(self.input.tau_g_data*(1-failure_count)))
+        print("     pa:", self.input.p_a)
+        print("     avg node cycles:", total_cycle_count)
         print("     parallel data transmissions number: ", parallel_data_tx)
+        print("     - probabilities -")
+        print("         p{failure}:", failure_count)
+        print("         p{success}", success_count)
+        print("     - times -")
+        print("         rts time: " + f'{rts_time * pow(10, 9) :.4f}' + " ns")
+        print("         rts data_time: " + f'{data_time * pow(10, 9) :.4f}' + " ns")
+        print("         cycle time: " + f'{cycle_time * pow(10, 9) :.4f}' + " ns")
+        print("         cycle time2: " + f'{cycle_time2 * pow(10, 9) :.4f}' + " ns")
+        print("     - tau -")
+        print("         tau:", tau)
+        print("         tau2:", tau2)
+        print("         tau_data:", tau_data if tau_data is not None else None)
+        print("         tau_data2:", tau_data2)
+        print("     - tau relation -")
+        print("         tau/tau_data:", tau/tau_data if tau is not None else None)
+
+        print("         tau2/tau_data2:", tau2/tau_data2 if tau_data2 is not None and tau_data2!=0 else None)
+        print("     - tau relation check -")
+        print("         t_rts/(t_packet*(1-p)):", self.input.tau_g_rts/(self.input.tau_g_data*(1-failure_count)))
+
+        print("     - Trajectory times -")
+        for k, v in trajectory_times.items():
+            print("     ",k, ": ",  f'{v * pow(10, 9) :.4f}' + " ns", " (", trajectory_cycle_count[k] ,"cycles)")
+
         print("")
 
         print("Gateway:")
@@ -737,10 +826,13 @@ class Simulation:
             print("     total cycles:", node.statistics.total_cycle_count)
             print("     success:", node.statistics.success_count)
             print("     failure:", node.statistics.failure_count)
-            print("     rts state time:", node.statistics.rts_time)
-            print("     cycle time:", node.statistics.cycle_time)
-            print("     cycle time2:", node.statistics.cycle_time2)
+            print("     rts time: " + f'{node.statistics.rts_time * pow(10, 9) :.4f}' + " ns")
+            print("     cycle time: " + f'{node.statistics.cycle_time * pow(10, 9) :.4f}' + " ns")
+            print("     cycle time: " + f'{node.statistics.cycle_time2 * pow(10, 9) :.4f}' + " ns")
             if node.statistics.data_transmissions_count == 0:
                 print("     parallel data transmissions count:", 0)
             else:
                 print("     parallel data transmissions count:", node.statistics.parallel_transmitting_nodes / node.statistics.data_transmissions_count)
+            print("     trajectory times:")
+            for k, v in node.statistics.trajectory_times.items():
+                print("     ", k, ": ",  f'{v * pow(10, 9) :.4f}' + " ns", " (", node.statistics.trajectory_cycle_count[k], "cycles)")
