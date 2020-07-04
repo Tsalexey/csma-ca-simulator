@@ -23,7 +23,7 @@ class RealisticInput1:
 
         self.nodes_number = 2
 
-        self.p_a = 1# probability that node has RTS message to transmit
+        self.p_a = 1.0 # probability that node has RTS message to transmit
 
         self.sphere_radius = 2 # meter
         self.N_retry = 3  # allowed rts retransmission count, None = unlimited

@@ -60,6 +60,8 @@ class NodeState(Enum):
 class NodeStatistics:
     def __init__(self):
         self.total_cycle_count = None
+        self.total_idle_cycle_count = None
+
         self.failure_count = 0.0
         self.success_count = 0.0
 
