@@ -669,8 +669,8 @@ class Simulation:
             node.statistics.cycle_time2 = node.statistics.cycle_time2 / cycles_count
             node.statistics.rts_time = node.statistics.rts_time / cycles_count
             node.statistics.data_time = node.statistics.data_time / cycles_count
-            node.statistics.failure_count = node.statistics.failure_count / (cycles_count - (0 if idle_cycles_count == 0 else idle_cycles_count))
-            node.statistics.success_count = node.statistics.success_count / (cycles_count - (0 if idle_cycles_count == 0 else idle_cycles_count))
+            node.statistics.failure_count = node.statistics.failure_count / (cycles_count - (0 if idle_cycles_count == 0 else idle_cycles_count)) if (cycles_count - (0 if idle_cycles_count == 0 else idle_cycles_count)) != 0 else 0
+            node.statistics.success_count = node.statistics.success_count / (cycles_count - (0 if idle_cycles_count == 0 else idle_cycles_count)) if (cycles_count - (0 if idle_cycles_count == 0 else idle_cycles_count)) != 0 else 0
 
             for key in node.statistics.trajectory_times.keys():
                 if node.statistics.trajectory_cycle_count[key] == 0:
