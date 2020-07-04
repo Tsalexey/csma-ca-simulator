@@ -296,8 +296,17 @@ class Simulation:
             node.state = NodeState.TX_RTS
             node.event_time = self.time + self.input.tau_g_rts
 
+            rts_msg = RTSMessage(node.id)
+            rts_msg.id = str(node.id) + "_" + str(self.time)
+            rts_msg.reached_gateway_at = self.time + self.input.tau_g_rts + node.get_propagation_time()
+            rts_msg.transmission_time = self.input.tau_g_rts
+            rts_msg.propagation_time = node.get_propagation_time()
+
+            self.gateway.received_rts_messages[rts_msg.id] = rts_msg
+
             if self.input.is_debug:
                 print("     Node", node.id, " goes to TX RTS until", node.event_time)
+                print("     Node", node.id, "sent RTS, RTS arrive to gateway at", rts_msg.reached_gateway_at)
 
             node.cycle_times.append({"rts": {"start": self.time, "end": node.event_time}})
             if self.input.is_debug:
@@ -314,21 +323,10 @@ class Simulation:
             node.statistics.rts_time += self.input.tau_g_rts
 
             node.state = NodeState.OUT
-            node.event_time = self.time + self.input.tau_g_rts + self.input.tau_out
-            # node.state = NodeState.BO
-            # node.attempt += 1
-            # node.event_time = self.time + self.generate_backoff_time(node)
+            node.event_time = self.time + self.input.tau_out
 
-            rts_msg = RTSMessage(node.id)
-            rts_msg.id = str(node.id) + "_" + str(self.time)
-            rts_msg.reached_gateway_at = self.time + node.get_propagation_time() # self.time + self.input.tau_g_rts + node.get_propagation_time()
-            rts_msg.transmission_time = self.input.tau_g_rts
-            rts_msg.propagation_time = node.get_propagation_time()
-
-            self.gateway.received_rts_messages[rts_msg.id] = rts_msg
 
             if self.input.is_debug:
-                print("     Node", node.id, "sent RTS, RTS arrive to gateway at", rts_msg.reached_gateway_at)
                 print("     Node", node.id, "goes to OUT until", node.event_time)
 
             node.cycle_times.append({"out": {"start": self.time, "end": node.event_time}})
@@ -797,11 +795,11 @@ class Simulation:
         print("         tau_data:", tau_data if tau_data is not None else None)
         print("         tau_data2:", tau_data2)
         print("     - tau relation -")
-        print("         tau/tau_data:", tau/tau_data if tau is not None else None)
+        print("         tau/tau_data:", tau/tau_data if tau is not None  and tau_data != 0 else None)
 
         print("         tau2/tau_data2:", tau2/tau_data2 if tau_data2 is not None and tau_data2!=0 else None)
         print("     - tau relation check -")
-        print("         t_rts/(t_packet*(1-p)):", self.input.tau_g_rts/(self.input.tau_g_data*(1-pow(failure_count, (1/(self.input.N_retry+1))))))
+        print("         t_rts/(t_packet*(1-p)):", self.input.tau_g_rts/(self.input.tau_g_data*(1-pow(failure_count, (1/(self.input.N_retry+1)))))) if (self.input.tau_g_data*(1-pow(failure_count, (1/(self.input.N_retry+1))))) != 0 else None
 
         print("     - Trajectory times -")
         for k, v in trajectory_times.items():
