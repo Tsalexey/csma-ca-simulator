@@ -777,6 +777,7 @@ class Simulation:
             tau_data2 = data_time / cycle_time2
 
         print("Summary:")
+        print("     node count:", self.input.nodes_number)
         print("     pa:", self.input.p_a)
         print("     avg node cycles:", total_cycle_count)
         print("     avg node idle cycles:", total_idle_cycle_count)
