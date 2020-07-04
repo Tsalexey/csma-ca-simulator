@@ -506,7 +506,7 @@ class Simulation:
                 node.event_time = None
             if self.input.mode == SimulationType.CYCLIC:
                 node.state = NodeState.IDLE
-                node.event_time = self.time + numpy.math.pow(10, -20)
+                node.event_time = self.time
 
             if self.input.mode not in list(map(lambda c: c, SimulationType)):
                 raise ValueError("Unsupported simulation mode:", self.input.mode)
@@ -533,7 +533,7 @@ class Simulation:
                 node.event_time = None
             if self.input.mode == SimulationType.CYCLIC:
                 node.state = NodeState.IDLE
-                node.event_time = self.time + numpy.math.pow(10, -20)
+                node.event_time = self.time
 
             if self.input.mode not in list(map(lambda c: c, SimulationType)):
                 raise ValueError("Unsupported simulation mode:", self.input.mode)
