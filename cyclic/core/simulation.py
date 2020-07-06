@@ -430,6 +430,9 @@ class Simulation:
                                   + self.input.tau_g_ack \
                                   + node.get_propagation_time()
 
+                node.statistics.data_time += self.input.tau_g_data
+                node.statistics.channel_busy_time += self.input.tau_g_cts + self.input.tau_g_data + self.input.tau_g_ack
+
                 self.gateway.state = GatewayState.RX_DATA
                 # for discrete case: self.gateway.event_time = self.time + 1.0
                 # self.gateway.event_time = self.time + 1.0
@@ -466,7 +469,6 @@ class Simulation:
             if self.input.is_debug:
                 print("     Node", node.id, ":", node.state.value, ", cycle ", node.cycle, ", attempt ", node.attempt)
 
-            node.statistics.data_time += self.input.tau_g_data
             data_tx_nodes_count = 0.0
             for n in self.nodes:
                 if n.state == NodeState.TX_DATA:
@@ -612,7 +614,7 @@ class Simulation:
                                     or (self.input.sensing == True and node.state == NodeState.BO):
                                 # if message arrives during back off then serve it
                                 node.state = NodeState.RX_CTS
-                                node.event_time = cts_message.reached_node_at
+                                node.event_time = self.time + self.input.tau_g_cts + node.get_propagation_time()
                                 node.cts = cts_message
 
                                 if self.input.is_debug:
@@ -669,6 +671,7 @@ class Simulation:
             node.statistics.cycle_time2 = node.statistics.cycle_time2 / cycles_count
             node.statistics.rts_time = node.statistics.rts_time / cycles_count
             node.statistics.data_time = node.statistics.data_time / cycles_count
+            node.statistics.channel_busy_time = node.statistics.channel_busy_time / cycles_count
             node.statistics.failure_count = node.statistics.failure_count / (cycles_count - (0 if idle_cycles_count == 0 else idle_cycles_count)) if (cycles_count - (0 if idle_cycles_count == 0 else idle_cycles_count)) != 0 else 0
             node.statistics.success_count = node.statistics.success_count / (cycles_count - (0 if idle_cycles_count == 0 else idle_cycles_count)) if (cycles_count - (0 if idle_cycles_count == 0 else idle_cycles_count)) != 0 else 0
 
@@ -704,6 +707,7 @@ class Simulation:
         cycle_time2 = 0.0
         rts_time = 0.0
         data_time = 0.0
+        channel_busy_time = 0.0
         parallel_data_tx = 0.0
 
         trajectory_times = {}
@@ -717,6 +721,7 @@ class Simulation:
         temp_cycle_time2 = 0.0
         temp_rts_time = 0.0
         temp_data_time = 0.0
+        temp_channel_busy_time = 0.0
         temp_parallel_data_tx = 0.0
         temp_trajectory_times = {}
         temp_trajectory_cycle_count = {}
@@ -730,6 +735,7 @@ class Simulation:
             temp_cycle_time2 += node.statistics.cycle_time2
             temp_rts_time += node.statistics.rts_time
             temp_data_time += node.statistics.data_time
+            temp_channel_busy_time += node.statistics.channel_busy_time
 
             if node.statistics.data_transmissions_count == 0:
                 temp_parallel_data_tx += 0
@@ -754,6 +760,7 @@ class Simulation:
         cycle_time2 += temp_cycle_time2 / len(self.nodes)
         rts_time += temp_rts_time / len(self.nodes)
         data_time += temp_data_time / len(self.nodes)
+        channel_busy_time += temp_channel_busy_time / len(self.nodes)
         parallel_data_tx += temp_parallel_data_tx / len(self.nodes)
 
         for k in temp_trajectory_times.keys():
@@ -765,16 +772,20 @@ class Simulation:
         if cycle_time == 0:
             tau = None
             tau_data = None
+            tau_channel_busy = None
         else:
             tau = rts_time / cycle_time
             tau_data = data_time / cycle_time
+            tau_channel_busy = channel_busy_time / cycle_time
 
         if cycle_time2 == 0:
             tau2 = 0.0
             tau_data2 = 0.0
+            tau_channel_busy2 = 0.0
         else :
             tau2 = rts_time / cycle_time2
             tau_data2 = data_time / cycle_time2
+            tau_channel_busy2 = channel_busy_time / cycle_time2
 
         print("Summary:")
         print("     node count:", self.input.nodes_number)
@@ -787,7 +798,7 @@ class Simulation:
         print("         p{success}", success_count)
         print("     - times -")
         print("         rts time: " + f'{rts_time * pow(10, 9) :.4f}' + " ns")
-        print("         rts data_time: " + f'{data_time * pow(10, 9) :.4f}' + " ns")
+        print("         data_time: " + f'{data_time * pow(10, 9) :.4f}' + " ns")
         print("         cycle time: " + f'{cycle_time * pow(10, 9) :.4f}' + " ns")
         print("         cycle time2: " + f'{cycle_time2 * pow(10, 9) :.4f}' + " ns")
         print("     - tau -")
@@ -795,9 +806,10 @@ class Simulation:
         print("         tau2:", tau2)
         print("         tau_data:", tau_data if tau_data is not None else None)
         print("         tau_data2:", tau_data2)
+        print("         tau_channel_busy:", tau_channel_busy)
+        print("         tau_channel_busy2:", tau_channel_busy2 if tau_channel_busy2 is not None else None)
         print("     - tau relation -")
         print("         tau/tau_data:", tau/tau_data if tau is not None  and tau_data != 0 else None)
-
         print("         tau2/tau_data2:", tau2/tau_data2 if tau_data2 is not None and tau_data2!=0 else None)
         print("     - tau relation check -")
         print("         t_rts/(t_packet*(1-p)):", self.input.tau_g_rts/(self.input.tau_g_data*(1-pow(failure_count, (1/(self.input.N_retry+1)))))) if (self.input.tau_g_data*(1-pow(failure_count, (1/(self.input.N_retry+1))))) != 0 else None
@@ -822,6 +834,8 @@ class Simulation:
             print("     success:", node.statistics.success_count)
             print("     failure:", node.statistics.failure_count)
             print("     rts time: " + f'{node.statistics.rts_time * pow(10, 9) :.4f}' + " ns")
+            print("     data time: " + f'{node.statistics.data_time * pow(10, 9) :.4f}' + " ns")
+            print("     channel busy time: " + f'{node.statistics.channel_busy_time * pow(10, 9) :.4f}' + " ns")
             print("     cycle time: " + f'{node.statistics.cycle_time * pow(10, 9) :.4f}' + " ns")
             print("     cycle time2: " + f'{node.statistics.cycle_time2 * pow(10, 9) :.4f}' + " ns")
             if node.statistics.data_transmissions_count == 0:

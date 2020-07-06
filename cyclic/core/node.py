@@ -69,6 +69,7 @@ class NodeStatistics:
         self.cycle_time = 0.0
         self.rts_time = 0.0
         self.data_time = 0.0
+        self.channel_busy_time = 0.0
 
         self.data_transmissions_count = 0.0
         self.parallel_transmitting_nodes = 0.0
