@@ -15,6 +15,17 @@ class Node:
         self.event_time = 0.0
         self.cycle = 0
         self.idle_cycle = 0
+
+        self.idle_state = 0
+        self.bo_state = 0
+        self.rts_state = 0
+        self.out_state = 0
+        self.wait_state = 0
+        self.cts_state = 0
+        self.data_state = 0
+        self.success_state = 0
+        self.failure_state = 0
+
         self.attempt = 0
         self.statistics = NodeStatistics()
 
