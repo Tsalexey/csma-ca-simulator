@@ -15,21 +15,20 @@ class RealisticInput1:
         self.repeats = 1
         self.mode = SimulationType.CYCLIC
 
+        self.nodes_number = 50
+
         # 0.001 = 333 real minutes for 1-50 nodes
         # 0.0002 = 60 real minutes for 1-50 nodes
         # 0.0001 = 30 real minutes for 1-50 nodes
         # 0.00005 = 15 real minutes for 1-50 nodes
-        self.simulation_time = 0.00001
-
-        self.nodes_number = 20
-
-        self.p_a = 1.0  # probability that node has RTS message to transmit
+        self.simulation_time = 0.0014
+        self.p_a = 0.25 # probability that node has RTS message to transmit
+        self.planned_success = 25
 
         self.sphere_radius = 2 # meter
         self.N_retry = 3  # allowed rts retransmission count, None = unlimited
         self.T_beam = 2 # sec - time of time slot
-
-        self.R_b = 53687091200 # 50Gbit/sec - channel bandwidth
+        self.R_b = 50000000000 # 50Gbit/sec - channel bandwidth
         self.c = 3 * pow(10, 8) # meters/second - light speed
 
         # message length
