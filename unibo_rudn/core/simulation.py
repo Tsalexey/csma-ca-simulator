@@ -66,7 +66,7 @@ class Simulation:
         if self.input.mode == SimulationType.CYCLIC:
             if self.input.time_limit == True:
                 # for node in self.nodes:
-                #     if node.statistics.success_count < self.input.planned_success:
+                #     if node.statistics.probability_of_success < self.input.planned_success:
                 #         return False
                 # return True
                 return self.time > self.input.simulation_time
@@ -543,7 +543,7 @@ class Simulation:
 
             node.cycle_end_time = self.time
 
-            node.statistics.failure_count += 1
+            node.statistics.probability_of_failure += 1
             node.statistics.cycle_time += node.cycle_end_time - node.cycle_start_time
 
             node.cycle_start_time = None
@@ -570,7 +570,7 @@ class Simulation:
 
             node.cycle_end_time = self.time
 
-            node.statistics.success_count += 1
+            node.statistics.probability_of_success += 1
             node.statistics.cycle_time += node.cycle_end_time - node.cycle_start_time
 
             node.cycle_start_time = None
@@ -720,8 +720,8 @@ class Simulation:
             node.statistics.rts_time = node.statistics.rts_time / cycles_count
             node.statistics.data_time = node.statistics.data_time / cycles_count
             node.statistics.channel_busy_time = node.statistics.channel_busy_time / cycles_count
-            node.statistics.failure_count = node.statistics.failure_count / (cycles_count - (0 if idle_cycles_count == 0 else idle_cycles_count)) if (cycles_count - (0 if idle_cycles_count == 0 else idle_cycles_count)) != 0 else 0
-            node.statistics.success_count = node.statistics.success_count / (cycles_count - (0 if idle_cycles_count == 0 else idle_cycles_count)) if (cycles_count - (0 if idle_cycles_count == 0 else idle_cycles_count)) != 0 else 0
+            node.statistics.probability_of_failure = node.statistics.probability_of_failure / (cycles_count - (0 if idle_cycles_count == 0 else idle_cycles_count)) if (cycles_count - (0 if idle_cycles_count == 0 else idle_cycles_count)) != 0 else 0
+            node.statistics.probability_of_success = node.statistics.probability_of_success / (cycles_count - (0 if idle_cycles_count == 0 else idle_cycles_count)) if (cycles_count - (0 if idle_cycles_count == 0 else idle_cycles_count)) != 0 else 0
 
             for key in node.statistics.trajectory_times.keys():
                 if node.statistics.trajectory_cycle_count[key] == 0:
@@ -733,9 +733,9 @@ class Simulation:
         self.gateway.statistics.received_rts += self.gateway.statistics.ignored_rts
 
         if self.gateway.statistics.received_rts == 0:
-            self.gateway.statistics.blocking_probability_by_call = 0.0
+            self.gateway.statistics.probability_of_collision = 0.0
         else:
-            self.gateway.statistics.blocking_probability_by_call = (
+            self.gateway.statistics.probability_of_collision = (
                                                                    self.gateway.statistics.blocked_rts + self.gateway.statistics.ignored_rts) / self.gateway.statistics.received_rts
 
     def internal_debug(self):
@@ -795,8 +795,8 @@ class Simulation:
         for node in self.nodes:
             temp_total_cycle_count += node.statistics.total_cycle_count
             temp_total_idle_cycle_count += node.statistics.total_idle_cycle_count
-            temp_failure_count += node.statistics.failure_count
-            temp_success_count += node.statistics.success_count
+            temp_failure_count += node.statistics.probability_of_failure
+            temp_success_count += node.statistics.probability_of_success
             temp_cycle_time += node.statistics.cycle_time
             temp_cycle_time2 += node.statistics.cycle_time2
             temp_cycle_time3 += node.statistics.cycle_time2 * node.cycle
@@ -966,15 +966,15 @@ class Simulation:
         print("     blocked rts:", self.gateway.statistics.blocked_rts)
         print("     not blocked rts:", self.gateway.statistics.not_blocked_rts)
         print("     ignored rts:", self.gateway.statistics.ignored_rts)
-        print("     Blocking probability by call:", self.gateway.statistics.blocking_probability_by_call)
+        print("     Blocking probability by call:", self.gateway.statistics.probability_of_collision)
         print("")
         for node in self.nodes:
             print("Node", node.id, ":", node.state.value)
             print("     total cycles:", node.statistics.total_cycle_count)
             print("     idle cycles:", node.statistics.total_idle_cycle_count)
             print("     - Probabilities - ")
-            print("     success:", node.statistics.success_count)
-            print("     failure:", node.statistics.failure_count)
+            print("     success:", node.statistics.probability_of_success)
+            print("     failure:", node.statistics.probability_of_failure)
             print("     - Average times -")
             print("     rts time: " + f'{node.statistics.rts_time * pow(10, 9) :.4f}' + " ns")
             print("     data time: " + f'{node.statistics.data_time * pow(10, 9) :.4f}' + " ns")

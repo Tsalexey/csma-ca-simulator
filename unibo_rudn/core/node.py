@@ -73,8 +73,8 @@ class NodeStatistics:
         self.total_cycle_count = None
         self.total_idle_cycle_count = None
 
-        self.failure_count = 0.0
-        self.success_count = 0.0
+        self.probability_of_failure = 0.0
+        self.probability_of_success = 0.0
 
         self.cycle_time2 = 0.0
         self.cycle_time = 0.0

@@ -13,8 +13,13 @@ def main():
     collector = StatisticCollector(input)
     collector.run()
 
+    output(input, "statisticts", collector.statistics, collector.statistics_description)
+    output(input, "statistics_full", collector.detailed_statistics, collector.detailed_statistics_description)
+
+def output(input, file_name, statistics, statistics_description):
     filename = "../results/" \
-               + input.mode.value \
+               + file_name \
+               + "_mode[" + input.mode.value + "]" \
                + "_sensing[" + str(input.sensing) + "]" \
                + "_nodes[" + str(1) + "-" + str(input.nodes_number) + "]" \
                + "_radius[" + str(input.sphere_radius) + "]" \
@@ -25,9 +30,19 @@ def main():
 
     with open(filename, mode, **kwargs) as fp:
         writer = csv.writer(fp, delimiter=' ')
-        for keys, values in collector.statistics.items():
+
+        description = []
+        for x in statistics_description.values():
+            description.append(x)
+
+        print(description)
+        writer.writerow(description)
+
+        for keys, values in statistics.items():
             print(values)
             writer.writerow(values)
+
+    print()
 
 
 if __name__ == '__main__':

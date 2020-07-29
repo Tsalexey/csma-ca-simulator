@@ -4,10 +4,50 @@ from unibo_rudn.core.simulation import Simulation
 
 
 class StatisticCollector:
-
     def __init__(self, input):
         self.input = input
         self.statistics = {}
+        self.detailed_statistics = {}
+
+        self.statistics_description = {
+            1 : "Nodes",
+            2 : "p{failure}",
+            3 : "p{success}",
+            4 : "p{collision}",
+            5 : "Cycle_time",
+            6 : "tau",
+            7 : "tau_data"
+        }
+
+        self.detailed_statistics_description = {
+            1 : "Nodes",
+            2 : "Total_cycles_count",
+            3 : "p{failure}",
+            4 : "p{success}",
+            5 : "Cycle_time_(1rst_approach)",
+            6 : "Cycle_time_(2nd_approach)",
+            7 : "Cycle_time_(3rd_approach)",
+            8 : "Rts_time",
+            9 : "Data_time",
+            10 : "Channel_busy_time",
+            11 : "tau_(1rst_approach)",
+            12 : "tau_(2nd_approach)",
+            13 : "tau_(3rd_approach)",
+            14 : "tau_(4th_approach)",
+            15 : "tau_data_(4th_approach)",
+            16 : "tau_tau_(2nd_approach)",
+            17 : "tau_tau_(3rd_approach)",
+            18 : "tau_tau_(4th_approach)",
+            19 : "tau_tau_(4th_approach)",
+            20 : "tau_channe_busy_(1rst_approach)",
+            21 : "tau_channe_busy_(2nd_approach)",
+            22 : "received_rts_msg_count",
+            23 : "blocked_rts_msg_count",
+            24 : "not_blocked_rts_msg_count",
+            25 : "ignored_rts_msg_count",
+            26 : "p{collision}"
+        }
+
 
     def run(self):
         start_time = time.time()
@@ -20,8 +60,8 @@ class StatisticCollector:
             print("Simulation run for ", i, " Nodes, radius", self.input.sphere_radius, ", repeats =", self.input.repeats)
 
             total_cycle_count = 0.0
-            failure_count = 0.0
-            success_count = 0.0
+            probability_of_failure = 0.0
+            probability_of_success = 0.0
             cycle_time = 0.0
             cycle_time2 = 0.0
             cycle_time3 = 0.0
@@ -32,7 +72,7 @@ class StatisticCollector:
             blocked_rts = 0.0
             not_blocked_rts = 0.0
             ignored_rts = 0.0
-            blocking_probability_by_call = 0.0
+            probability_of_collision = 0.0
 
             simulation_time = 0.0
             total_idle_time = 0.0
@@ -59,8 +99,8 @@ class StatisticCollector:
                 simulation_time += simulation.time
                 for node in simulation.nodes:
                     temp_total_cycle_count += node.statistics.total_cycle_count
-                    temp_failure_count += node.statistics.failure_count
-                    temp_success_count += node.statistics.success_count
+                    temp_failure_count += node.statistics.probability_of_failure
+                    temp_success_count += node.statistics.probability_of_success
                     temp_cycle_time += node.statistics.cycle_time
                     temp_cycle_time2 += node.statistics.cycle_time2
                     temp_cycle_time3 += node.statistics.cycle_time2 * node.cycle
@@ -75,8 +115,8 @@ class StatisticCollector:
                     total_data_time += node.statistics.total_data_time
 
                 total_cycle_count += temp_total_cycle_count / len(simulation.nodes)
-                failure_count += temp_failure_count / len(simulation.nodes)
-                success_count += temp_success_count / len(simulation.nodes)
+                probability_of_failure += temp_failure_count / len(simulation.nodes)
+                probability_of_success += temp_success_count / len(simulation.nodes)
                 cycle_time += temp_cycle_time / len(simulation.nodes)
                 cycle_time2 += temp_cycle_time2 / len(simulation.nodes)
                 cycle_time3 += temp_cycle_time3 / len(simulation.nodes)
@@ -94,13 +134,13 @@ class StatisticCollector:
                 blocked_rts += simulation.gateway.statistics.blocked_rts
                 not_blocked_rts += simulation.gateway.statistics.not_blocked_rts
                 ignored_rts += simulation.gateway.statistics.ignored_rts
-                blocking_probability_by_call += simulation.gateway.statistics.blocking_probability_by_call
+                probability_of_collision += simulation.gateway.statistics.probability_of_collision
 
 
 
             total_cycle_count = total_cycle_count / self.input.repeats
-            failure_count = failure_count / self.input.repeats
-            success_count = success_count / self.input.repeats
+            probability_of_failure = probability_of_failure / self.input.repeats
+            probability_of_success = probability_of_success / self.input.repeats
             cycle_time = cycle_time / self.input.repeats
             cycle_time2 = cycle_time2 / self.input.repeats
             cycle_time3 = (cycle_time3 / self.input.repeats) / total_cycle_count
@@ -113,7 +153,7 @@ class StatisticCollector:
             blocked_rts = blocked_rts / self.input.repeats
             not_blocked_rts = not_blocked_rts / self.input.repeats
             ignored_rts = ignored_rts / self.input.repeats
-            blocking_probability_by_call = blocking_probability_by_call / self.input.repeats
+            probability_of_collision = probability_of_collision / self.input.repeats
 
             simulation_time /= self.input.repeats
             total_idle_time /= self.input.repeats
@@ -124,9 +164,19 @@ class StatisticCollector:
 
             self.statistics[i] = [
                 i,
+                probability_of_failure,
+                probability_of_success,
+                probability_of_collision,
+                pow(10, 9) * cycle_time3,
+                total_rts_time / simulation_time,
+                total_data_time / simulation_time
+            ]
+
+            self.detailed_statistics[i] = [
+                i,
                 total_cycle_count,
-                failure_count,
-                success_count,
+                probability_of_failure,
+                probability_of_success,
 
                 pow(10,9) * cycle_time,
                 pow(10, 9) * cycle_time2,
@@ -142,7 +192,7 @@ class StatisticCollector:
 
                 data_time / cycle_time,
                 data_time / cycle_time2,
-                self.input.tau_g_data * success_count / cycle_time3,
+                self.input.tau_g_data * probability_of_success / cycle_time3,
                 total_data_time / simulation_time,
 
                 channel_busy_time / cycle_time,
@@ -152,7 +202,7 @@ class StatisticCollector:
                 blocked_rts,
                 not_blocked_rts,
                 ignored_rts,
-                blocking_probability_by_call
+                probability_of_collision
             ]
 
             t2 = time.time()
@@ -163,22 +213,8 @@ class StatisticCollector:
 
     def debug(self):
 
-        for i in self.statistics.keys():
+        for i in self.detailed_statistics.keys():
             print("Nodes = ", i)
-            print("     cycles =", self.statistics[i][1])
-            print("     failure =", self.statistics[i][2])
-            print("     success =", self.statistics[i][3])
-            print("     E[tc] =", pow(10,9) * self.statistics[i][4])
-            print("     E[tc] 2 =", pow(10,9) * self.statistics[i][5])
-            print("     RTS time =", pow(10,9) * self.statistics[i][6])
-            print("     received rts= ", self.statistics[i][7])
-            print("     blocked rts =", self.statistics[i][8])
-            print("     not blocked rts =", self.statistics[i][9])
-            print("     ignored rts =", self.statistics[i][10])
-            print("     p =", self.statistics[i][11])
-            print("     tau =", self.statistics[i][12])
-            print("     tau2 =", self.statistics[i][13])
-            print("     data time =", pow(10,9) * self.statistics[i][14])
-            print("     tau packet =", self.statistics[i][15])
-            print("     tau packet 2 =", self.statistics[i][16])
+            for index, description in self.detailed_statistics:
+                print("     ", description, "=", self.statistics[i][index])
 
