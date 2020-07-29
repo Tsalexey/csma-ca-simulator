@@ -1,6 +1,6 @@
 import time
 
-from cyclic.core.simulation import Simulation
+from unibo_rudn.core.simulation import Simulation
 
 
 class StatisticCollector:

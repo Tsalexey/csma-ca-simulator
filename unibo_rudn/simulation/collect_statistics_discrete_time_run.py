@@ -1,7 +1,7 @@
 import csv
 import sys
 
-from cyclic.core.statistics_collector import StatisticCollector
+from unibo_rudn.core.statistics_collector import StatisticCollector
 from unibo_rudn.input.input_discrete_time import InputDiscreteTime
 
 sys.path.append('../')
