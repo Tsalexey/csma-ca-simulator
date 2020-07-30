@@ -75,15 +75,18 @@ class NodeStatistics:
 
         self.probability_of_failure = 0.0
         self.probability_of_success = 0.0
+        self.probability_of_wait = 0.0
 
         self.cycle_time2 = 0.0
         self.cycle_time = 0.0
         self.rts_time = 0.0
         self.data_time = 0.0
+        self.wait_time = 0.0
         self.channel_busy_time = 0.0
 
         self.total_rts_time = 0.0
         self.total_data_time = 0.0
+        self.total_wait_time = 0.0
         self.total_failure_cycle_time = 0.0
         self.total_success_cycle_time = 0.0
         self.total_idle_cycle_time = 0.0
