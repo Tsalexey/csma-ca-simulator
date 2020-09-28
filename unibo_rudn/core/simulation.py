@@ -104,6 +104,7 @@ class Simulation:
         if self.input.is_debug:
             for node in self.nodes:
                 print("   Node", node.id, ", next event at", pow(10,9)*node.event_time)
+
         for node in self.nodes:
             self.serve_node_idle(node)
             self.serve_node_backoff(node)
@@ -203,7 +204,7 @@ class Simulation:
             finished_in_success = False
             finished_in_failure = False
             for e in node.cycle_times:
-                if "bo" in e:
+                if "backoff" in e:
                     node.bo_state +=1
                 if "success" in e:
                     finished_in_success = True
@@ -649,7 +650,8 @@ class Simulation:
                             cts_message.transmission_time = self.input.tau_g_cts
                             cts_message.propagation_time = node.get_propagation_time()
 
-                            if cts_message.reached_node_at <= node.event_time and node.state == NodeState.OUT \
+                            if cts_message.reached_node_at <= node.event_time \
+                                    and node.state == NodeState.OUT \
                                     or (self.input.sensing == True and node.state == NodeState.BO):
                                 # if message arrives during back off then serve it
                                 node.state = NodeState.RX_CTS
