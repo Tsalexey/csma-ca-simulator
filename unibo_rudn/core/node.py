@@ -30,12 +30,12 @@ class Node:
         self.statistics = NodeStatistics()
 
         self.statistics.trajectory_times["idle"] = 0.0
-        for i in range(1, input.N_retry+2):
+        for i in range(1, input.Nretx+2):
             self.statistics.trajectory_times["success with " + str(i) + " rts"] = 0.0
         self.statistics.trajectory_times["failure"] = 0.0
 
         self.statistics.trajectory_cycle_count["idle"] = 0
-        for i in range(1, input.N_retry+2):
+        for i in range(1, input.Nretx+2):
             self.statistics.trajectory_cycle_count["success with " + str(i) + " rts"] = 0
         self.statistics.trajectory_cycle_count["failure"] = 0
 

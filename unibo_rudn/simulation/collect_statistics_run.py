@@ -21,9 +21,9 @@ def output(input, file_name, statistics, statistics_description):
                + file_name \
                + "_mode[" + input.mode.value + "]" \
                + "_sensing[" + str(input.sensing) + "]" \
-               + "_nodes[" + str(1) + "-" + str(input.nodes_number) + "]" \
+               + "_nodes[" + str(1) + "-" + str(input.NN) + "]" \
                + "_radius[" + str(input.sphere_radius) + "]" \
-               + "_retry[" + str(input.N_retry) + "]_pa[" + str(input.p_a) + "]_time[" + str(input.simulation_time) + "].dat"
+               + "_retry[" + str(input.Nretx) + "]_pa[" + str(input.p_a) + "]_time[" + str(input.simulation_time) + "].dat"
 
     kwargs = {'newline': ''}
     mode = 'w'

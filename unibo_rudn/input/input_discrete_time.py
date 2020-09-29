@@ -11,15 +11,15 @@ class InputDiscreteTime:
         self.mode = SimulationType.CYCLIC
         self.simulation_time = 10000
 
-        self.nodes_number = 20
+        self.NN = 20
 
         self.p_a = 1.0 # probability that node has RTS message to transmit
 
         self.sphere_radius = 2 # meter
-        self.N_retry = 3  # allowed rts retransmission count, None = unlimited
+        self.Nretx = 3  # allowed rts retransmission count, None = unlimited
         self.T_beam = 2 # sec - time of time slot
 
-        self.R_b = 53687091200 # 50Gbit/sec - channel bandwidth
+        self.rb = 53687091200 # 50Gbit/sec - channel bandwidth
         self.c = 3 * pow(10, 8) # meters/second - light speed
 
         # message length
@@ -30,29 +30,29 @@ class InputDiscreteTime:
         self.N_data = 100*8 # bit - length of user data messsage
 
         # message transmission time
-        self.tau_g_beacon = 1 # sec - transmission time of BEACON message
-        self.tau_g_rts = 1 # sec - transmission time of RTS message
-        self.tau_g_cts = 1 # sec - transmission time of CTS message
-        self.tau_g_ack = 1 # sec - transmission time of ACK message
-        self.tau_g_data = 1 # sec - transmission time of user data message
+        self.Tbeacon = 1 # sec - transmission time of BEACON message
+        self.Trts = 1 # sec - transmission time of RTS message
+        self.Tcts = 1 # sec - transmission time of CTS message
+        self.Tack = 1 # sec - transmission time of ACK message
+        self.Tdata = 1 # sec - transmission time of user data message
 
         # other timing estimations
 
-        # if self.N_retry is None:
+        # if self.Nretx is None:
         #     N = 3.0/2.0
         # else :
-        #     N = self.N_retry / 2.0;
+        #     N = self.Nretx / 2.0;
 
         self.N = 12
 
-        self.T_max = self.N #* self.tau_g_rts # sec - delay before sending RTS
+        self.Tbo = self.N #* self.Trts # sec - delay before sending RTS
         self.tau_p_max = self.sphere_radius / self.c # sec - maximal propagation time
-        self.tau_out = 2 * self.tau_p_max + self.tau_g_cts # sec - window contention time
-        self.tau_channel_busy = self.tau_g_data \
+        self.Tout = 2 * self.tau_p_max + self.Tcts # sec - window contention time
+        self.tau_channel_busy = self.Tdata \
                                 + self.tau_p_max \
-                                + self.tau_g_cts \
+                                + self.Tcts \
                                 + self.tau_p_max \
-                                + self.tau_g_ack \
+                                + self.Tack \
                                 + self.tau_p_max # sec - data transmission time
 
 

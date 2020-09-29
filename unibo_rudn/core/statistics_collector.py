@@ -55,7 +55,7 @@ class StatisticCollector:
     def run(self):
         start_time = time.time()
 
-        for i in range(1, self.input.nodes_number + 1):
+        for i in range(1, self.input.NN + 1):
             # if not (i == 1 or i % 10 == 0):
             #     continue
 
@@ -90,7 +90,7 @@ class StatisticCollector:
             total_wait_time = 0.0
 
             for j in range(0, self.input.repeats):
-                self.input.nodes_number = i
+                self.input.NN = i
                 simulation = Simulation(self.input)
                 simulation.run()
 
@@ -211,7 +211,7 @@ class StatisticCollector:
 
                 data_time / cycle_time,
                 data_time / cycle_time2,
-                self.input.tau_g_data * probability_of_success / cycle_time3,
+                self.input.Tdata * probability_of_success / cycle_time3,
                 total_data_time / simulation_time,
 
                 channel_busy_time / cycle_time,
