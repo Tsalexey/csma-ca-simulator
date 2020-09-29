@@ -15,9 +15,11 @@ class StatisticCollector:
             3 : "p{success}",
             4 : "p{collision}",
             5 : "p{wait}",
-            6 : "Cycle_time",
-            7 : "tau",
-            8 : "tau_data"
+            6 : "rts_time",
+            7 : "data_time",
+            8 : "Cycle_time",
+            9 : "tau",
+            10 : "tau_data"
         }
 
         self.detailed_statistics_description = {
@@ -185,6 +187,8 @@ class StatisticCollector:
                 probability_of_success,
                 probability_of_collision,
                 probability_of_wait,
+                pow(10, 9) * rts_time,
+                pow(10, 9) * data_time,
                 pow(10, 9) * cycle_time3,
                 total_rts_time / simulation_time,
                 total_data_time / simulation_time
