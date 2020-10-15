@@ -260,15 +260,17 @@ class Simulation:
                         raise ValueError('Incorrect cycle. Cycle should contain success or failure state:', node.cycle_times)
                     if finished_in_success and finished_in_failure:
                         raise ValueError('Incorrect cycle. Cycle cannot contain success and failure state:', node.cycle_times)
-                    node.cycle += 1
+                    """node.cycle += 1"""
                     if finished_in_failure:
                         node.statistics.trajectory_times["failure"] += s
                         node.statistics.trajectory_cycle_count["failure"] += 1
                         node.statistics.total_failure_cycle_time += s
+
                     if finished_in_success:
                         node.statistics.trajectory_times["success with " + str(sent_rts_count) + " rts"] += s
                         node.statistics.trajectory_cycle_count["success with " + str(sent_rts_count) + " rts"] += 1
                         node.statistics.total_success_cycle_time += s
+
 
 
             node.cycle_times = []
@@ -341,6 +343,7 @@ class Simulation:
             rts_msg.propagation_time = node.get_propagation_time()
 
             self.gateway.received_rts_messages[rts_msg.id] = rts_msg
+            self.gateway.statistics.received_rts += 1
 
             if self.input.is_debug:
                 print("     Node", node.id, " goes to TX RTS until", pow(10,9) * node.event_time)
@@ -539,6 +542,7 @@ class Simulation:
 
             node.statistics.probability_of_failure += 1
             node.statistics.cycle_time += node.cycle_end_time - node.cycle_start_time
+            node.cycle += 1
 
             node.cycle_start_time = None
             node.cycle_end_time = None
@@ -566,6 +570,7 @@ class Simulation:
 
             node.statistics.probability_of_success += 1
             node.statistics.cycle_time += node.cycle_end_time - node.cycle_start_time
+            node.cycle += 1
 
             node.cycle_start_time = None
             node.cycle_end_time = None
@@ -624,7 +629,7 @@ class Simulation:
                         collision_rts_ids.append(rts.id)
 
                         for col in collision_rts_list:
-                            self.gateway.statistics.received_rts += 1
+
                             self.gateway.statistics.blocked_rts += 1
                             already_received_rts.append(col.id)
 
@@ -635,7 +640,7 @@ class Simulation:
                         if self.input.is_debug:
                             print("     There were no collisions")
 
-                        self.gateway.statistics.received_rts += 1
+
                         self.gateway.statistics.not_blocked_rts += 1
 
                         for node in self.nodes:
@@ -698,7 +703,7 @@ class Simulation:
             For discrete case use: int(numpy.random.uniform(0, node.attempt * self.input.Tbo))
             For time durations use: numpy.random.uniform(0, node.attempt * self.input.Tbo)
         """
-        bo = numpy.random.uniform(0, node.attempt * self.input.Tbo)
+        bo = numpy.random.uniform(0, node.attempt * self.input.Tmax *self.input.Tbo)
         # if self.input.is_debug:
         #     print("#generate_backoff_time: node :", node.id, ", attempt:", node.attempt, ", max value:", pow(10,9) * node.attempt * self.input.Tbo, ", generated value:", pow(10,9) * bo)
         return bo
@@ -715,9 +720,9 @@ class Simulation:
             node.statistics.data_time = node.statistics.data_time / cycles_count
             node.statistics.wait_time = node.statistics.wait_time / cycles_count
             node.statistics.channel_busy_time = node.statistics.channel_busy_time / cycles_count
-            node.statistics.probability_of_failure = node.statistics.probability_of_failure / (cycles_count - (0 if idle_cycles_count == 0 else idle_cycles_count)) if (cycles_count - (0 if idle_cycles_count == 0 else idle_cycles_count)) != 0 else 0
-            node.statistics.probability_of_success = node.statistics.probability_of_success / (cycles_count - (0 if idle_cycles_count == 0 else idle_cycles_count)) if (cycles_count - (0 if idle_cycles_count == 0 else idle_cycles_count)) != 0 else 0
-            node.statistics.probability_of_wait = node.statistics.probability_of_wait / (cycles_count - (0 if idle_cycles_count == 0 else idle_cycles_count)) if (cycles_count - (0 if idle_cycles_count == 0 else idle_cycles_count)) != 0 else 0
+            node.statistics.probability_of_failure = node.statistics.probability_of_failure / (cycles_count - (0 if idle_cycles_count == 0 else idle_cycles_count)) if (cycles_count - (0 if idle_cycles_count == 0 else idle_cycles_count)) != 0 else 1
+            node.statistics.probability_of_success = node.statistics.probability_of_success / (cycles_count - (0 if idle_cycles_count == 0 else idle_cycles_count)) if (cycles_count - (0 if idle_cycles_count == 0 else idle_cycles_count)) != 0 else 1
+            node.statistics.probability_of_wait = node.statistics.probability_of_wait / (cycles_count - (0 if idle_cycles_count == 0 else idle_cycles_count)) if (cycles_count - (0 if idle_cycles_count == 0 else idle_cycles_count)) != 0 else 1
             node.statistics.probability_of_wait = node.statistics.probability_of_wait * self.input.Twait / node.statistics.cycle_time2
 
             for key in node.statistics.trajectory_times.keys():
@@ -733,7 +738,7 @@ class Simulation:
             self.gateway.statistics.probability_of_collision = 0.0
         else:
             self.gateway.statistics.probability_of_collision = (
-                                                                   self.gateway.statistics.blocked_rts + self.gateway.statistics.ignored_rts) / self.gateway.statistics.received_rts
+                                                                   self.gateway.statistics.blocked_rts ) / self.gateway.statistics.received_rts
 
     def internal_debug(self):
         if self.input.is_debug and not self.input.auto_continue:

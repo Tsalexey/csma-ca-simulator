@@ -20,7 +20,7 @@ class RealisticInput1:
         # 0.0002 = 60 real minutes for 1-50 nodes
         # 0.0001 = 30 real minutes for 1-50 nodes
         # 0.00005 = 15 real minutes for 1-50 nodes
-        self.simulation_time = 0.000001 # seconds
+        self.simulation_time = 0.00001 # seconds
 
         self.Nretx = 3  # retransmission attemps, None = unlimited
         self.NN = 20 # nodes number
