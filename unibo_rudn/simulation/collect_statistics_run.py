@@ -19,11 +19,21 @@ def main():
 def output(input, file_name, statistics, statistics_description):
     filename = "../results/" \
                + file_name \
+               + "_pa[" + str(input.p_a) + "]" \
                + "_mode[" + input.mode.value + "]" \
                + "_sensing[" + str(input.sensing) + "]" \
                + "_nodes[" + str(1) + "-" + str(input.NN) + "]" \
                + "_radius[" + str(input.sphere_radius) + "]" \
-               + "_retry[" + str(input.Nretx) + "]_pa[" + str(input.p_a) + "]_time[" + str(input.simulation_time) + "].dat"
+               + "_retry[" + str(input.Nretx) + "]" \
+               + "_Ldata[" + str(input.Ldata) + "]" \
+               + "_Lack[" + str(input.Lack) + "]" \
+               + "_Lrts[" + str(input.Lrts) + "]" \
+               + "_Lcts[" + str(input.Lcts) + "]" \
+               + "_Tidle[" + str(input.Tidle) + "]" \
+               + "_Tout[" + str(input.Tout) + "]" \
+               + "_Twait[" + str(input.Twait) + "]" \
+               + "_Tmax[" + str(input.Tmax) + "]" \
+               + "_time[" + str(input.simulation_time) + "].dat"
 
     kwargs = {'newline': ''}
     mode = 'w'

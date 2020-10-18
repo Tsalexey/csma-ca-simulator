@@ -11,15 +11,18 @@ class StatisticCollector:
 
         self.statistics_description = {
             1 : "Nodes",
-            2 : "p{failure}",
-            3 : "p{success}",
-            4 : "p{collision}",
-            5 : "p{wait}",
-            6 : "rts_time",
-            7 : "data_time",
-            8 : "Cycle_time",
-            9 : "tau",
-            10 : "tau_data"
+            2 : "p_a",
+            3 : "p{failure}",
+            4 : "p{success}",
+            5 : "p{collision}",
+            6 : "p{wait}",
+            7 : "idle_time",
+            8 : "rts_time",
+            9 : "data_time",
+            10 : "Cycle_time",
+            11 : "time_w/o_tx",
+            12 : "tau",
+            13 : "tau_data"
         }
 
         self.detailed_statistics_description = {
@@ -73,6 +76,8 @@ class StatisticCollector:
             cycle_time = 0.0
             cycle_time2 = 0.0
             cycle_time3 = 0.0
+            idle_time = 0.0
+            not_tx_rx_time = 0.0
             rts_time = 0.0
             data_time = 0.0
             wait_time = 0.0
@@ -103,6 +108,8 @@ class StatisticCollector:
                 temp_cycle_time = 0.0
                 temp_cycle_time2 = 0.0
                 temp_cycle_time3 = 0.0
+                temp_idle_time = 0.0
+                temp_not_tx_rx_time = 0.0
                 temp_rts_time = 0.0
                 temp_data_time = 0.0
                 temp_wait_time = 0.0
@@ -117,6 +124,8 @@ class StatisticCollector:
                     temp_cycle_time += node.statistics.cycle_time
                     temp_cycle_time2 += node.statistics.cycle_time2
                     temp_cycle_time3 += node.statistics.cycle_time2 * node.cycle
+                    temp_idle_time += node.statistics.idle_time
+                    temp_not_tx_rx_time += node.statistics.not_tx_rx_time
                     temp_rts_time += node.statistics.rts_time
                     temp_data_time += node.statistics.data_time
                     temp_wait_time += node.statistics.wait_time
@@ -136,6 +145,8 @@ class StatisticCollector:
                 cycle_time += temp_cycle_time / len(simulation.nodes)
                 cycle_time2 += temp_cycle_time2 / len(simulation.nodes)
                 cycle_time3 += temp_cycle_time3 / len(simulation.nodes)
+                idle_time += temp_idle_time / len(simulation.nodes)
+                not_tx_rx_time += temp_not_tx_rx_time / len(simulation.nodes)
                 rts_time += temp_rts_time / len(simulation.nodes)
                 data_time += temp_data_time / len(simulation.nodes)
                 wait_time += temp_wait_time / len(simulation.nodes)
@@ -183,13 +194,16 @@ class StatisticCollector:
 
             self.statistics[i] = [
                 i,
+                self.input.p_a,
                 probability_of_failure,
                 probability_of_success,
                 probability_of_collision,
                 probability_of_wait,
+                pow(10, 9) * idle_time,
                 pow(10, 9) * rts_time,
                 pow(10, 9) * data_time,
                 pow(10, 9) * cycle_time3,
+                pow(10, 9) * not_tx_rx_time,
                 total_rts_time / simulation_time,
                 total_data_time / simulation_time
             ]
