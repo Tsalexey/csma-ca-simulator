@@ -122,7 +122,7 @@ class StatisticCollector:
                     temp_wait_time += node.statistics.wait_time
                     temp_channel_busy_time += node.statistics.channel_busy_time
 
-                    total_idle_time += node.statistics.total_idle_cycle_time
+                    total_idle_time += node.statistics.total_idle_time
                     total_success_time += node.statistics.total_success_cycle_time
                     total_failure_time += node.statistics.total_failure_cycle_time
                     total_rts_time += node.statistics.total_rts_time

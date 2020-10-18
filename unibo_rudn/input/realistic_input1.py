@@ -11,7 +11,7 @@ class RealisticInput1:
         self.time_limit = True # if False then run simulation until the error between cycle time of all nodes is greater then self.precision
         self.precision = 0.001
 
-        self.sensing = True
+        self.sensing = False
         self.repeats = 1
         self.mode = SimulationType.CYCLIC
 
@@ -24,7 +24,7 @@ class RealisticInput1:
 
         self.Nretx = 3  # retransmission attemps, None = unlimited
         self.NN = 20 # nodes number
-        self.p_a = 1.0 # probability that node has RTS message to transmit
+        self.p_a = 0.75 # probability that node has RTS message to transmit
 
         self.B = 100 * pow(10, 9) # Bandwidth
         self.eta = 0.5 # Spectral Efficiency
@@ -55,3 +55,25 @@ class RealisticInput1:
         self.Twait = self.Tdata + self.Tack
         self.Tmax = 12 # parameter of the mathematical model
 
+        self.print()
+
+
+    def print(self):
+        print("Input parameters:")
+        print("     mode - ", self.mode)
+        print("     sensing - ", self.sensing)
+        print("     Nretx - ", self.Nretx)
+        print("     NN - ", self.NN)
+        print("     p_a - ", self.p_a)
+        print("     Tdata - ", self.Tdata * pow(10, 9), " ns")
+        print("     Tack - ", self.Tack * pow(10, 9), " ns")
+        print("     Trts - ", self.Trts * pow(10, 9), " ns")
+        print("     Tcts - ", self.Tcts * pow(10, 9), " ns")
+        print("     Tbeacon - ", self.Tbeacon * pow(10, 9), " ns")
+        print("     Tbo - ", self.Tbo * pow(10, 9), " ns")
+        print("     Tdatacts - ", self.Tdatacts * pow(10, 9), " ns")
+        print("     Tout - ", self.Tout * pow(10, 9), " ns")
+        print("     Tidle - ", self.Tidle * pow(10, 9), " ns")
+        print("     Twait - ", self.Twait * pow(10, 9), " ns")
+        print("     Tmax - ", self.Tmax)
+        print("")
