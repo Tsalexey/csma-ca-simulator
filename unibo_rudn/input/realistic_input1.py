@@ -7,6 +7,7 @@ class RealisticInput1:
         self.auto_continue = True
         self.is_debug_cycle_info = False
         self.is_debug_cycle_error = False
+        self.is_debug_node_info = False
 
         self.time_limit = True # if False then run simulation until the error between cycle time of all nodes is greater then self.precision
         self.precision = 0.001
@@ -16,15 +17,11 @@ class RealisticInput1:
         self.mode = SimulationType.CYCLIC
 
         # self.planned_success = 25
-        # 0.001 = 333 real minutes for 1-50 nodes
-        # 0.0002 = 60 real minutes for 1-50 nodes
-        # 0.0001 = 30 real minutes for 1-50 nodes
-        # 0.00005 = 15 real minutes for 1-50 nodes
-        self.simulation_time = 0.00001 # seconds
+        self.simulation_time = 0.00003 # seconds
 
         self.Nretx = 3  # retransmission attemps, None = unlimited
         self.NN = 20 # nodes number
-        self.p_a = 0.75 # probability that node has RTS message to transmit
+        self.p_a = 1.0 # probability that node has RTS message to transmit
 
         self.B = 100 * pow(10, 9) # Bandwidth
         self.eta = 0.5 # Spectral Efficiency
