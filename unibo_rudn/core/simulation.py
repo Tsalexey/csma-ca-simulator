@@ -679,6 +679,8 @@ class Simulation:
 
                     if collision_rts_list:
                         # we got collision
+                        self.gateway.statistics.collision_time += rts.transmission_time
+
                         collision_rts_list.append(rts)
                         collision_rts_ids.append(rts.id)
 
@@ -799,8 +801,12 @@ class Simulation:
             self.gateway.statistics.probability_of_collision = 0.0
         else:
             # before we counted here also self.gateway.statistics.ignored_rts
-            self.gateway.statistics.probability_of_collision = (
-                                                                   self.gateway.statistics.blocked_rts ) / self.gateway.statistics.received_rts
+            self.gateway.statistics.probability_of_collision = ( self.gateway.statistics.blocked_rts ) / self.gateway.statistics.received_rts
+
+        if self.gateway.statistics.collision_time == 0:
+            self.gateway.statistics.probability_of_collision_by_time = 0.0
+        else:
+            self.gateway.statistics.probability_of_collision_by_time = self.gateway.statistics.collision_time / self.time
 
     def internal_debug(self):
         if self.input.is_debug and not self.input.auto_continue:
@@ -1081,8 +1087,8 @@ class Simulation:
         print("             mean_rts_cycles * tau_rts / mean_rts_cycles = " + f'{mean_rts_cycles * self.input.Trts / mean_rts_cycles * pow(10, 9) :.4f}' + " ns")
         print("             mean rts time * avg. cycles count / mean_rts_cyces = " + f'{total_cycle_count * rts_time / mean_rts_cycles * pow(10, 9) :.4f}' + " ns")
         print("             -")
-        print("             mean_data_cycles * tau_data / mean_rts_cycles = " + f'{mean_data_cycles * self.input.Tdata / mean_data_cycles * pow(10, 9) :.4f}' + " ns")
-        print("             mean data time * avg. cycles count / mean_data_cycles =" + f'{total_cycle_count * data_time / mean_data_cycles * pow(10, 9) :.4f}' + " ns")
+        print("             mean_data_cycles * tau_data / mean_rts_cycles = " + f'{mean_data_cycles * self.input.Tdata / (1 if mean_data_cycles == 0 else mean_data_cycles) * pow(10, 9) :.4f}' + " ns")
+        print("             mean data time * avg. cycles count / mean_data_cycles =" + f'{total_cycle_count * data_time / (1 if mean_data_cycles == 0 else mean_data_cycles) * pow(10, 9) :.4f}' + " ns")
         print("             -")
         print("     - tau -")
         print("             tau:", tau)
@@ -1107,6 +1113,7 @@ class Simulation:
         print("     not blocked rts:", self.gateway.statistics.not_blocked_rts)
         print("     ignored rts:", self.gateway.statistics.ignored_rts)
         print("     Blocking probability by call:", self.gateway.statistics.probability_of_collision)
+        print("     Blocking probability by time:", self.gateway.statistics.probability_of_collision_by_time)
         print("")
 
         if self.input.is_debug_node_info:

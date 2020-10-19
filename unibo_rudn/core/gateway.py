@@ -29,4 +29,6 @@ class GatewayStatistics:
         self.not_blocked_rts = 0.0
         self.ignored_rts = 0.0
 
+        self.collision_time = 0.0
         self.probability_of_collision = None
+        self.probability_of_collision_by_time = None

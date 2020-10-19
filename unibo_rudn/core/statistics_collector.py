@@ -15,15 +15,16 @@ class StatisticCollector:
             3 : "p{failure}",
             4 : "p{success}",
             5 : "p{collision}",
-            6 : "p{wait}",
-            7 : "idle_time",
-            8 : "backoff_time",
-            9 : "rts_time",
-            10 : "cts_time",
-            11 : "out_time",
-            12 : "data_time",
-            13 : "wait_time",
-            14 : "Cycle_time",
+            6 : "p{collision_time}",
+            7 : "p{wait}",
+            8 : "idle_time",
+            9 : "backoff_time",
+            10 : "rts_time",
+            11 : "cts_time",
+            12 : "out_time",
+            13 : "data_time",
+            14 : "wait_time",
+            15 : "Cycle_time",
             16 : "time_between_tx",
             17 : "time_w/o_tx",
             18 : "tau",
@@ -76,6 +77,7 @@ class StatisticCollector:
             probability_of_failure = 0.0
             probability_of_success = 0.0
             probability_of_collision = 0.0
+            probability_of_collision_by_time = 0.0
             probability_of_wait = 0.0
 
             cycle_time = 0.0
@@ -194,6 +196,7 @@ class StatisticCollector:
                 not_blocked_rts += simulation.gateway.statistics.not_blocked_rts
                 ignored_rts += simulation.gateway.statistics.ignored_rts
                 probability_of_collision += simulation.gateway.statistics.probability_of_collision
+                probability_of_collision_by_time += simulation.gateway.statistics.probability_of_collision_by_time
 
             total_cycle_count = total_cycle_count / self.input.repeats
             probability_of_failure = probability_of_failure / self.input.repeats
@@ -217,6 +220,7 @@ class StatisticCollector:
             blocked_rts = blocked_rts / self.input.repeats
             not_blocked_rts = not_blocked_rts / self.input.repeats
             ignored_rts = ignored_rts / self.input.repeats
+            probability_of_collision_by_time = probability_of_collision_by_time / self.input.repeats
             probability_of_collision = probability_of_collision / self.input.repeats
 
             simulation_time /= self.input.repeats
@@ -238,6 +242,7 @@ class StatisticCollector:
                 probability_of_failure,
                 probability_of_success,
                 probability_of_collision,
+                probability_of_collision_by_time,
                 probability_of_wait,
                 pow(10, 9) * idle_time,
                 pow(10, 9) * backoff_time,
