@@ -24,9 +24,10 @@ class StatisticCollector:
             12 : "data_time",
             13 : "wait_time",
             14 : "Cycle_time",
-            15 : "time_w/o_tx",
-            16 : "tau",
-            17 : "tau_data"
+            16 : "time_between_tx",
+            17 : "time_w/o_tx",
+            18 : "tau",
+            19 : "tau_data"
         }
 
         self.detailed_statistics_description = {
@@ -87,6 +88,7 @@ class StatisticCollector:
             out_time = 0.0
             data_time = 0.0
             wait_time = 0.0
+            time_between_tx = 0.0
             not_tx_rx_time = 0.0
             channel_busy_time = 0.0
 
@@ -127,6 +129,7 @@ class StatisticCollector:
                 temp_out_time = 0.0
                 temp_data_time = 0.0
                 temp_wait_time = 0.0
+                temp_time_between_tx = 0.0
                 temp_not_tx_rx_time = 0.0
                 temp_channel_busy_time = 0.0
 
@@ -146,6 +149,7 @@ class StatisticCollector:
                     temp_out_time += node.statistics.out_time
                     temp_data_time += node.statistics.data_time
                     temp_wait_time += node.statistics.wait_time
+                    temp_time_between_tx += node.idle_series_statistics.time
                     temp_not_tx_rx_time += node.statistics.not_tx_rx_time
                     temp_channel_busy_time += node.statistics.channel_busy_time
 
@@ -170,6 +174,7 @@ class StatisticCollector:
                 out_time += temp_out_time / len(simulation.nodes)
                 data_time += temp_data_time / len(simulation.nodes)
                 wait_time += temp_wait_time / len(simulation.nodes)
+                time_between_tx += temp_time_between_tx / len(simulation.nodes)
                 not_tx_rx_time += temp_not_tx_rx_time / len(simulation.nodes)
                 channel_busy_time += temp_channel_busy_time / len(simulation.nodes)
 
@@ -242,6 +247,7 @@ class StatisticCollector:
                 pow(10, 9) * data_time,
                 pow(10, 9) * wait_time,
                 pow(10, 9) * cycle_time3,
+                pow(10, 9) * time_between_tx,
                 pow(10, 9) * not_tx_rx_time,
                 total_rts_time / simulation_time,
                 total_data_time / simulation_time

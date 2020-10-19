@@ -313,6 +313,17 @@ class Simulation:
                         node.statistics.trajectory_cycle_count["success with " + str(sent_rts_count) + " rts"] += 1
                         node.statistics.total_success_cycle_time += s
 
+                    if node.idle_series_statistics.is_prev_cycled_closed_idle:
+                        # this is last closed idle cycle in the serie
+                        node.idle_series_statistics.is_prev_cycled_closed_idle = False
+                        node.idle_series_statistics.end_time = self.time - s
+
+                        node.idle_series_statistics.time += node.idle_series_statistics.end_time - node.idle_series_statistics.start_time
+
+                        node.idle_series_statistics.cycles_count += 1
+
+                        node.idle_series_statistics.start_time = None
+                        node.idle_series_statistics.end_time = None
 
 
             node.cycle_times = []
@@ -349,15 +360,16 @@ class Simulation:
                     self.debug_node_cycle_times(node)
             else:
                 node.state = NodeState.IDLE
-                #  for discrete case: node.event_time = self.time + 1.0
-                # node.event_time = self.time + 1.0
-                node.event_time = self.time + self.input.Tcts \
-                                  + self.input.Tdata \
-                                  + self.input.Tack
+                node.event_time = self.time + self.input.Tidle
 
                 node.statistics.cycle_time += node.event_time - self.time
                 node.cycle_start_time = None
                 node.cycle_end_time = None
+
+                if not node.idle_series_statistics.is_prev_cycled_closed_idle:
+                    # this is first closed idle cycle in the serie
+                    node.idle_series_statistics.is_prev_cycled_closed_idle = True
+                    node.idle_series_statistics.start_time = self.time
 
                 if self.input.is_debug:
                     print("     Node", node.id, " keep staying IDLE")
@@ -772,6 +784,8 @@ class Simulation:
             node.statistics.probability_of_wait = node.statistics.probability_of_wait / (cycles_count - (0 if idle_cycles_count == 0 else idle_cycles_count)) if (cycles_count - (0 if idle_cycles_count == 0 else idle_cycles_count)) != 0 else 1
             node.statistics.probability_of_wait = node.statistics.probability_of_wait * self.input.Twait / node.statistics.cycle_time2
 
+            node.idle_series_statistics.time = node.idle_series_statistics.time / (1 if node.idle_series_statistics.cycles_count == 0 else node.idle_series_statistics.cycles_count)
+
             for key in node.statistics.trajectory_times.keys():
                 if node.statistics.trajectory_cycle_count[key] == 0:
                     node.statistics.trajectory_times[key] = 0.0
@@ -824,6 +838,7 @@ class Simulation:
         data_time = 0.0
         wait_time = 0.0
         not_tx_rx_time = 0.0
+        time_between_tx = 0.0
         channel_busy_time = 0.0
         parallel_data_tx = 0.0
 
@@ -846,6 +861,7 @@ class Simulation:
         temp_data_time = 0.0
         temp_wait_time = 0.0
         temp_not_tx_rx_time = 0.0
+        temp_time_between_tx = 0.0
         temp_channel_busy_time = 0.0
         temp_parallel_data_tx = 0.0
         temp_trajectory_times = {}
@@ -889,6 +905,7 @@ class Simulation:
             temp_data_time += node.statistics.data_time
             temp_wait_time += node.statistics.wait_time
             temp_not_tx_rx_time += node.statistics.not_tx_rx_time
+            temp_time_between_tx += node.idle_series_statistics.time
             temp_channel_busy_time += node.statistics.channel_busy_time
 
             total_success_time += node.statistics.total_success_cycle_time
@@ -943,6 +960,7 @@ class Simulation:
         data_time += temp_data_time / len(self.nodes)
         wait_time += temp_wait_time / len(self.nodes)
         not_tx_rx_time += temp_not_tx_rx_time / len(self.nodes)
+        time_between_tx += temp_time_between_tx / len(self.nodes)
         channel_busy_time += temp_channel_busy_time / len(self.nodes)
         parallel_data_tx += temp_parallel_data_tx / len(self.nodes)
 
@@ -1013,6 +1031,7 @@ class Simulation:
         print("             out time: " + f'{out_time * pow(10, 9) :.4f}' + " ns")
         print("             data_time: " + f'{data_time * pow(10, 9) :.4f}' + " ns")
         print("             wait_time: " + f'{wait_time * pow(10, 9) :.4f}' + " ns")
+        print("             time between tx: " + f'{time_between_tx * pow(10, 9) :.4f}' + " ns")
         print("             time w/o tx/rx: " + f'{not_tx_rx_time * pow(10, 9) :.4f}' + " ns")
         print("             cycle time: " + f'{cycle_time * pow(10, 9) :.4f}' + " ns")
         print("             cycle time2: " + f'{cycle_time2 * pow(10, 9) :.4f}' + " ns")

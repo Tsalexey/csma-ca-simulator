@@ -28,6 +28,7 @@ class Node:
 
         self.attempt = 0
         self.statistics = NodeStatistics()
+        self.idle_series_statistics = IdleSeriesStatistics()
 
         self.statistics.trajectory_times["idle"] = 0.0
         for i in range(1, input.Nretx+2):
@@ -105,3 +106,12 @@ class NodeStatistics:
 
         self.trajectory_times = {}
         self.trajectory_cycle_count = {}
+
+class IdleSeriesStatistics:
+    def __init__(self):
+        self.is_prev_cycled_closed_idle = False
+        self.start_time = None
+        self.end_time = None
+
+        self.time = 0.0
+        self.cycles_count = 0
