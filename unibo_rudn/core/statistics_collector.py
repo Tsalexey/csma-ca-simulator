@@ -17,12 +17,16 @@ class StatisticCollector:
             5 : "p{collision}",
             6 : "p{wait}",
             7 : "idle_time",
-            8 : "rts_time",
-            9 : "data_time",
-            10 : "Cycle_time",
-            11 : "time_w/o_tx",
-            12 : "tau",
-            13 : "tau_data"
+            8 : "backoff_time",
+            9 : "rts_time",
+            10 : "cts_time",
+            11 : "out_time",
+            12 : "data_time",
+            13 : "wait_time",
+            14 : "Cycle_time",
+            15 : "time_w/o_tx",
+            16 : "tau",
+            17 : "tau_data"
         }
 
         self.detailed_statistics_description = {
@@ -77,10 +81,13 @@ class StatisticCollector:
             cycle_time2 = 0.0
             cycle_time3 = 0.0
             idle_time = 0.0
-            not_tx_rx_time = 0.0
+            backoff_time = 0.0
             rts_time = 0.0
+            cts_time = 0.0
+            out_time = 0.0
             data_time = 0.0
             wait_time = 0.0
+            not_tx_rx_time = 0.0
             channel_busy_time = 0.0
 
             received_rts = 0.0
@@ -89,10 +96,15 @@ class StatisticCollector:
             ignored_rts = 0.0
 
             simulation_time = 0.0
-            total_idle_time = 0.0
+
             total_success_time = 0.0
             total_failure_time = 0.0
+
+            total_idle_time = 0.0
+            total_backoff_time = 0.0
             total_rts_time = 0.0
+            total_cts_time = 0.0
+            total_out_time = 0.0
             total_data_time = 0.0
             total_wait_time = 0.0
 
@@ -109,10 +121,13 @@ class StatisticCollector:
                 temp_cycle_time2 = 0.0
                 temp_cycle_time3 = 0.0
                 temp_idle_time = 0.0
-                temp_not_tx_rx_time = 0.0
+                temp_backoff_time = 0.0
                 temp_rts_time = 0.0
+                temp_cts_time = 0.0
+                temp_out_time = 0.0
                 temp_data_time = 0.0
                 temp_wait_time = 0.0
+                temp_not_tx_rx_time = 0.0
                 temp_channel_busy_time = 0.0
 
                 simulation_time += simulation.time
@@ -125,10 +140,13 @@ class StatisticCollector:
                     temp_cycle_time2 += node.statistics.cycle_time2
                     temp_cycle_time3 += node.statistics.cycle_time2 * node.cycle
                     temp_idle_time += node.statistics.idle_time
-                    temp_not_tx_rx_time += node.statistics.not_tx_rx_time
+                    temp_backoff_time += node.statistics.backoff_time
                     temp_rts_time += node.statistics.rts_time
+                    temp_cts_time += node.statistics.cts_time
+                    temp_out_time += node.statistics.out_time
                     temp_data_time += node.statistics.data_time
                     temp_wait_time += node.statistics.wait_time
+                    temp_not_tx_rx_time += node.statistics.not_tx_rx_time
                     temp_channel_busy_time += node.statistics.channel_busy_time
 
                     total_idle_time += node.statistics.total_idle_time
@@ -146,16 +164,23 @@ class StatisticCollector:
                 cycle_time2 += temp_cycle_time2 / len(simulation.nodes)
                 cycle_time3 += temp_cycle_time3 / len(simulation.nodes)
                 idle_time += temp_idle_time / len(simulation.nodes)
-                not_tx_rx_time += temp_not_tx_rx_time / len(simulation.nodes)
+                backoff_time += temp_backoff_time / len(simulation.nodes)
                 rts_time += temp_rts_time / len(simulation.nodes)
+                cts_time += temp_cts_time / len(simulation.nodes)
+                out_time += temp_out_time / len(simulation.nodes)
                 data_time += temp_data_time / len(simulation.nodes)
                 wait_time += temp_wait_time / len(simulation.nodes)
+                not_tx_rx_time += temp_not_tx_rx_time / len(simulation.nodes)
                 channel_busy_time += temp_channel_busy_time / len(simulation.nodes)
 
-                total_idle_time /= len(simulation.nodes)
                 total_success_time /= len(simulation.nodes)
                 total_failure_time /= len(simulation.nodes)
+
+                total_idle_time /= len(simulation.nodes)
+                total_backoff_time /= len(simulation.nodes)
                 total_rts_time /= len(simulation.nodes)
+                total_cts_time /= len(simulation.nodes)
+                total_out_time /= len(simulation.nodes)
                 total_data_time /= len(simulation.nodes)
                 total_wait_time /= len(simulation.nodes)
 
@@ -172,7 +197,12 @@ class StatisticCollector:
             cycle_time = cycle_time / self.input.repeats
             cycle_time2 = cycle_time2 / self.input.repeats
             cycle_time3 = (cycle_time3 / self.input.repeats) / total_cycle_count
+
+            idle_time = idle_time / self.input.repeats
+            backoff_time = backoff_time / self.input.repeats
             rts_time = rts_time / self.input.repeats
+            cts_time = cts_time / self.input.repeats
+            out_time = out_time / self.input.repeats
             data_time = data_time / self.input.repeats
             wait_time = wait_time / self.input.repeats
             channel_busy_time = channel_busy_time / self.input.repeats
@@ -185,10 +215,15 @@ class StatisticCollector:
             probability_of_collision = probability_of_collision / self.input.repeats
 
             simulation_time /= self.input.repeats
-            total_idle_time /= self.input.repeats
+
             total_success_time /= self.input.repeats
             total_failure_time /= self.input.repeats
+
+            total_idle_time /= self.input.repeats
+            total_backoff_time /= self.input.repeats
             total_rts_time /= self.input.repeats
+            total_cts_time /= self.input.repeats
+            total_out_time /= self.input.repeats
             total_data_time /= self.input.repeats
             total_wait_time /= self.input.repeats
 
@@ -200,8 +235,12 @@ class StatisticCollector:
                 probability_of_collision,
                 probability_of_wait,
                 pow(10, 9) * idle_time,
+                pow(10, 9) * backoff_time,
                 pow(10, 9) * rts_time,
+                pow(10, 9) * cts_time,
+                pow(10, 9) * out_time,
                 pow(10, 9) * data_time,
+                pow(10, 9) * wait_time,
                 pow(10, 9) * cycle_time3,
                 pow(10, 9) * not_tx_rx_time,
                 total_rts_time / simulation_time,

@@ -25,21 +25,13 @@ def output(input, file_name, statistics, statistics_description):
                + "_nodes[" + str(1) + "-" + str(input.NN) + "]" \
                + "_radius[" + str(input.sphere_radius) + "]" \
                + "_retry[" + str(input.Nretx) + "]" \
-               + "_Ldata[" + str(input.Ldata) + "]" \
-               + "_Lack[" + str(input.Lack) + "]" \
-               + "_Lrts[" + str(input.Lrts) + "]" \
-               + "_Lcts[" + str(input.Lcts) + "]" \
-               + "_Tidle[" + str(input.Tidle) + "]" \
-               + "_Tout[" + str(input.Tout) + "]" \
-               + "_Twait[" + str(input.Twait) + "]" \
-               + "_Tmax[" + str(input.Tmax) + "]" \
                + "_time[" + str(input.simulation_time) + "].dat"
 
     kwargs = {'newline': ''}
     mode = 'w'
 
     with open(filename, mode, **kwargs) as fp:
-        writer = csv.writer(fp, delimiter=' ')
+        writer = csv.writer(fp, delimiter=';')
 
         description = []
         for x in statistics_description.values():

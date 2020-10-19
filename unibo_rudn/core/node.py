@@ -80,17 +80,23 @@ class NodeStatistics:
         self.cycle_time2 = 0.0
         self.cycle_time = 0.0
         self.idle_time = 0.0
-        self.not_tx_rx_time = 0.0 # part of cycle time where there are not RTS/CTS/DATA/ACK transmission
+        self.backoff_time = 0.0
         self.rts_time = 0.0
+        self.cts_time = 0.0
+        self.out_time = 0.0
         self.data_time = 0.0
         self.wait_time = 0.0
+        self.not_tx_rx_time = 0.0 # part of cycle time where there are not RTS/CTS/DATA/ACK transmission
         self.channel_busy_time = 0.0
 
         self.total_idle_time = 0.0
-        self.total_not_tx_rx_time = 0.0
+        self.total_backoff_time = 0.0
         self.total_rts_time = 0.0
+        self.total_cts_time = 0.0
+        self.total_out_time = 0.0
         self.total_data_time = 0.0
         self.total_wait_time = 0.0
+        self.total_not_tx_rx_time = 0.0
         self.total_failure_cycle_time = 0.0
         self.total_success_cycle_time = 0.0
 
