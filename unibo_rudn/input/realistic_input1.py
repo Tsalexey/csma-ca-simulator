@@ -20,7 +20,7 @@ class RealisticInput1:
         self.simulation_time = 0.00003 # seconds
 
         self.Nretx = 3  # retransmission attemps, None = unlimited
-        self.NN = 20 # nodes number
+        self.NN = 30 # nodes number
         self.p_a = 1.0 # probability that node has RTS message to transmit
 
         self.B = 100 * pow(10, 9) # Bandwidth
@@ -32,11 +32,11 @@ class RealisticInput1:
 
         # message length
         self.Ldata = 100 # Bytes data total
-        self.Ldatapay = 90 # Bytes payload data
-        self.Lack = 10 # Bytes
-        self.Lrts = 10 # Bytes
-        self.Lcts = 10 # Bytes
-        self.Lbeacon = 10 # Bytes
+        self.Ldatapay = 80 # Bytes payload data
+        self.Lack = 20 # Bytes
+        self.Lrts = 20 # Bytes
+        self.Lcts = 20 # Bytes
+        self.Lbeacon = 20 # Bytes
 
         # times
         # self.tau_p_max = 0 # self.sphere_radius / self.c # sec - maximal propagation time
