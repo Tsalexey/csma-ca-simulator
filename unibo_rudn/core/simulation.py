@@ -324,6 +324,10 @@ class Simulation:
 
                         node.idle_series_statistics.start_time = None
                         node.idle_series_statistics.end_time = None
+                    else:
+                        # if previous cycle wan't closed idle cycle then just add to statictics idle delay before backoff
+                        node.idle_series_statistics.time += self.input.Tidle
+                        node.idle_series_statistics.cycles_count += 1
 
 
             node.cycle_times = []
@@ -349,11 +353,15 @@ class Simulation:
             if random.random() < node.input.p_a:
                 node.state = NodeState.BO
                 node.attempt = 1
-                node.event_time = self.time + self.generate_backoff_time(node)
+
+                node.event_time = self.time + self.input.Tidle
+                node.cycle_times.append({"idle": {"start": self.time, "end": node.event_time}})
+
+                node.event_time = node.event_time + self.generate_backoff_time(node)
+                node.cycle_times.append({"backoff": {"start": self.time, "end": node.event_time}})
 
                 if self.input.is_debug:
                     print("     Node", node.id, " goes to BACKOFF until", pow(10,9) * node.event_time)
-                node.cycle_times.append({"backoff": {"start": self.time, "end": node.event_time}})
 
                 if self.input.is_debug:
                     print("             Node", node.id, " cycle states: ")
