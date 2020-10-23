@@ -23,6 +23,7 @@ class Node:
         self.wait_state = 0
         self.cts_state = 0
         self.data_state = 0
+        self.ack_state = 0
         self.success_state = 0
         self.failure_state = 0
 
@@ -86,6 +87,7 @@ class NodeStatistics:
         self.cts_time = 0.0
         self.out_time = 0.0
         self.data_time = 0.0
+        self.ack_time = 0.0
         self.wait_time = 0.0
         self.not_tx_rx_time = 0.0 # part of cycle time where there are not RTS/CTS/DATA/ACK transmission
         self.channel_busy_time = 0.0
@@ -96,6 +98,7 @@ class NodeStatistics:
         self.total_cts_time = 0.0
         self.total_out_time = 0.0
         self.total_data_time = 0.0
+        self.total_ack_time = 0.0
         self.total_wait_time = 0.0
         self.total_not_tx_rx_time = 0.0
         self.total_failure_cycle_time = 0.0

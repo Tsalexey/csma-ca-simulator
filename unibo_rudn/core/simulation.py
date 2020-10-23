@@ -270,11 +270,18 @@ class Simulation:
                 if "data" in e:
                     node.data_state +=1
 
-                    data_and_ack_time = e["data"]["end"] - e["data"]["start"]
+                    data_time = e["data"]["end"] - e["data"]["start"]
 
-                    node.statistics.data_time += data_and_ack_time - self.input.Tack
-                    node.statistics.channel_busy_time += self.input.Tcts + data_and_ack_time
-                    node.statistics.total_data_time += data_and_ack_time - self.input.Tack
+                    node.statistics.data_time += data_time
+                    node.statistics.total_data_time += data_time
+                    node.statistics.channel_busy_time += self.input.Tcts + data_time + self.input.Tack
+                if "ack" in e:
+                    node.ack_state += 1
+
+                    ack_time = e["ack"]["end"] - e["ack"]["start"]
+
+                    node.statistics.ack_time += ack_time
+                    node.statistics.total_ack_time += ack_time
                 for k, v in e.items():
                     s += e[k]["end"] - e[k]["start"]
 
@@ -528,11 +535,13 @@ class Simulation:
                 node.state = NodeState.TX_DATA
                 # for discrete case: self.time + 1.0
                 # node.event_time = self.time + 1.0
-                node.event_time = self.time \
-                                  + self.input.Tdata \
-                                  + node.get_propagation_time() \
-                                  + self.input.Tack \
-                                  + node.get_propagation_time()
+                node.event_time = self.time + self.input.Tdata + node.get_propagation_time()
+                node.cycle_times.append({"data": {"start": self.time, "end": node.event_time}})
+
+                ack_event_time = node.event_time
+
+                node.event_time = node.event_time + self.input.Tack + node.get_propagation_time()
+                node.cycle_times.append({"ack": {"start": ack_event_time, "end": node.event_time}})
 
                 self.gateway.state = GatewayState.RX_DATA
                 # for discrete case: self.gateway.event_time = self.time + 1.0
@@ -546,7 +555,6 @@ class Simulation:
                     print("     Node", node.id, " goes to TX DATA until", pow(10,9) * node.event_time)
                     print("     Gateway goes to RX DATA until", pow(10,9) * self.gateway.event_time)
 
-                node.cycle_times.append({"data": {"start": self.time, "end": node.event_time}})
                 if self.input.is_debug:
                     print("             Node", node.id, " cycle states: ")
                     self.debug_node_cycle_times(node)
@@ -786,6 +794,7 @@ class Simulation:
             node.statistics.cts_time = node.statistics.cts_time / cycles_count
             node.statistics.out_time = node.statistics.out_time / cycles_count
             node.statistics.data_time = node.statistics.data_time / cycles_count
+            node.statistics.ack_time = node.statistics.ack_time / cycles_count
             node.statistics.wait_time = node.statistics.wait_time / cycles_count
             node.statistics.not_tx_rx_time = node.statistics.not_tx_rx_time / cycles_count
             node.statistics.channel_busy_time = node.statistics.channel_busy_time / cycles_count
@@ -850,6 +859,7 @@ class Simulation:
         cts_time = 0.0
         out_time = 0.0
         data_time = 0.0
+        ack_time = 0.0
         wait_time = 0.0
         not_tx_rx_time = 0.0
         time_between_tx = 0.0
@@ -873,6 +883,7 @@ class Simulation:
         temp_cts_time = 0.0
         temp_out_time = 0.0
         temp_data_time = 0.0
+        temp_ack_time = 0.0
         temp_wait_time = 0.0
         temp_not_tx_rx_time = 0.0
         temp_time_between_tx = 0.0
@@ -899,6 +910,7 @@ class Simulation:
         total_cts_time = 0.0
         total_out_time = 0.0
         total_data_time = 0.0
+        total_ack_time = 0.0
         total_wait_time = 0.0
         total_not_tx_rx_time = 0.0
 
@@ -917,6 +929,7 @@ class Simulation:
             temp_cts_time += node.statistics.cts_time
             temp_out_time += node.statistics.out_time
             temp_data_time += node.statistics.data_time
+            temp_ack_time += node.statistics.ack_time
             temp_wait_time += node.statistics.wait_time
             temp_not_tx_rx_time += node.statistics.not_tx_rx_time
             temp_time_between_tx += node.idle_series_statistics.time
@@ -930,6 +943,7 @@ class Simulation:
             total_cts_time += node.statistics.total_cts_time
             total_out_time += node.statistics.total_out_time
             total_data_time += node.statistics.total_data_time
+            total_ack_time += node.statistics.total_ack_time
             total_wait_time += node.statistics.total_wait_time
             total_not_tx_rx_time += node.statistics.total_not_tx_rx_time
 
@@ -972,6 +986,7 @@ class Simulation:
         cts_time += temp_cts_time / len(self.nodes)
         out_time += temp_out_time / len(self.nodes)
         data_time += temp_data_time / len(self.nodes)
+        ack_time += temp_ack_time / len(self.nodes)
         wait_time += temp_wait_time / len(self.nodes)
         not_tx_rx_time += temp_not_tx_rx_time / len(self.nodes)
         time_between_tx += temp_time_between_tx / len(self.nodes)
@@ -1044,6 +1059,7 @@ class Simulation:
         print("             cts time: " + f'{cts_time * pow(10, 9) :.4f}' + " ns")
         print("             out time: " + f'{out_time * pow(10, 9) :.4f}' + " ns")
         print("             data_time: " + f'{data_time * pow(10, 9) :.4f}' + " ns")
+        print("             ack_time: " + f'{ack_time * pow(10, 9) :.4f}' + " ns")
         print("             wait_time: " + f'{wait_time * pow(10, 9) :.4f}' + " ns")
         print("             time between tx: " + f'{time_between_tx * pow(10, 9) :.4f}' + " ns")
         print("             time w/o tx/rx: " + f'{not_tx_rx_time * pow(10, 9) :.4f}' + " ns")
@@ -1066,6 +1082,7 @@ class Simulation:
         print("             total data time / total time: " + f'{(total_data_time / self.time)  :.4f}' )
         print("             total wait time: " + f'{total_wait_time * pow(10, 9) :.4f}' + " ns")
         print("             total wait time / total time: " + f'{(total_wait_time / self.time)  :.4f}' )
+        print("             total ack time: " + f'{total_ack_time * pow(10, 9) :.4f}' + " ns")
         print("             total time w/o tx/rx: " + f'{total_not_tx_rx_time * pow(10, 9) :.4f}' + " ns")
         print("             total success time: " + f'{total_success_time * pow(10, 9) :.4f}' + " ns")
         print("             total success time / total time: " + f'{(total_success_time / self.time)  :.4f}')

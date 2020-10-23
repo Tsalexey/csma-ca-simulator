@@ -21,7 +21,7 @@ class RealisticInput1:
         self.simulation_time = 0.0001 # seconds
 
         self.Nretx = 3  # retransmission attemps, None = unlimited
-        self.NN = 30 # nodes number
+        self.NN = 1 # nodes number
         self.p_a = 1.0 # probability that node has RTS message to transmit
 
         self.B = 100 * pow(10, 9) # Bandwidth
