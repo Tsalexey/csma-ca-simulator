@@ -17,14 +17,14 @@ class AlohaInput:
         self.mode = SimulationType.CYCLIC
 
         # self.planned_success = 25
-        self.simulation_time = 0.0002 # seconds
+        self.simulation_time = 0.00002 # seconds
 
         self.Nretx = 3  # retransmission attemps, None = unlimited
-        self.NN = 30 # nodes number
+        self.NN = 10 # nodes number
         self.p_a = 1.0 # probability that node has RTS message to transmit
 
         self.B = 100 * pow(10, 9) # Bandwidth
-        self.eta = 0.5 # Spectral Efficiency
+        self.eta = 1 # Spectral Efficiency
         self.rb = self.B * self.eta  # Bit rate
 
         self.sphere_radius = 2 # meter
@@ -34,8 +34,8 @@ class AlohaInput:
         self.Ldata = 0 # do not use for ALOHA
         self.Ldatapay = 0 # do not use for ALOHA
         self.Lack = 0 # do not use for ALOHA
-        self.Lrts = 100 # Bytes - ALOHA DATA
-        self.Lcts = 20 # Bytes - ALOHA ACK
+        self.Lrts = 20 # Bytes - ALOHA DATA
+        self.Lcts = 2 # Bytes - ALOHA ACK
         self.Lbeacon = 00 # do not use for ALOHA
 
         # times
