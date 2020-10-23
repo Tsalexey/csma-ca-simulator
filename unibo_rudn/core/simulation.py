@@ -272,9 +272,9 @@ class Simulation:
 
                     data_and_ack_time = e["data"]["end"] - e["data"]["start"]
 
-                    node.statistics.data_time += data_and_ack_time
+                    node.statistics.data_time += data_and_ack_time - self.input.Tack
                     node.statistics.channel_busy_time += self.input.Tcts + data_and_ack_time
-                    node.statistics.total_data_time += data_and_ack_time
+                    node.statistics.total_data_time += data_and_ack_time - self.input.Tack
                 for k, v in e.items():
                     s += e[k]["end"] - e[k]["start"]
 

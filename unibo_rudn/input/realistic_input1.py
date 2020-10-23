@@ -17,6 +17,7 @@ class RealisticInput1:
         self.mode = SimulationType.CYCLIC
 
         # self.planned_success = 25
+        # 0.004 - apr. 6 hours
         self.simulation_time = 0.0001 # seconds
 
         self.Nretx = 3  # retransmission attemps, None = unlimited

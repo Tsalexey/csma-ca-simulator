@@ -48,18 +48,17 @@ class StatisticCollector:
             14 : "tau_(3rd_approach)",
             15 : "tau_(4th_approach)",
             16 : "tau_data_(4th_approach)",
-            17 : "tau_tau_(2nd_approach)",
-            18 : "tau_tau_(3rd_approach)",
-            19 : "tau_tau_(4th_approach)",
-            20 : "tau_tau_(4th_approach)",
-            21 : "tau_channe_busy_(1rst_approach)",
-            22 : "tau_channe_busy_(2nd_approach)",
-            23 : "received_rts_msg_count",
-            24 : "blocked_rts_msg_count",
-            25 : "not_blocked_rts_msg_count",
-            26 : "ignored_rts_msg_count",
-            27 : "p{collision}",
-            28 : "p{wait}"
+            17 : "tau_data_(2nd_approach)",
+            18 : "tau_data_(3rd_approach)",
+            19 : "tau_data_(4th_approach)",
+            20 : "tau_channe_busy_(1rst_approach)",
+            21 : "tau_channe_busy_(2nd_approach)",
+            22 : "received_rts_msg_count",
+            23 : "blocked_rts_msg_count",
+            24 : "not_blocked_rts_msg_count",
+            25 : "ignored_rts_msg_count",
+            26 : "p{collision}",
+            27 : "p{wait}"
         }
 
 
@@ -251,11 +250,11 @@ class StatisticCollector:
                 pow(10, 9) * out_time,
                 pow(10, 9) * data_time,
                 pow(10, 9) * wait_time,
-                pow(10, 9) * cycle_time3,
+                pow(10,9) * cycle_time,
                 pow(10, 9) * time_between_tx,
                 pow(10, 9) * not_tx_rx_time,
-                total_rts_time / simulation_time,
-                total_data_time / simulation_time
+                0 if cycle_time2 == 0 else (rts_time) / cycle_time2,
+                data_time / cycle_time2,
             ]
 
             self.detailed_statistics[i] = [
