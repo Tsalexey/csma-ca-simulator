@@ -12,8 +12,8 @@ class StatisticCollector:
         self.statistics_description = {
             1 : "Nodes",
             2 : "p_a",
-            3 : "p{failure}",
-            4 : "p{success}",
+            3 : "p{cycle_failure}",
+            4 : "p{cycle_success}",
             5 : "p{rts_collision}",
             6 : "p{rts_success}",
             7 : "p{wait}",
@@ -34,8 +34,8 @@ class StatisticCollector:
         self.detailed_statistics_description = {
             1 : "Nodes",
             2 : "Total_cycles_count",
-            3 : "p{failure}",
-            4 : "p{success}",
+            3 : "p{cycle_failure}",
+            4 : "p{cycle_success}",
             5 : "Cycle_time_(1rst_approach)",
             6 : "Cycle_time_(2nd_approach)",
             7 : "Cycle_time_(3rd_approach)",
