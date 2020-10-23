@@ -310,15 +310,21 @@ class Simulation:
                     if finished_in_success and finished_in_failure:
                         raise ValueError('Incorrect cycle. Cycle cannot contain success and failure state:', node.cycle_times)
                     """node.cycle += 1"""
+
+                    node.statistics.total_transmitted_rts_messages += sent_rts_count
+
                     if finished_in_failure:
                         node.statistics.trajectory_times["failure"] += s
                         node.statistics.trajectory_cycle_count["failure"] += 1
                         node.statistics.total_failure_cycle_time += s
+                        node.statistics.rts_collision_messages += sent_rts_count
 
                     if finished_in_success:
                         node.statistics.trajectory_times["success with " + str(sent_rts_count) + " rts"] += s
                         node.statistics.trajectory_cycle_count["success with " + str(sent_rts_count) + " rts"] += 1
                         node.statistics.total_success_cycle_time += s
+                        node.statistics.rts_success_messages += 1
+                        node.statistics.rts_collision_messages += 0 if sent_rts_count == 1 else sent_rts_count - 1
 
                     if node.idle_series_statistics.is_prev_cycled_closed_idle:
                         # this is last closed idle cycle in the serie
@@ -802,6 +808,8 @@ class Simulation:
             node.statistics.probability_of_success = node.statistics.probability_of_success / (cycles_count - (0 if idle_cycles_count == 0 else idle_cycles_count)) if (cycles_count - (0 if idle_cycles_count == 0 else idle_cycles_count)) != 0 else 1
             node.statistics.probability_of_wait = node.statistics.probability_of_wait / (cycles_count - (0 if idle_cycles_count == 0 else idle_cycles_count)) if (cycles_count - (0 if idle_cycles_count == 0 else idle_cycles_count)) != 0 else 1
             node.statistics.probability_of_wait = node.statistics.probability_of_wait * self.input.Twait / node.statistics.cycle_time2
+            node.statistics.probability_of_rts_collision = node.statistics.rts_collision_messages / node.statistics.total_transmitted_rts_messages
+            node.statistics.probability_of_rts_success = node.statistics.rts_success_messages / node.statistics.total_transmitted_rts_messages
 
             node.idle_series_statistics.time = node.idle_series_statistics.time / (1 if node.idle_series_statistics.cycles_count == 0 else node.idle_series_statistics.cycles_count)
 
@@ -846,6 +854,8 @@ class Simulation:
 
         total_cycle_count = 0.0
         total_idle_cycle_count = 0.0
+        prob_rts_success = 0.0
+        prob_rts_collision = 0.0
         failure_count = 0.0
         success_count = 0.0
         wait_count = 0.0
@@ -871,6 +881,8 @@ class Simulation:
 
         temp_total_cycle_count = 0.0
         temp_total_idle_cycle_count = 0.0
+        temp_prob_rts_success = 0.0
+        temp_prob_rts_collision = 0.0
         temp_failure_count = 0.0
         temp_success_count = 0.0
         temp_wait_count = 0.0
@@ -917,6 +929,8 @@ class Simulation:
         for node in self.nodes:
             temp_total_cycle_count += node.statistics.total_cycle_count
             temp_total_idle_cycle_count += node.statistics.total_idle_cycle_count
+            temp_prob_rts_success += node.statistics.probability_of_rts_success
+            temp_prob_rts_collision += node.statistics.probability_of_rts_collision
             temp_failure_count += node.statistics.probability_of_failure
             temp_success_count += node.statistics.probability_of_success
             temp_wait_count += node.statistics.probability_of_wait
@@ -974,6 +988,8 @@ class Simulation:
 
         total_cycle_count += temp_total_cycle_count / len(self.nodes)
         total_idle_cycle_count += temp_total_idle_cycle_count / len(self.nodes)
+        prob_rts_success += temp_prob_rts_success / len(self.nodes)
+        prob_rts_collision += temp_prob_rts_collision / len(self.nodes)
         failure_count += temp_failure_count / len(self.nodes)
         success_count += temp_success_count / len(self.nodes)
         wait_count += temp_wait_count / len(self.nodes)
@@ -1047,6 +1063,8 @@ class Simulation:
         print("     avg node w/o idle cycles:", total_cycle_count-total_idle_cycle_count)
         print("     parallel data transmissions number: ", parallel_data_tx - 1)
         print("     - probabilities -")
+        print("             p{rts collison}:", prob_rts_collision)
+        print("             p{rts success}:", prob_rts_success)
         print("             p{failure}:", failure_count)
         print("             p{success}", success_count)
         print("             ---")
@@ -1147,6 +1165,8 @@ class Simulation:
                 print("     total cycles:", node.statistics.total_cycle_count)
                 print("     idle cycles:", node.statistics.total_idle_cycle_count)
                 print("     - Probabilities - ")
+                print("         rts success:", node.statistics.probability_of_rts_success)
+                print("         rts collsion:", node.statistics.rts_collision_messages)
                 print("         success:", node.statistics.probability_of_success)
                 print("         failure:", node.statistics.probability_of_failure)
                 print("         wait:", node.statistics.probability_of_wait)
@@ -1157,6 +1177,7 @@ class Simulation:
                 print("         cts time: " + f'{node.statistics.cts_time * pow(10, 9) :.4f}' + " ns")
                 print("         out time: " + f'{node.statistics.out_time * pow(10, 9) :.4f}' + " ns")
                 print("         data time: " + f'{node.statistics.data_time * pow(10, 9) :.4f}' + " ns")
+                print("         ack time: " + f'{node.statistics.ack_time * pow(10, 9) :.4f}' + " ns")
                 print("         wait time: " + f'{node.statistics.wait_time * pow(10, 9) :.4f}' + " ns")
                 print("         channel busy time: " + f'{node.statistics.channel_busy_time * pow(10, 9) :.4f}' + " ns")
                 print("         time w/o tx/rx: " + f'{node.statistics.not_tx_rx_time * pow(10, 9) :.4f}' + " ns")

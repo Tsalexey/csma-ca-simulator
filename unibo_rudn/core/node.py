@@ -75,8 +75,11 @@ class NodeStatistics:
         self.total_cycle_count = None
         self.total_idle_cycle_count = None
 
-        self.probability_of_failure = 0.0
-        self.probability_of_success = 0.0
+        self.probability_of_rts_collision = 0.0
+        self.probability_of_rts_success = 0.0
+
+        self.probability_of_failure = 0.0 # cycle failure
+        self.probability_of_success = 0.0 # cycle success
         self.probability_of_wait = 0.0
 
         self.cycle_time2 = 0.0
@@ -106,6 +109,10 @@ class NodeStatistics:
 
         self.data_transmissions_count = 0.0
         self.parallel_transmitting_nodes = 0.0
+
+        self.total_transmitted_rts_messages = 0
+        self.rts_collision_messages = 0
+        self.rts_success_messages = 0
 
         self.trajectory_times = {}
         self.trajectory_cycle_count = {}

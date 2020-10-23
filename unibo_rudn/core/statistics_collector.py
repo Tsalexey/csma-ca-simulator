@@ -14,8 +14,8 @@ class StatisticCollector:
             2 : "p_a",
             3 : "p{failure}",
             4 : "p{success}",
-            5 : "p{collision}",
-            6 : "p{collision_time}",
+            5 : "p{rts_collision}",
+            6 : "p{rts_success}",
             7 : "p{wait}",
             8 : "idle_time",
             9 : "backoff_time",
@@ -73,6 +73,8 @@ class StatisticCollector:
             print("Simulation run for ", i, " Nodes, radius", self.input.sphere_radius, ", repeats =", self.input.repeats)
 
             total_cycle_count = 0.0
+            probability_of_rts_success = 0.0
+            probability_of_rts_collision = 0.0
             probability_of_failure = 0.0
             probability_of_success = 0.0
             probability_of_collision = 0.0
@@ -117,6 +119,8 @@ class StatisticCollector:
                 simulation.run()
 
                 temp_total_cycle_count = 0.0
+                temp_probability_of_rts_success = 0.0
+                temp_probability_of_rts_collision = 0.0
                 temp_failure_count = 0.0
                 temp_success_count = 0.0
                 temp_wait_count = 0.0
@@ -137,6 +141,8 @@ class StatisticCollector:
                 simulation_time += simulation.time
                 for node in simulation.nodes:
                     temp_total_cycle_count += node.statistics.total_cycle_count
+                    temp_probability_of_rts_success += node.statistics.probability_of_rts_success
+                    temp_probability_of_rts_collision += node.statistics.probability_of_rts_collision
                     temp_failure_count += node.statistics.probability_of_failure
                     temp_success_count += node.statistics.probability_of_success
                     temp_wait_count += node.statistics.probability_of_wait
@@ -162,6 +168,8 @@ class StatisticCollector:
                     total_wait_time += node.statistics.total_wait_time
 
                 total_cycle_count += temp_total_cycle_count / len(simulation.nodes)
+                probability_of_rts_success += temp_probability_of_rts_success / len(simulation.nodes)
+                probability_of_rts_collision += temp_probability_of_rts_collision / len(simulation.nodes)
                 probability_of_failure += temp_failure_count / len(simulation.nodes)
                 probability_of_success += temp_success_count / len(simulation.nodes)
                 probability_of_wait += temp_wait_count / len(simulation.nodes)
@@ -198,6 +206,8 @@ class StatisticCollector:
                 probability_of_collision_by_time += simulation.gateway.statistics.probability_of_collision_by_time
 
             total_cycle_count = total_cycle_count / self.input.repeats
+            probability_of_rts_success = probability_of_rts_success / self.input.repeats
+            probability_of_rts_collision = probability_of_rts_collision / self.input.repeats
             probability_of_failure = probability_of_failure / self.input.repeats
             probability_of_success = probability_of_success / self.input.repeats
             probability_of_wait = probability_of_wait / self.input.repeats
@@ -240,8 +250,8 @@ class StatisticCollector:
                 self.input.p_a,
                 probability_of_failure,
                 probability_of_success,
-                probability_of_collision,
-                probability_of_collision_by_time,
+                probability_of_rts_collision,
+                probability_of_rts_success,
                 probability_of_wait,
                 pow(10, 9) * idle_time,
                 pow(10, 9) * backoff_time,
