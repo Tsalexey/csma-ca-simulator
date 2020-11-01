@@ -781,7 +781,7 @@ class Simulation:
             For discrete case use: int(numpy.random.uniform(0, node.attempt * self.input.Tbo))
             For time durations use: numpy.random.uniform(0, node.attempt * self.input.Tbo)
         """
-        bo = numpy.random.uniform(0, node.attempt * self.input.Tmax *self.input.Tbo)
+        bo = numpy.random.uniform(0, node.attempt * (self.input.Tmax - 1) *self.input.Tbo)
         # if self.input.is_debug:
         #     print("#generate_backoff_time: node :", node.id, ", attempt:", node.attempt, ", max value:", pow(10,9) * node.attempt * self.input.Tbo, ", generated value:", pow(10,9) * bo)
         return bo
