@@ -198,12 +198,12 @@ class StatisticCollector:
                 total_data_time /= len(simulation.nodes)
                 total_wait_time /= len(simulation.nodes)
 
-                received_rts += simulation.gateway.statistics.received_rts
-                blocked_rts += simulation.gateway.statistics.blocked_rts
-                not_blocked_rts += simulation.gateway.statistics.not_blocked_rts
-                ignored_rts += simulation.gateway.statistics.ignored_rts
-                probability_of_collision += simulation.gateway.statistics.probability_of_collision
-                probability_of_collision_by_time += simulation.gateway.statistics.probability_of_collision_by_time
+                # received_rts += simulation.gateway.statistics.received_rts
+                # blocked_rts += simulation.gateway.statistics.blocked_rts
+                # not_blocked_rts += simulation.gateway.statistics.not_blocked_rts
+                # ignored_rts += simulation.gateway.statistics.ignored_rts
+                # probability_of_collision += simulation.gateway.statistics.probability_of_collision
+                # probability_of_collision_by_time += simulation.gateway.statistics.probability_of_collision_by_time
 
             total_cycle_count = total_cycle_count / self.input.repeats
             probability_of_rts_success = probability_of_rts_success / self.input.repeats
@@ -225,12 +225,12 @@ class StatisticCollector:
             channel_busy_time = channel_busy_time / self.input.repeats
 
 
-            received_rts = received_rts / self.input.repeats
-            blocked_rts = blocked_rts / self.input.repeats
-            not_blocked_rts = not_blocked_rts / self.input.repeats
-            ignored_rts = ignored_rts / self.input.repeats
-            probability_of_collision_by_time = probability_of_collision_by_time / self.input.repeats
-            probability_of_collision = probability_of_collision / self.input.repeats
+            # received_rts = received_rts / self.input.repeats
+            # blocked_rts = blocked_rts / self.input.repeats
+            # not_blocked_rts = not_blocked_rts / self.input.repeats
+            # ignored_rts = ignored_rts / self.input.repeats
+            # probability_of_collision_by_time = probability_of_collision_by_time / self.input.repeats
+            # probability_of_collision = probability_of_collision / self.input.repeats
 
             simulation_time /= self.input.repeats
 
@@ -294,12 +294,12 @@ class StatisticCollector:
                 channel_busy_time / cycle_time,
                 channel_busy_time / cycle_time2,
 
-                received_rts,
-                blocked_rts,
-                not_blocked_rts,
-                ignored_rts,
-                probability_of_collision,
-                probability_of_wait
+                # received_rts,
+                # blocked_rts,
+                # not_blocked_rts,
+                # ignored_rts,
+                # probability_of_collision,
+                # probability_of_wait
             ]
 
             t2 = time.time()

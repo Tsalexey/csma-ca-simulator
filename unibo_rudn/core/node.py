@@ -16,6 +16,9 @@ class Node:
         self.cycle = 0
         self.idle_cycle = 0
 
+        self.rts_message = None
+        self.has_collision = False
+
         self.idle_state = 0
         self.bo_state = 0
         self.rts_state = 0
@@ -116,6 +119,13 @@ class NodeStatistics:
 
         self.trajectory_times = {}
         self.trajectory_cycle_count = {}
+
+        self.pacchRx = 0
+        self.pacchTx = 0
+        self.pacchColl = 0
+
+        self.pS = 0.0
+        self.pC = 0.0
 
 class IdleSeriesStatistics:
     def __init__(self):

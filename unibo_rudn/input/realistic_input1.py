@@ -18,7 +18,7 @@ class RealisticInput1:
 
         # self.planned_success = 25
         # 0.004 - apr. 6 hours
-        self.simulation_time = 0.00002 # seconds
+        self.simulation_time = 0.0001 # seconds
 
         self.Nretx = 3  # retransmission attemps, None = unlimited
         self.NN = 30 # nodes number
@@ -41,6 +41,8 @@ class RealisticInput1:
 
         # times
         # self.tau_p_max = 0 # self.sphere_radius / self.c # sec - maximal propagation time
+        self.Tslot = (self.Lbeacon * 4) / self.rb
+
         self.Tdata = (self.Ldata * 8) / self.rb
         self.Tack = (self.Lack * 8) / self.rb
         self.Trts = (self.Lrts * 8) / self.rb

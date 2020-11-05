@@ -13,11 +13,11 @@ class AlohaInput:
         self.precision = 0.001
 
         self.sensing = False
-        self.repeats = 1
+        self.repeats = 100
         self.mode = SimulationType.CYCLIC
 
         # self.planned_success = 25
-        self.simulation_time = 0.00002 # seconds
+        self.simulation_time = 0.00001 # seconds
 
         self.Nretx = 3  # retransmission attemps, None = unlimited
         self.NN = 10 # nodes number
@@ -40,17 +40,19 @@ class AlohaInput:
 
         # times
         # self.tau_p_max = 0 # self.sphere_radius / self.c # sec - maximal propagation time
-        self.Tdata = (self.Ldata * 8) / self.rb
-        self.Tack = (self.Lack * 8) / self.rb
-        self.Trts = (self.Lrts * 8) / self.rb
-        self.Tcts = (self.Lcts * 8) / self.rb
-        self.Tbeacon = (self.Lbeacon * 8) / self.rb
-        self.Tbo = (self.Lcts * 8) / self.rb
+        self.Tslot = 2 / pow(10, 9)
+
+        self.Tdata = 0#(self.Ldata * 8) / self.rb
+        self.Tack = 0#(self.Lack * 8) / self.rb
+        self.Trts = 20/pow(10,9)#(self.Lrts * 8) / self.rb
+        self.Tcts = 2/pow(10,9)#(self.Lcts * 8) / self.rb
+        self.Tbeacon = 0#(self.Lbeacon * 8) / self.rb
+        self.Tbo = 2/pow(10,9)#(self.Lcts * 8) / self.rb
         self.Tdatacts = self.Tcts + self.Tdata + self.Tack
-        self.Tout = self.Tcts
-        self.Tidle = self.Tcts # o be set according to the Application - it could be also zero
-        self.Twait = self.Tdata + self.Tack
-        self.Tmax = 12 # parameter of the mathematical model
+        self.Tout = 2/pow(10,9)#self.Tcts
+        self.Tidle = 2/pow(10,9)#self.Tcts # o be set according to the Application - it could be also zero
+        self.Twait = 0#self.Tdata + self.Tack
+        self.Tmax = 11 # parameter of the mathematical model
 
         self.print()
 
