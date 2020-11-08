@@ -13,11 +13,11 @@ class AlohaInput:
         self.precision = 0.001
 
         self.sensing = False
-        self.repeats = 100
+        self.repeats = 50
         self.mode = SimulationType.CYCLIC
 
         # self.planned_success = 25
-        self.simulation_time = 0.00001 # seconds
+        self.simulation_time = 0.0002 # seconds
 
         self.Nretx = 3  # retransmission attemps, None = unlimited
         self.NN = 10 # nodes number
@@ -40,7 +40,7 @@ class AlohaInput:
 
         # times
         # self.tau_p_max = 0 # self.sphere_radius / self.c # sec - maximal propagation time
-        self.Tslot = 2 / pow(10, 9)
+        self.Tslot = 1 / pow(10, 9)
 
         self.Tdata = 0#(self.Ldata * 8) / self.rb
         self.Tack = 0#(self.Lack * 8) / self.rb
@@ -52,7 +52,7 @@ class AlohaInput:
         self.Tout = 2/pow(10,9)#self.Tcts
         self.Tidle = 2/pow(10,9)#self.Tcts # o be set according to the Application - it could be also zero
         self.Twait = 0#self.Tdata + self.Tack
-        self.Tmax = 11 # parameter of the mathematical model
+        self.Tmax = 12 # parameter of the mathematical model
 
         self.print()
 

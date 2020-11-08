@@ -12,13 +12,13 @@ class RealisticInput1:
         self.time_limit = True # if False then run simulation until the error between cycle time of all nodes is greater then self.precision
         self.precision = 0.001
 
-        self.sensing = False
-        self.repeats = 1
+        self.sensing = True
+        self.repeats = 50
         self.mode = SimulationType.CYCLIC
 
         # self.planned_success = 25
         # 0.004 - apr. 6 hours
-        self.simulation_time = 0.0001 # seconds
+        self.simulation_time = 0.0005 # seconds
 
         self.Nretx = 3  # retransmission attemps, None = unlimited
         self.NN = 30 # nodes number
