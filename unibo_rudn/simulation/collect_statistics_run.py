@@ -17,15 +17,7 @@ def main():
     output(input, "statistics_full", collector.detailed_statistics, collector.detailed_statistics_description)
 
 def output(input, file_name, statistics, statistics_description):
-    filename = "../results/" \
-               + file_name \
-               + "_pa[" + str(input.p_a) + "]" \
-               + "_sensing[" + str(input.sensing) + "]" \
-               + "_nodes[" + str(1) + "-" + str(input.NN) + "]" \
-               + "_radius[" + str(input.sphere_radius) + "]" \
-               + "_retry[" + str(input.Nretx) + "]" \
-               + "_time[" + str(input.simulation_time) + "].csv"
-
+    filename = input.generate_output_filename(file_name)
     kwargs = {'newline': ''}
     mode = 'w'
 

@@ -7,15 +7,10 @@ class RealisticInput1:
         self.is_debug_cycle_error = False
         self.is_debug_node_info = False
 
-        self.time_limit = True # if False then run simulation until the error between cycle time of all nodes is greater then self.precision
-        self.precision = 0.001
-
         self.sensing = True
-        self.repeats = 50
+        self.repeats = 1
 
-        # self.planned_success = 25
-        # 0.004 - apr. 6 hours
-        self.simulation_time = 0.0005 # seconds
+        self.simulation_time = 0.00001 # seconds
 
         self.Nretx = 3  # retransmission attemps, None = unlimited
         self.NN = 30 # nodes number
@@ -54,6 +49,16 @@ class RealisticInput1:
 
         self.print()
 
+    def generate_output_filename(self, file_name):
+        return "../results/" \
+               + file_name \
+               + "_pa[" + str(self.p_a) + "]" \
+               + "_sensing[" + str(self.repeats) + "]" \
+               + "_nodes[" + str(1) + "-" + str(self.NN) + "]" \
+               + "_radius[" + str(self.sphere_radius) + "]" \
+               + "_retry[" + str(self.Nretx) + "]" \
+               + "_repeats[" + str(self.repeats) + "]" \
+               + "_time[" + str(self.simulation_time) + "].csv"
 
     def print(self):
         print("Input parameters:")
