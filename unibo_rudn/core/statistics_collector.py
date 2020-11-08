@@ -144,7 +144,7 @@ class StatisticCollector:
                     temp_wait_count += node.statistics.probability_of_wait
                     temp_cycle_time += node.statistics.cycle_time
                     temp_cycle_time2 += node.statistics.cycle_time2
-                    temp_cycle_time3 += node.statistics.cycle_time2 * node.cycle
+                    temp_cycle_time3 += node.statistics.cycle_time2 * node.cycle_count
                     temp_idle_time += node.statistics.idle_time
                     temp_backoff_time += node.statistics.backoff_time
                     temp_rts_time += node.statistics.rts_time

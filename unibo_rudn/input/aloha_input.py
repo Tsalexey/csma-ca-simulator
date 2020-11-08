@@ -10,7 +10,7 @@ class AlohaInput:
         self.sensing = False
         self.repeats = 1
 
-        self.simulation_time = 0.00001 # seconds
+        self.simulation_time = 0.0001 # seconds
 
         self.Nretx = 3  # retransmission attemps, None = unlimited
         self.NN = 10 # nodes number

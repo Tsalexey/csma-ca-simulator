@@ -66,14 +66,14 @@ class Simulation:
         self.time = min(self.time + self.input.Tslot, event_time)
 
     def collect_node_cycles_statistics(self, node):
-        temp = node.cycle_times
+        temp = node.cycle_states_stacktrace
 
         s = 0.0
         sent_rts_count = 0
         has_idle = False
         finished_in_success = False
         finished_in_failure = False
-        for e in node.cycle_times:
+        for e in node.cycle_states_stacktrace:
 
             if "backoff" in e:
                 node.bo_state += 1
@@ -157,39 +157,55 @@ class Simulation:
 
         node.statistics.cycle_time2 += s
 
-        if node.cycle_times:
-            if len(node.cycle_times) == 1:
+        if node.cycle_states_stacktrace:
+            if len(node.cycle_states_stacktrace) == 1:
                 if has_idle:
                     node.statistics.trajectory_times["idle"] += s
                     node.statistics.trajectory_cycle_count["idle"] += 1
-                    node.cycle += 1
-                    node.idle_cycle += 1
+                    node.cycle_count += 1
+                    node.closed_idle_cycle_count += 1
                 else:
                     raise ValueError(
                         'Found cycle time with length 1 and it is not idle loop. That is incorrect. Cycle:',
-                        node.cycle_times)
+                        node.cycle_states_stacktrace)
             else:
                 if not (finished_in_success or finished_in_failure):
                     print(finished_in_success)
                     print(finished_in_failure)
                     print(not (finished_in_success or finished_in_failure))
                     raise ValueError('Incorrect cycle. Cycle should contain success or failure state:',
-                                     node.cycle_times)
+                                     node.cycle_states_stacktrace)
                 if finished_in_success and finished_in_failure:
                     raise ValueError('Incorrect cycle. Cycle cannot contain success and failure state:',
-                                     node.cycle_times)
+                                     node.cycle_states_stacktrace)
 
                 node.statistics.total_transmitted_rts_messages += sent_rts_count
 
                 if finished_in_failure:
-                    node.statistics.trajectory_times["failure"] += s
-                    node.statistics.trajectory_cycle_count["failure"] += 1
+                    if not  node.statistics.trajectory_times.__contains__("failure"):
+                        node.statistics.trajectory_times["failure"] = 0.0
+                    else:
+                        node.statistics.trajectory_times["failure"] += s
+
+                    if not node.statistics.trajectory_cycle_count.__contains__("failure"):
+                        node.statistics.trajectory_cycle_count["failure"] = 0.0
+                    else:
+                        node.statistics.trajectory_cycle_count["failure"] += 1
+                        
                     node.statistics.total_failure_cycle_time += s
                     node.statistics.rts_collision_messages += sent_rts_count
 
                 if finished_in_success:
-                    node.statistics.trajectory_times["success with " + str(sent_rts_count) + " rts"] += s
-                    node.statistics.trajectory_cycle_count["success with " + str(sent_rts_count) + " rts"] += 1
+                    if not node.statistics.trajectory_times.__contains__("success with " + str(sent_rts_count) + " rts"):
+                        node.statistics.trajectory_times["success with " + str(sent_rts_count) + " rts"] = 0.0
+                    else:
+                        node.statistics.trajectory_times["success with " + str(sent_rts_count) + " rts"] += s
+
+                    if not node.statistics.trajectory_cycle_count.__contains__("success with " + str(sent_rts_count) + " rts"):
+                        node.statistics.trajectory_cycle_count["success with " + str(sent_rts_count) + " rts"] = 0.0
+                    else:
+                        node.statistics.trajectory_cycle_count["success with " + str(sent_rts_count) + " rts"] += 1
+
                     node.statistics.total_success_cycle_time += s
                     node.statistics.rts_success_messages += 1
                     node.statistics.rts_collision_messages += 0 if sent_rts_count == 1 else sent_rts_count - 1
@@ -210,7 +226,7 @@ class Simulation:
                     node.idle_series_statistics.time += self.input.Tidle
                     node.idle_series_statistics.cycles_count += 1
 
-        node.cycle_times = []
+        node.cycle_states_stacktrace = []
 
         if self.input.is_debug or self.input.is_debug_cycle_info:
             print("Node", node.id, " finished cycle with duration", f'{s * pow(10, 9) :.4f}', "! \nCycle stacktrace:")
@@ -237,12 +253,12 @@ class Simulation:
             node.attempt = 1
 
             node.event_time = self.time + self.input.Tidle
-            node.cycle_times.append({"idle": {"start": self.time, "end": node.event_time}})
+            node.cycle_states_stacktrace.append({"idle": {"start": self.time, "end": node.event_time}})
 
             idle_end_time = node.event_time
 
             node.event_time = node.event_time + self.generate_backoff_time(node)
-            node.cycle_times.append({"backoff": {"start": idle_end_time, "end": node.event_time}})
+            node.cycle_states_stacktrace.append({"backoff": {"start": idle_end_time, "end": node.event_time}})
         else:
             node.state = NodeState.IDLE
             node.event_time = self.time + self.input.Tidle
@@ -255,7 +271,7 @@ class Simulation:
                 # this is first closed idle cycle in the serie
                 node.idle_series_statistics.is_prev_cycled_closed_idle = True
                 node.idle_series_statistics.start_time = self.time
-            node.cycle_times.append({"idle": {"start": self.time, "end": node.event_time}})
+            node.cycle_states_stacktrace.append({"idle": {"start": self.time, "end": node.event_time}})
 
     def serve_node_backoff(self, node):
         node.state = NodeState.TX_RTS
@@ -271,7 +287,7 @@ class Simulation:
 
         node.rts_message = rts_msg
 
-        node.cycle_times.append({"rts": {"start": self.time, "end": node.event_time}})
+        node.cycle_states_stacktrace.append({"rts": {"start": self.time, "end": node.event_time}})
 
     def serve_node_tx_rts(self, node):
         if node.has_collision == False:
@@ -283,17 +299,17 @@ class Simulation:
                     cts_message.transmission_time = self.input.Tcts
                     cts_message.propagation_time = node.get_propagation_time()
 
-                    another_node.cts = cts_message
+                    another_node.cts_message = cts_message
                     another_node.state = NodeState.RX_CTS
                     another_node.event_time = self.time + self.input.Tcts
 
-                    another_node.cycle_times.append({"cts": {"start": self.time, "end": another_node.event_time}})
+                    another_node.cycle_states_stacktrace.append({"cts": {"start": self.time, "end": another_node.event_time}})
         else:
             node.state = NodeState.OUT
             node.event_time = self.time + self.input.Tout
             node.has_collision = False
             node.rts_message = None
-            node.cycle_times.append({"out": {"start": self.time, "end": node.event_time}})
+            node.cycle_states_stacktrace.append({"out": {"start": self.time, "end": node.event_time}})
 
     def serve_node_out(self, node):
         node.statistics.pacchColl += 1
@@ -302,42 +318,42 @@ class Simulation:
             node.state = NodeState.BO
             node.attempt += 1
             node.event_time = self.time + self.generate_backoff_time(node)
-            node.cycle_times.append({"backoff": {"start": self.time, "end": node.event_time}})
+            node.cycle_states_stacktrace.append({"backoff": {"start": self.time, "end": node.event_time}})
         else:
             if node.attempt == self.input.Nretx + 1:
                 node.state = NodeState.FAILURE
                 node.event_time = self.time
-                node.cycle_times.append({"failure": {"start": self.time, "end": node.event_time}})
+                node.cycle_states_stacktrace.append({"failure": {"start": self.time, "end": node.event_time}})
             else:
                 node.state = NodeState.BO
                 node.attempt += 1
                 node.event_time = self.time + self.generate_backoff_time(node)
-                node.cycle_times.append({"backoff": {"start": self.time, "end": node.event_time}})
+                node.cycle_states_stacktrace.append({"backoff": {"start": self.time, "end": node.event_time}})
 
     def serve_node_rx_cts(self, node):
-        if node.cts.node_id != node.id:
+        if node.cts_message.node_id != node.id:
             node.state = NodeState.WAIT
             node.event_time = self.time + self.input.Twait
-            node.cts = None
+            node.cts_message = None
             node.rts_message = None
             node.has_collision = False
-            node.cycle_times.append({"wait": {"start": self.time, "end": node.event_time}})
+            node.cycle_states_stacktrace.append({"wait": {"start": self.time, "end": node.event_time}})
         else:
-            node.cts = None
+            node.cts_message = None
             node.state = NodeState.TX_DATA
             node.event_time = self.time + self.input.Tdata + node.get_propagation_time()
-            node.cycle_times.append({"data": {"start": self.time, "end": node.event_time}})
+            node.cycle_states_stacktrace.append({"data": {"start": self.time, "end": node.event_time}})
 
             ack_event_time = node.event_time
 
             node.event_time = node.event_time + self.input.Tack + node.get_propagation_time()
-            node.cycle_times.append({"ack": {"start": ack_event_time, "end": node.event_time}})
+            node.cycle_states_stacktrace.append({"ack": {"start": ack_event_time, "end": node.event_time}})
 
     def serve_node_wait(self, node):
         node.statistics.probability_of_wait += 1
         node.state = NodeState.BO
         node.event_time = self.time + self.generate_backoff_time(node)
-        node.cycle_times.append({"backoff": {"start": self.time, "end": node.event_time}})
+        node.cycle_states_stacktrace.append({"backoff": {"start": self.time, "end": node.event_time}})
 
     def serve_node_tx_data(self, node):
         data_tx_nodes_count = 0.0
@@ -353,14 +369,14 @@ class Simulation:
         node.state = NodeState.SUCCESS
         node.event_time = self.time
 
-        node.cycle_times.append({"success": {"start": self.time, "end": node.event_time}})
+        node.cycle_states_stacktrace.append({"success": {"start": self.time, "end": node.event_time}})
 
     def serve_node_failure(self, node):
         node.cycle_end_time = self.time
 
         node.statistics.probability_of_failure += 1
         node.statistics.cycle_time += node.cycle_end_time - node.cycle_start_time
-        node.cycle += 1
+        node.cycle_count += 1
 
         node.has_collision = False
         node.rts_message = None
@@ -376,7 +392,7 @@ class Simulation:
 
         node.statistics.probability_of_success += 1
         node.statistics.cycle_time += node.cycle_end_time - node.cycle_start_time
-        node.cycle += 1
+        node.cycle_count += 1
 
         node.has_collision = False
         node.rts_message = None
@@ -392,10 +408,10 @@ class Simulation:
 
     def find_mean_node_statistic_values(self):
         for node in self.nodes:
-            cycles_count = node.cycle
-            idle_cycles_count = node.idle_cycle
-            node.statistics.total_cycle_count = node.cycle
-            node.statistics.total_idle_cycle_count = node.idle_cycle
+            cycles_count = node.cycle_count
+            idle_cycles_count = node.closed_idle_cycle_count
+            node.statistics.total_cycle_count = node.cycle_count
+            node.statistics.total_idle_cycle_count = node.closed_idle_cycle_count
             node.statistics.cycle_time = node.statistics.cycle_time / cycles_count
             node.statistics.cycle_time2 = node.statistics.cycle_time2 / cycles_count
             node.statistics.idle_time = node.statistics.idle_time / cycles_count
@@ -437,7 +453,7 @@ class Simulation:
 
     def debug_node_cycle_times(self, node):
         ''' Print current cycle states of the node '''
-        for time in node.cycle_times:
+        for time in node.cycle_states_stacktrace:
             string = ""
             for state, times in time.items():
                 string += state + ": "
@@ -542,7 +558,7 @@ class Simulation:
 
             temp_cycle_time += node.statistics.cycle_time
             temp_cycle_time2 += node.statistics.cycle_time2
-            temp_cycle_time3 += node.statistics.cycle_time2 * node.cycle
+            temp_cycle_time3 += node.statistics.cycle_time2 * node.cycle_count
             temp_idle_time += node.statistics.idle_time
             temp_backoff_time += node.statistics.backoff_time
             temp_rts_time += node.statistics.rts_time
@@ -582,7 +598,7 @@ class Simulation:
                     temp_trajectory_cycle_count[k] = 0.0
                 temp_trajectory_cycle_count[k] += v
 
-            mean_idle_cycles += node.idle_cycle
+            mean_idle_cycles += node.closed_idle_cycle_count
             mean_bo_cycles += node.bo_state
             mean_rts_cycles += node.rts_state
             mean_out_cycles += node.out_state

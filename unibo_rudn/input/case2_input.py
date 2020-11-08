@@ -7,10 +7,10 @@ class Case2Input:
         self.is_debug_cycle_error = False
         self.is_debug_node_info = False
 
-        self.sensing = True
+        self.sensing = False
         self.repeats = 1
 
-        self.simulation_time = 0.00001 # seconds
+        self.simulation_time = 0.0001 # seconds
 
         self.Nretx = 3  # retransmission attemps, None = unlimited
         self.NN = 30 # nodes number

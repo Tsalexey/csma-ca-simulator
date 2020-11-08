@@ -13,11 +13,15 @@ class Node:
         self.id = id
         self.position = Position(radius)
         self.event_time = 0.0
-        self.cycle = 0
-        self.idle_cycle = 0
+        self.cycle_count = 0
+        self.closed_idle_cycle_count = 0
 
         self.rts_message = None
+        self.cts_message = None
+
         self.has_collision = False
+
+        self.attempt = 0
 
         self.idle_state = 0
         self.bo_state = 0
@@ -30,25 +34,12 @@ class Node:
         self.success_state = 0
         self.failure_state = 0
 
-        self.attempt = 0
-        self.statistics = NodeStatistics()
-        self.idle_series_statistics = IdleSeriesStatistics()
-
-        self.statistics.trajectory_times["idle"] = 0.0
-        for i in range(1, input.Nretx+2):
-            self.statistics.trajectory_times["success with " + str(i) + " rts"] = 0.0
-        self.statistics.trajectory_times["failure"] = 0.0
-
-        self.statistics.trajectory_cycle_count["idle"] = 0
-        for i in range(1, input.Nretx+2):
-            self.statistics.trajectory_cycle_count["success with " + str(i) + " rts"] = 0
-        self.statistics.trajectory_cycle_count["failure"] = 0
-
-        self.cts = None
-
-        self.cycle_times = []
+        self.cycle_states_stacktrace = []
         self.cycle_start_time = None
         self.cycle_end_time = None
+
+        self.statistics = NodeStatistics()
+        self.idle_series_statistics = IdleSeriesStatistics()
 
         if (self.input.is_debug):
             print("# Generate node{id=", self.id, ", x =", self.position.x, ", y = ", self.position.y, ", z = ", self.position.z, "}, distance = ", self.get_distance_to_gateway())
