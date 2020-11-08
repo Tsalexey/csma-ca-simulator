@@ -1,5 +1,3 @@
-from unibo_rudn.core.simulation_type import SimulationType
-
 
 class AlohaInput:
     def __init__(self):
@@ -13,11 +11,10 @@ class AlohaInput:
         self.precision = 0.001
 
         self.sensing = False
-        self.repeats = 50
-        self.mode = SimulationType.CYCLIC
+        self.repeats = 1
 
         # self.planned_success = 25
-        self.simulation_time = 0.0002 # seconds
+        self.simulation_time = 0.001 # seconds
 
         self.Nretx = 3  # retransmission attemps, None = unlimited
         self.NN = 10 # nodes number
@@ -59,7 +56,6 @@ class AlohaInput:
 
     def print(self):
         print("Input parameters:")
-        print("     mode - ", self.mode)
         print("     sensing - ", self.sensing)
         print("     Nretx - ", self.Nretx)
         print("     NN - ", self.NN)

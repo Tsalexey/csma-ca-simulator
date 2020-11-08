@@ -1,103 +1,31 @@
 import random
 
-from unibo_rudn.core.gateway import Gateway, GatewayState
 from unibo_rudn.core.message import RTSMessage, CTSMessage
 from unibo_rudn.core.node import Node, NodeState
-from unibo_rudn.core.simulation_type import SimulationType
-
 
 class Simulation:
     def __init__(self, input):
-        # input
         self.input = input
 
-        # simulation parameters
         self.time = 0
-        self.iter_counter = 0
 
-        # gateway
-        # self.gateway = Gateway(self.input)
-
-        # nodes
         self.nodes = []
         for i in range(1, self.input.NN + 1):
             self.nodes.append(Node(i, self.input.sphere_radius, self.input))
 
     def run(self):
-        """
-        Run simulation
-        """
-
         if self.input.is_debug:
             print("\n# Simulation started\n")
 
-        while not self.is_simulation_finished():
-            if self.input.is_debug:
-                print("Time =", pow(10, 9) * self.time)
-
-            self.validate_run()
-
+        while self.time <= self.input.simulation_time:
             self.serve_nodes()
-            # self.serve_gateway()
             self.update_time()
-
             self.internal_debug()
 
         self.find_mean_node_statistic_values()
-        # self.find_gateway_statistic_values()
 
         if self.input.is_debug:
             print("\n# Simulation finished\n")
-
-    def is_simulation_finished(self):
-        self.iter_counter += 1
-        if self.input.mode == SimulationType.ABSORBING:
-            if self.input.Nretx is None:
-                for node in self.nodes:
-                    if node.state != NodeState.SUCCESS:
-                        return False
-            else:
-                for node in self.nodes:
-                    if node.state not in [NodeState.SUCCESS, NodeState.FAILURE]:
-                        return False
-            return True
-        if self.input.mode == SimulationType.CYCLIC:
-            if self.input.time_limit == True:
-                # for node in self.nodes:
-                #     if node.statistics.probability_of_success < self.input.planned_success:
-                #         return False
-                # return True
-                return self.time > self.input.simulation_time
-            else:
-                if len(self.nodes) > 1:
-                    for i in self.nodes:
-                        for j in self.nodes:
-                            if i == j:
-                                continue
-
-                            if i.cycle == 0 or j.cycle == 0:
-                                return False
-
-                            etc_i = i.statistics.cycle_time2 / i.cycle
-                            etc_j = j.statistics.cycle_time2 / j.cycle
-
-                            if etc_i == 0 or etc_j == 0:
-                                return False
-
-                            error = abs(etc_i - etc_j) / etc_i
-                            # if self.input.is_debug or self.input.is_debug_cycle_error:
-                            #     print("i=", i.id, ", j=", j.id, ", etc_i=", etc_i, ", etc_j=", etc_i, ", error", error)
-                            #     print("Error between nodes cycle time ", error, " between nodes ", i.id, " and ", j.id, "; cycles:", i.cycle)
-                            if error > self.input.precision:
-                                if self.iter_counter % 100000 == 0 and (
-                                        self.input.is_debug or self.input.is_debug_cycle_error):
-                                    print("Error between nodes cycle time ", error, " between nodes ", i.id, " and ",
-                                          j.id, "; cycles:", i.cycle)
-
-                                return False
-                    return True
-                else:
-                    return self.time > self.input.simulation_time
 
     def serve_nodes(self):
         if self.input.is_debug:
@@ -145,13 +73,9 @@ class Simulation:
             raise ValueError("Invalid state ", self.gateway.state, " for gateway")
 
     def update_time(self):
-        next_state = "None"
-
         min_node_event_time = None
 
         for node in self.nodes:
-            if self.input.mode == SimulationType.ABSORBING and node.state in [NodeState.SUCCESS, NodeState.FAILURE]:
-                continue
             if min_node_event_time is None and node.event_time is not None:
                 min_node_event_time = node.event_time
             if node.event_time is not None and node.event_time < min_node_event_time:
@@ -159,52 +83,11 @@ class Simulation:
 
         if min_node_event_time is not None:
             event_time = min_node_event_time
-            next_state = "Serve node"
         else:
             event_time = None
-            next_state = "None"
-
-        # if self.gateway.state == GatewayState.RX_RTS:
-        #     next_gw_rts = None
-        #     if len(self.gateway.received_rts_messages) > 0:
-        #         next_gw_rts = list(self.gateway.received_rts_messages.values())[0].reached_gateway_at
-        #         for id, rts in self.gateway.received_rts_messages.items():
-        #             if rts.reached_gateway_at < next_gw_rts:
-        #                 next_gw_rts = rts.reached_gateway_at
-        #
-        #     if next_gw_rts is not None and next_gw_rts < event_time:
-        #         event_time = next_gw_rts
-        #         next_state = "Serve rts on gateway"
-        #
-        # if self.gateway.event_time is not None and self.gateway.event_time < event_time:
-        #     event_time = self.gateway.event_time
-        #     next_state = "Receive data on gateway"
-
-        # if event_time is None:
-        #     raise ValueError("Error at updating time, new time is None:", event_time)
-
-        # if event_time == self.time:
-        #     raise ValueError("Error at updating time, new time equal to previous:", event_time)
-
-        # if event_time < self.time:
-        #     raise ValueError("Error at updating time, new time less than previous:", event_time)
-
-        if self.input.is_debug:
-            print()
-            print("New time: ", pow(10, 9) * event_time, ", event:", next_state)
 
         self.time = min(self.time + self.input.Tslot, event_time)
 
-    def validate_run(self):
-        has_transmiting_node = False
-        transmitting_node = None
-
-        for node in self.nodes:
-            # if has_transmiting_node and node.state == NodeState.TX_DATA:
-            #     raise ValueError('Multiples transmitting nodes found:', node.id, ' and ', transmitting_node.id)
-            if node.state == NodeState.TX_DATA:
-                has_transmiting_node = True
-                transmitting_node = node
 
     def serve_node_idle(self, node):
         """
@@ -696,16 +579,8 @@ class Simulation:
         node.cycle_start_time = None
         node.cycle_end_time = None
 
-        if self.input.mode == SimulationType.ABSORBING:
-            node.state = NodeState.FAILURE
-            node.event_time = None
-        if self.input.mode == SimulationType.CYCLIC:
-            node.state = NodeState.IDLE
-            node.event_time = self.time
-
-        if self.input.mode not in list(map(lambda c: c, SimulationType)):
-            raise ValueError("Unsupported simulation mode:", self.input.mode)
-
+        node.state = NodeState.IDLE
+        node.event_time = self.time
 
     def serve_node_success(self, node):
         """
@@ -728,16 +603,8 @@ class Simulation:
         node.cycle_start_time = None
         node.cycle_end_time = None
 
-        if self.input.mode == SimulationType.ABSORBING:
-            node.state = NodeState.SUCCESS
-            node.event_time = None
-        if self.input.mode == SimulationType.CYCLIC:
-            node.state = NodeState.IDLE
-            node.event_time = self.time
-
-        if self.input.mode not in list(map(lambda c: c, SimulationType)):
-            raise ValueError("Unsupported simulation mode:", self.input.mode)
-
+        node.state = NodeState.IDLE
+        node.event_time = self.time
 
     def serve_gateway_tx_rts(self):
         """
@@ -1282,15 +1149,6 @@ class Simulation:
                                                                                                                             1 / (
                                                                                                                             self.input.Nretx + 1))))) != 0 else None
 
-        print("")
-
-        print("Gateway:")
-        print("     received rts:", self.gateway.statistics.received_rts)
-        print("     blocked rts:", self.gateway.statistics.blocked_rts)
-        print("     not blocked rts:", self.gateway.statistics.not_blocked_rts)
-        print("     ignored rts:", self.gateway.statistics.ignored_rts)
-        print("     Blocking probability by call:", self.gateway.statistics.probability_of_collision)
-        print("     Blocking probability by time:", self.gateway.statistics.probability_of_collision_by_time)
         print("")
 
         if self.input.is_debug_node_info:

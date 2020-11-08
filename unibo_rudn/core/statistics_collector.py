@@ -66,8 +66,6 @@ class StatisticCollector:
         start_time = time.time()
 
         for i in range(1, self.input.NN + 1):
-            # if not (i == 1 or i % 10 == 0):
-            #     continue
 
             t1 = time.time()
             print("Simulation run for ", i, " Nodes, radius", self.input.sphere_radius, ", repeats =", self.input.repeats)
@@ -77,8 +75,6 @@ class StatisticCollector:
             probability_of_rts_collision = 0.0
             probability_of_failure = 0.0
             probability_of_success = 0.0
-            probability_of_collision = 0.0
-            probability_of_collision_by_time = 0.0
             probability_of_wait = 0.0
 
             cycle_time = 0.0
@@ -94,11 +90,6 @@ class StatisticCollector:
             time_between_tx = 0.0
             not_tx_rx_time = 0.0
             channel_busy_time = 0.0
-
-            received_rts = 0.0
-            blocked_rts = 0.0
-            not_blocked_rts = 0.0
-            ignored_rts = 0.0
 
             simulation_time = 0.0
 
@@ -198,13 +189,6 @@ class StatisticCollector:
                 total_data_time /= len(simulation.nodes)
                 total_wait_time /= len(simulation.nodes)
 
-                # received_rts += simulation.gateway.statistics.received_rts
-                # blocked_rts += simulation.gateway.statistics.blocked_rts
-                # not_blocked_rts += simulation.gateway.statistics.not_blocked_rts
-                # ignored_rts += simulation.gateway.statistics.ignored_rts
-                # probability_of_collision += simulation.gateway.statistics.probability_of_collision
-                # probability_of_collision_by_time += simulation.gateway.statistics.probability_of_collision_by_time
-
             total_cycle_count = total_cycle_count / self.input.repeats
             probability_of_rts_success = probability_of_rts_success / self.input.repeats
             probability_of_rts_collision = probability_of_rts_collision / self.input.repeats
@@ -223,14 +207,6 @@ class StatisticCollector:
             data_time = data_time / self.input.repeats
             wait_time = wait_time / self.input.repeats
             channel_busy_time = channel_busy_time / self.input.repeats
-
-
-            # received_rts = received_rts / self.input.repeats
-            # blocked_rts = blocked_rts / self.input.repeats
-            # not_blocked_rts = not_blocked_rts / self.input.repeats
-            # ignored_rts = ignored_rts / self.input.repeats
-            # probability_of_collision_by_time = probability_of_collision_by_time / self.input.repeats
-            # probability_of_collision = probability_of_collision / self.input.repeats
 
             simulation_time /= self.input.repeats
 
@@ -294,12 +270,6 @@ class StatisticCollector:
                 channel_busy_time / cycle_time,
                 channel_busy_time / cycle_time2,
 
-                # received_rts,
-                # blocked_rts,
-                # not_blocked_rts,
-                # ignored_rts,
-                # probability_of_collision,
-                # probability_of_wait
             ]
 
             t2 = time.time()
@@ -309,7 +279,6 @@ class StatisticCollector:
         print("Executed in %s seconds" % (end_time - start_time))
 
     def debug(self):
-
         for i in self.detailed_statistics.keys():
             print("Nodes = ", i)
             for index, description in self.detailed_statistics:

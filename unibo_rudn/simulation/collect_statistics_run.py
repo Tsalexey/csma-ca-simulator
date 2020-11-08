@@ -20,12 +20,11 @@ def output(input, file_name, statistics, statistics_description):
     filename = "../results/" \
                + file_name \
                + "_pa[" + str(input.p_a) + "]" \
-               + "_mode[" + input.mode.value + "]" \
                + "_sensing[" + str(input.sensing) + "]" \
                + "_nodes[" + str(1) + "-" + str(input.NN) + "]" \
                + "_radius[" + str(input.sphere_radius) + "]" \
                + "_retry[" + str(input.Nretx) + "]" \
-               + "_time[" + str(input.simulation_time) + "].dat"
+               + "_time[" + str(input.simulation_time) + "].csv"
 
     kwargs = {'newline': ''}
     mode = 'w'

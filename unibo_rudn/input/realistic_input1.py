@@ -1,5 +1,3 @@
-from unibo_rudn.core.simulation_type import SimulationType
-
 
 class RealisticInput1:
     def __init__(self):
@@ -14,7 +12,6 @@ class RealisticInput1:
 
         self.sensing = True
         self.repeats = 50
-        self.mode = SimulationType.CYCLIC
 
         # self.planned_success = 25
         # 0.004 - apr. 6 hours
@@ -60,7 +57,6 @@ class RealisticInput1:
 
     def print(self):
         print("Input parameters:")
-        print("     mode - ", self.mode)
         print("     sensing - ", self.sensing)
         print("     Nretx - ", self.Nretx)
         print("     NN - ", self.NN)

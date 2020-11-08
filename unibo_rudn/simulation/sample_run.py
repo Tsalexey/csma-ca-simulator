@@ -10,10 +10,6 @@ from unibo_rudn.input.realistic_input1 import RealisticInput1
 def main():
     data = RealisticInput1()
 
-    # collector = StatisticCollector(data)
-    # collector.run()
-    # collector.debug()
-
     start_time = time.time()
 
     sim = Simulation(data)
