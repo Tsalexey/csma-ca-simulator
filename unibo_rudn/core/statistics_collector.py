@@ -1,7 +1,12 @@
+import csv
 import time
+from enum import Enum
 
 from unibo_rudn.core.simulation import Simulation
 
+class StatisticsType(Enum):
+    statistics = "statistics"
+    detailed_statistics = "detailed_statistics"
 
 class StatisticCollector:
     def __init__(self, input):
@@ -277,6 +282,40 @@ class StatisticCollector:
 
         end_time = time.time()
         print("Executed in %s seconds" % (end_time - start_time))
+
+    def output(self, input, file_name, statistics_type):
+        if not StatisticsType.__contains__(statistics_type):
+            raise ValueError("Please provide valid statistics type: %s", StatisticsType.value )
+
+        statistics_description = None
+        statistics = None
+
+        if statistics_type == StatisticsType.statistics:
+            statistics_description = self.statistics_description
+            statistics = self.statistics
+        else:
+            statistics_description = self.detailed_statistics_description
+            statistics = self.detailed_statistics
+
+        filename = input.generate_output_filename(file_name + "_" + statistics_type._name_)
+        kwargs = {'newline': ''}
+        mode = 'w'
+
+        with open(filename, mode, **kwargs) as fp:
+            writer = csv.writer(fp, delimiter=';')
+
+            description = []
+            for x in statistics_description.values():
+                description.append(x)
+
+            print(description)
+            writer.writerow(description)
+
+            for keys, values in statistics.items():
+                print(values)
+                writer.writerow(values)
+
+        print()
 
     def debug(self):
         for i in self.detailed_statistics.keys():
