@@ -6,9 +6,7 @@ from unibo_rudn.core.node import Node, NodeState
 class Simulation:
     def __init__(self, input):
         self.input = input
-
         self.time = 0
-
         self.nodes = []
         for i in range(1, self.input.NN + 1):
             self.nodes.append(Node(i, self.input.sphere_radius, self.input))
@@ -18,46 +16,37 @@ class Simulation:
             print("\n# Simulation started\n")
 
         while self.time <= self.input.simulation_time:
-            self.serve_nodes()
+            for node in self.nodes:
+                if node.event_time == self.time:
+                    if node.state == NodeState.IDLE:
+                        self.collect_node_cycles_statistics(node)
+                        self.serve_node_idle(node)
+                    elif node.state == NodeState.BO:
+                        self.serve_node_backoff(node)
+                    elif node.state == NodeState.TX_RTS:
+                        self.serve_node_tx_rts(node)
+                    elif node.state == NodeState.OUT:
+                        self.serve_node_out(node)
+                    elif node.state == NodeState.RX_CTS:
+                        self.serve_node_rx_cts(node)
+                    elif node.state == NodeState.WAIT:
+                        self.serve_node_wait(node)
+                    elif node.state == NodeState.TX_DATA:
+                        self.serve_node_tx_data(node)
+
+                    if node.state == NodeState.SUCCESS:
+                        self.serve_node_success(node)
+                    if node.state == NodeState.FAILURE:
+                        self.serve_node_failure(node)
+                else:
+                    if node.state == NodeState.TX_RTS:
+                        node.has_collision = self.check_collisions(node)
             self.update_time()
-            self.internal_debug()
 
         self.find_mean_node_statistic_values()
 
         if self.input.is_debug:
             print("\n# Simulation finished\n")
-
-    def serve_nodes(self):
-        if self.input.is_debug:
-            for node in self.nodes:
-                print("   Node", node.id, ", next event at", pow(10, 9) * node.event_time)
-
-        for node in self.nodes:
-            if node.event_time == self.time:
-                if node.state == NodeState.IDLE:
-                    self.serve_node_idle(node)
-                elif node.state == NodeState.BO:
-                    self.serve_node_backoff(node)
-                elif node.state == NodeState.TX_RTS:
-                    self.serve_node_tx_rts(node)
-                elif node.state == NodeState.OUT:
-                    self.serve_node_out(node)
-                elif node.state == NodeState.RX_CTS:
-                    self.serve_node_rx_cts(node)
-                elif node.state == NodeState.WAIT:
-                    self.serve_node_wait(node)
-                elif node.state == NodeState.TX_DATA:
-                    self.serve_node_tx_data(node)
-
-                if node.state == NodeState.SUCCESS:
-                    self.serve_node_success(node)
-                if node.state == NodeState.FAILURE:
-                    self.serve_node_failure(node)
-            else:
-                if node.state == NodeState.TX_RTS:
-                    node.has_collision = self.check_collisions(node)
-            if node.state not in list(map(lambda c: c, NodeState)):
-                raise ValueError("Invalid state ", node.state, " for node", node.id)
 
     def check_collisions(self, node):
         for another_node in self.nodes:
@@ -65,37 +54,18 @@ class Simulation:
                 return True
         return False
 
-    def serve_gateway(self):
-        self.serve_gateway_tx_rts()
-        self.serve_gateway_rx_data()
-
-        if self.gateway.state not in list(map(lambda c: c, GatewayState)):
-            raise ValueError("Invalid state ", self.gateway.state, " for gateway")
-
     def update_time(self):
-        min_node_event_time = None
+        event_time = None
 
         for node in self.nodes:
-            if min_node_event_time is None and node.event_time is not None:
-                min_node_event_time = node.event_time
-            if node.event_time is not None and node.event_time < min_node_event_time:
-                min_node_event_time = node.event_time
-
-        if min_node_event_time is not None:
-            event_time = min_node_event_time
-        else:
-            event_time = None
+            if event_time is None and node.event_time is not None:
+                event_time = node.event_time
+            if node.event_time is not None and node.event_time < event_time:
+                event_time = node.event_time
 
         self.time = min(self.time + self.input.Tslot, event_time)
 
-
-    def serve_node_idle(self, node):
-        """
-            Check if node has RTS to transmit.
-            If so, init transmission process
-            Otherwise stay idle for some time
-        """
-
+    def collect_node_cycles_statistics(self, node):
         temp = node.cycle_times
 
         s = 0.0
@@ -187,12 +157,7 @@ class Simulation:
 
         node.statistics.cycle_time2 += s
 
-        if not node.cycle_times:
-            if self.input.is_debug or self.input.is_debug_cycle_error:
-                print("Note, cycle is empty:", node.cycle_times)
-                print("It is ok if this occurs at the start, otherwise this is strange")
-                print()
-        else:
+        if node.cycle_times:
             if len(node.cycle_times) == 1:
                 if has_idle:
                     node.statistics.trajectory_times["idle"] += s
@@ -213,7 +178,6 @@ class Simulation:
                 if finished_in_success and finished_in_failure:
                     raise ValueError('Incorrect cycle. Cycle cannot contain success and failure state:',
                                      node.cycle_times)
-                """node.cycle += 1"""
 
                 node.statistics.total_transmitted_rts_messages += sent_rts_count
 
@@ -261,13 +225,10 @@ class Simulation:
                           f'{(value["end"] - value["start"]) * pow(10, 9) :.4f}', "ns")
             print()
 
-        if self.input.is_debug:
-            print("     Node", node.id, ":", node.state.value, ", cycle ", node.cycle, ", attempt ", node.attempt,
-                  ", | GW state: ", self.gateway.state)
-
         if node.cycle_start_time is None:
             node.cycle_start_time = self.time
 
+    def serve_node_idle(self, node):
         if random.random() < node.input.p_a:
 
             node.statistics.pacchTx += 1
@@ -282,13 +243,6 @@ class Simulation:
 
             node.event_time = node.event_time + self.generate_backoff_time(node)
             node.cycle_times.append({"backoff": {"start": idle_end_time, "end": node.event_time}})
-
-            if self.input.is_debug:
-                print("     Node", node.id, " goes to BACKOFF until", pow(10, 9) * node.event_time)
-
-            if self.input.is_debug:
-                print("             Node", node.id, " cycle states: ")
-                self.debug_node_cycle_times(node)
         else:
             node.state = NodeState.IDLE
             node.event_time = self.time + self.input.Tidle
@@ -301,23 +255,9 @@ class Simulation:
                 # this is first closed idle cycle in the serie
                 node.idle_series_statistics.is_prev_cycled_closed_idle = True
                 node.idle_series_statistics.start_time = self.time
-
-            if self.input.is_debug:
-                print("     Node", node.id, " keep staying IDLE")
-
             node.cycle_times.append({"idle": {"start": self.time, "end": node.event_time}})
-            if self.input.is_debug:
-                print("             Node", node.id, " cycle states: ")
-                self.debug_node_cycle_times(node)
 
     def serve_node_backoff(self, node):
-        """
-            After waiting back off window go to RTS transmission
-        """
-        if self.input.is_debug:
-            print("     Node", node.id, ":", node.state.value, ", cycle ", node.cycle, ", attempt ", node.attempt,
-                  ", | GW state: ", self.gateway.state)
-
         node.state = NodeState.TX_RTS
         node.event_time = self.time + self.input.Trts
         node.has_collision = False
@@ -331,27 +271,9 @@ class Simulation:
 
         node.rts_message = rts_msg
 
-        # self.gateway.received_rts_messages[rts_msg.id] = rts_msg
-        # self.gateway.statistics.received_rts += 1
-
-        if self.input.is_debug:
-            print("     Node", node.id, " goes to TX RTS until", pow(10, 9) * node.event_time)
-            print("     Node", node.id, "sent RTS, RTS arrive to gateway at", pow(10, 9) * rts_msg.reached_gateway_at)
-
         node.cycle_times.append({"rts": {"start": self.time, "end": node.event_time}})
-        if self.input.is_debug:
-            print("             Node", node.id, " cycle states: ")
-            self.debug_node_cycle_times(node)
-
 
     def serve_node_tx_rts(self, node):
-        """
-            Transmit RTS to gateway
-        """
-        if self.input.is_debug:
-            print("     Node", node.id, ":", node.state.value, ", cycle ", node.cycle, ", attempt ", node.attempt,
-                  ", | GW state: ", self.gateway.state)
-
         if node.has_collision == False:
             for another_node in self.nodes:
                 if another_node.id == node.id or (self.input.sensing == True and another_node.state == NodeState.BO):
@@ -365,130 +287,44 @@ class Simulation:
                     another_node.state = NodeState.RX_CTS
                     another_node.event_time = self.time + self.input.Tcts
 
-                    if self.input.is_debug:
-                        print("     CTS sent to node", another_node.id, " and will reach it at",
-                              pow(10, 9) * cts_message.reached_node_at)
-
                     another_node.cycle_times.append({"cts": {"start": self.time, "end": another_node.event_time}})
-
-                    if self.input.is_debug:
-                        print("             Node", node.id, " cycle states: ")
-                        self.debug_node_cycle_times(node)
-
         else:
             node.state = NodeState.OUT
             node.event_time = self.time + self.input.Tout
             node.has_collision = False
             node.rts_message = None
-
-            if self.input.is_debug:
-                print("     Node", node.id, "goes to OUT until", pow(10, 9) * node.event_time)
-
             node.cycle_times.append({"out": {"start": self.time, "end": node.event_time}})
-            if self.input.is_debug:
-                print("             Node", node.id, " cycle states: ")
-                self.debug_node_cycle_times(node)
-
 
     def serve_node_out(self, node):
-        """
-            No CTS were received.
-            Go to the next attempt if attempts limit wasn't reached
-            Go to failure state if attempt limit was reached
-        """
-        if self.input.is_debug:
-            print("     Node", node.id, ":", node.state.value, ", cycle ", node.cycle, ", attempt ", node.attempt,
-                  ", | GW state: ", self.gateway.state)
-
         node.statistics.pacchColl += 1
 
         if self.input.Nretx is None:
             node.state = NodeState.BO
             node.attempt += 1
             node.event_time = self.time + self.generate_backoff_time(node)
-
-            if self.input.is_debug:
-                print("     Node", node.id, " goes to BACKOFF #", node.attempt, "until", pow(10, 9) * node.event_time)
-
             node.cycle_times.append({"backoff": {"start": self.time, "end": node.event_time}})
-            if self.input.is_debug:
-                print("             Node", node.id, " cycle states: ")
-                self.debug_node_cycle_times(node)
         else:
             if node.attempt == self.input.Nretx + 1:
                 node.state = NodeState.FAILURE
                 node.event_time = self.time
-
-                if self.input.is_debug:
-                    print("     Node", node.id, " goes to FAILURE in ", node.attempt, "attempt")
-
                 node.cycle_times.append({"failure": {"start": self.time, "end": node.event_time}})
-                if self.input.is_debug:
-                    print("             Node", node.id, " cycle states: ")
-                    self.debug_node_cycle_times(node)
             else:
                 node.state = NodeState.BO
                 node.attempt += 1
                 node.event_time = self.time + self.generate_backoff_time(node)
-
-                if self.input.is_debug:
-                    print("     Node", node.id, " goes to BACKOFF #", node.attempt, "until",
-                          pow(10, 9) * node.event_time)
-
-                node.cycle_times.append(
-                    {"backoff": {"start": self.time, "end": node.event_time}})
-                if self.input.is_debug:
-                    print("             Node", node.id, " cycle states: ")
-                    self.debug_node_cycle_times(node)
-
+                node.cycle_times.append({"backoff": {"start": self.time, "end": node.event_time}})
 
     def serve_node_rx_cts(self, node):
-        """
-            If node receive CTS for other node, wait until end of transmission
-            Else transmit data
-        """
-        if self.input.is_debug:
-            print("     Node", node.id, ":", node.state.value, ", cycle ", node.cycle, ", attempt ", node.attempt,
-                  ", | GW state: ", self.gateway.state)
-
         if node.cts.node_id != node.id:
-            # for n, i in enumerate(reversed(node.cycle_times)):
-            #     if i.keys().__contains__("out") or i.keys().__contains__("backoff"):
-            #         if i.keys().__contains__("out"):
-            #             node.cycle_times[len(node.cycle_times) - n - 1]["out"][
-            #                 "end"] = node.cts.reached_node_at - node.cts.transmission_time
-            #             break
-            #         elif i.keys().__contains__("backoff"):
-            #             node.cycle_times[len(node.cycle_times) - n - 1]["backoff"][
-            #                 "end"] = node.cts.reached_node_at - node.cts.transmission_time
-            #             break
-
             node.state = NodeState.WAIT
-            # for discrete case: self.time + 1.0
-            # node.event_time = self.time + 1.0
             node.event_time = self.time + self.input.Twait
-
-            if self.input.is_debug:
-                print("     Node", node.id, " goes to WAIT because cts from ", node.cts.node_id, "until",
-                      pow(10, 9) * node.event_time)
             node.cts = None
             node.rts_message = None
             node.has_collision = False
-
             node.cycle_times.append({"wait": {"start": self.time, "end": node.event_time}})
-            if self.input.is_debug:
-                print("             Node", node.id, " cycle states: ")
-                self.debug_node_cycle_times(node)
         else:
-            # for n, i in enumerate(reversed(node.cycle_times)):
-            #     if i.keys().__contains__("out"):
-            #         node.cycle_times.remove(i)
-            #         break
-
             node.cts = None
             node.state = NodeState.TX_DATA
-            # for discrete case: self.time + 1.0
-            # node.event_time = self.time + 1.0
             node.event_time = self.time + self.input.Tdata + node.get_propagation_time()
             node.cycle_times.append({"data": {"start": self.time, "end": node.event_time}})
 
@@ -497,50 +333,18 @@ class Simulation:
             node.event_time = node.event_time + self.input.Tack + node.get_propagation_time()
             node.cycle_times.append({"ack": {"start": ack_event_time, "end": node.event_time}})
 
-            # self.gateway.state = GatewayState.RX_DATA
-            # for discrete case: self.gateway.event_time = self.time + 1.0
-            # self.gateway.event_time = self.time + 1.0
-            # self.gateway.event_time = self.time \
-            #                           + self.input.Tdata \
-            #                           + node.get_propagation_time() \
-            #                           + self.input.Tack
-
-            if self.input.is_debug:
-                print("     Node", node.id, " goes to TX DATA until", pow(10, 9) * node.event_time)
-                print("     Gateway goes to RX DATA until", pow(10, 9) * self.gateway.event_time)
-
-            if self.input.is_debug:
-                print("             Node", node.id, " cycle states: ")
-                self.debug_node_cycle_times(node)
-
-
     def serve_node_wait(self, node):
-        if self.input.is_debug:
-            print("     Node", node.id, ":", node.state.value, ", cycle ", node.cycle, ", attempt ", node.attempt,
-                  ", | GW state: ", self.gateway.state)
-
         node.statistics.probability_of_wait += 1
         node.state = NodeState.BO
         node.event_time = self.time + self.generate_backoff_time(node)
-
-        if self.input.is_debug:
-            print("     Node", node.id, " goes to BACKOFF #", node.attempt, "until", pow(10, 9) * node.event_time)
-
         node.cycle_times.append({"backoff": {"start": self.time, "end": node.event_time}})
-        if self.input.is_debug:
-            print("             Node", node.id, " cycle states: ")
-            self.debug_node_cycle_times(node)
-
 
     def serve_node_tx_data(self, node):
-        if self.input.is_debug:
-            print("     Node", node.id, ":", node.state.value, ", cycle ", node.cycle, ", attempt ", node.attempt,
-                  ", | GW state: ", self.gateway.state)
-
         data_tx_nodes_count = 0.0
         for n in self.nodes:
             if n.state == NodeState.TX_DATA:
                 data_tx_nodes_count += 1
+
         node.statistics.data_transmissions_count += 1
         node.statistics.parallel_transmitting_nodes += data_tx_nodes_count
 
@@ -549,24 +353,9 @@ class Simulation:
         node.state = NodeState.SUCCESS
         node.event_time = self.time
 
-        if self.input.is_debug:
-            print("     Node", node.id, " goes to SUCCESS in ", node.attempt, "attempt")
-
         node.cycle_times.append({"success": {"start": self.time, "end": node.event_time}})
-        if self.input.is_debug:
-            print("             Node", node.id, " cycle states: ")
-            self.debug_node_cycle_times(node)
-
 
     def serve_node_failure(self, node):
-        """
-            Terminate node activity for Absorbing mode
-            Go to the next cycle for Cyclic mode
-        """
-        if self.input.is_debug:
-            print("     Node", node.id, ":", node.state.value, ", cycle ", node.cycle, ", attempt ", node.attempt,
-                  ", | GW state: ", self.gateway.state)
-
         node.cycle_end_time = self.time
 
         node.statistics.probability_of_failure += 1
@@ -583,14 +372,6 @@ class Simulation:
         node.event_time = self.time
 
     def serve_node_success(self, node):
-        """
-            Terminate node activity for Absorbing mode
-            Go to the next cycle for Cyclic mode
-        """
-        if self.input.is_debug:
-            print("     Node", node.id, ":", node.state.value, ", cycle ", node.cycle, ", attempt ", node.attempt,
-                  ", | GW state: ", self.gateway.state)
-
         node.cycle_end_time = self.time
 
         node.statistics.probability_of_success += 1
@@ -606,133 +387,8 @@ class Simulation:
         node.state = NodeState.IDLE
         node.event_time = self.time
 
-    def serve_gateway_tx_rts(self):
-        """
-            Gateway listens channel for arriving RTS.
-            If RTS arrive at current moment, check collisions
-                1) In case of collision drop collided RTS
-                2) In case of no collisions:
-                    a) for sensing case send CTS for all nodes
-                    b) for no sensing case send CTS only to single node
-        """
-        if self.gateway.state == GatewayState.RX_RTS:
-            if self.input.is_debug:
-                print("     Gateway", self.gateway.state, ", event time:", pow(10,
-                                                                               9) * self.gateway.event_time if self.gateway.event_time is not None else self.gateway.event_time)
-
-            already_received_rts = []
-
-            for id, rts in self.gateway.received_rts_messages.items():
-                if rts.reached_gateway_at == self.time:
-                    if self.input.is_debug:
-                        print("     RTS from Node", rts.node_id, "reached gateway at", pow(10, 9) * rts.reached_gateway_at)
-
-                    already_received_rts.append(rts.id)
-                    # check for collisions
-
-                    collision_rts_list = []
-                    collision_rts_ids = []
-                    collision_ids = []
-
-                    collision_start_time = rts.reached_gateway_at - rts.propagation_time
-                    collision_end_time = rts.reached_gateway_at
-
-                    for other_id, other_rts in self.gateway.received_rts_messages.items():
-                        if rts.id != other_rts.id and rts.reached_gateway_at >= (
-                                other_rts.reached_gateway_at - other_rts.transmission_time):
-                            if other_rts.id not in already_received_rts and other_rts.id not in collision_rts_ids:
-                                collision_rts_list.append(other_rts)
-                                collision_rts_ids.append(other_rts.id)
-                                collision_ids.append(other_rts.id)
-
-                    if collision_rts_list:
-                        # we got collision
-                        self.gateway.statistics.collision_time += rts.transmission_time
-
-                        collision_rts_list.append(rts)
-                        collision_rts_ids.append(rts.id)
-
-                        for col in collision_rts_list:
-                            self.gateway.statistics.blocked_rts += 1
-                            already_received_rts.append(col.id)
-
-                        if self.input.is_debug:
-                            print("     There is a collision between", collision_rts_ids)
-                    else:
-                        # no collision, send CTS
-                        if self.input.is_debug:
-                            print("     There were no collisions")
-
-                        self.gateway.statistics.not_blocked_rts += 1
-
-                        for node in self.nodes:
-                            # if node sensing is off, send CTS only to target node
-                            if not self.input.sensing:
-                                if rts.node_id != node.id:
-                                    continue
-
-                            cts_message = CTSMessage(rts.node_id)
-                            cts_message.id = str(node.id) + "_" + str(self.time)
-                            cts_message.reached_node_at = self.time + self.input.Tcts + node.get_propagation_time()
-                            cts_message.transmission_time = self.input.Tcts
-                            cts_message.propagation_time = node.get_propagation_time()
-
-                            if cts_message.reached_node_at <= node.event_time \
-                                    and node.state == NodeState.OUT \
-                                    or (self.input.sensing == True and node.state == NodeState.BO):
-                                # if message arrives during back off then serve it
-                                node.state = NodeState.RX_CTS
-                                node.event_time = self.time + self.input.Tcts + node.get_propagation_time()
-                                node.cts = cts_message
-
-                                if self.input.is_debug:
-                                    print("     CTS sent to node", node.id, " and will reach it at",
-                                          pow(10, 9) * cts_message.reached_node_at)
-
-                                node.cycle_times.append({"cts": {"start": self.time, "end": node.event_time}})
-                                if self.input.is_debug:
-                                    print("             Node", node.id, " cycle states: ")
-                                    self.debug_node_cycle_times(node)
-                            # otherwise let's consider such CTS as lost
-
-            # remove served rts
-            for rts_id in already_received_rts:
-                self.gateway.received_rts_messages.pop(rts_id, None)
-
-
-    def serve_gateway_rx_data(self):
-        if self.gateway.state == GatewayState.RX_DATA and self.time == self.gateway.event_time:
-            if self.input.is_debug:
-                print("     Gateway", self.gateway.state, ", event time:", pow(10, 9) * self.gateway.event_time)
-
-            self.gateway.state = GatewayState.RX_RTS
-            self.gateway.event_time = None
-
-            received_during_data_transmission_rts = []
-
-            for id, rts in self.gateway.received_rts_messages.items():
-                if self.time > rts.reached_gateway_at:
-                    received_during_data_transmission_rts.append(rts.id)
-
-            for rts_id in received_during_data_transmission_rts:
-                self.gateway.statistics.ignored_rts += 1
-                self.gateway.received_rts_messages.pop(rts_id, None)
-
-            if self.input.is_debug:
-                print("     Gateway goes to RX RTS")
-
-
     def generate_backoff_time(self, node):
-        """
-            For discrete case use: int(numpy.random.uniform(0, node.attempt * self.input.Tbo))
-            For time durations use: numpy.random.uniform(0, node.attempt * self.input.Tbo)
-        """
-        bo = random.randrange(0, node.attempt * self.input.Tmax) * self.input.Tbo
-        # bo = numpy.random.uniform(0, node.attempt * (self.input.Tmax - 1) * self.input.Tbo)
-        # if self.input.is_debug:
-        #     print("#generate_backoff_time: node :", node.id, ", attempt:", node.attempt, ", max value:", pow(10,9) * node.attempt * self.input.Tbo, ", generated value:", pow(10,9) * bo)
-        return bo
-
+        return random.randrange(0, node.attempt * self.input.Tmax) * self.input.Tbo
 
     def find_mean_node_statistic_values(self):
         for node in self.nodes:
@@ -779,31 +435,8 @@ class Simulation:
             node.statistics.pC = node.statistics.pacchColl / (node.statistics.pacchRx + node.statistics.pacchColl)
 
 
-    def find_gateway_statistic_values(self):
-        self.gateway.statistics.received_rts += self.gateway.statistics.ignored_rts
-
-        if self.gateway.statistics.received_rts == 0:
-            self.gateway.statistics.probability_of_collision = 0.0
-        else:
-            # before we counted here also self.gateway.statistics.ignored_rts
-            self.gateway.statistics.probability_of_collision = (
-                                                                   self.gateway.statistics.blocked_rts) / self.gateway.statistics.received_rts
-
-        if self.gateway.statistics.collision_time == 0:
-            self.gateway.statistics.probability_of_collision_by_time = 0.0
-        else:
-            self.gateway.statistics.probability_of_collision_by_time = self.gateway.statistics.collision_time / self.time
-
-
-    def internal_debug(self):
-        if self.input.is_debug and not self.input.auto_continue:
-            print()
-            user_input = input("[?] Press Enter in order to continue or input 'True' to enabled auto continue mode: \n")
-            if bool(user_input) == True:
-                self.input.auto_continue = True
-
-
     def debug_node_cycle_times(self, node):
+        ''' Print current cycle states of the node '''
         for time in node.cycle_times:
             string = ""
             for state, times in time.items():
@@ -812,7 +445,6 @@ class Simulation:
                     string += str(k) + " = " + str(pow(10, 9) * v) + " ns, "
             string = string[:-2]
             print("                 ", string)
-
 
     def debug(self):
         total_cycle_count = 0.0
