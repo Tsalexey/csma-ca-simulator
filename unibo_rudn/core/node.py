@@ -55,12 +55,13 @@ class Node:
 
 class NodeState(Enum):
     IDLE = "idle"
-    BO = "backoff"
-    TX_RTS = "tx rts"
+    BACKOFF = "backoff"
+    TX_RTS = "rts"
     OUT = "out"
-    RX_CTS = "rx cts"
+    RX_CTS = "cts"
     WAIT = "wait"
-    TX_DATA = "tx data"
+    TX_DATA = "data"
+    RX_ACK = "ack"
     SUCCESS = "success"
     FAILURE = "failure"
 
