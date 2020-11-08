@@ -471,8 +471,7 @@ class Simulation:
 
         if node.has_collision == False:
             for another_node in self.nodes:
-                if another_node.id == node.id or self.input.sensing == True:
-
+                if another_node.id == node.id or (self.input.sensing == True and another_node.state == NodeState.BO):
                     cts_message = CTSMessage(node.id)
                     cts_message.id = str(node.id) + "_" + str(self.time)
                     cts_message.reached_node_at = self.time + self.input.Tcts + node.get_propagation_time()
