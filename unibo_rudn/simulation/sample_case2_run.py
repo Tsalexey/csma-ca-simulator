@@ -5,10 +5,10 @@ import time
 sys.path.append("..")
 
 from unibo_rudn.core.simulation import Simulation
-from unibo_rudn.input.realistic_input1 import RealisticInput1
+from unibo_rudn.input.case2_input import Case2Input
 
 def main():
-    data = RealisticInput1()
+    data = Case2Input()
 
     start_time = time.time()
 

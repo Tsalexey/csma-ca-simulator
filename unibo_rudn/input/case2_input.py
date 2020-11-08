@@ -1,5 +1,5 @@
 
-class RealisticInput1:
+class Case2Input:
     def __init__(self):
         self.is_debug = False
         self.auto_continue = True
