@@ -40,7 +40,11 @@ class Simulation:
                         self.serve_node_failure(node)
                 else:
                     if node.state == NodeState.TX_RTS:
-                        node.has_collision = self.check_collisions(node)
+                        has_collision = self.check_collisions(node)
+                        node.has_collision = has_collision
+                        # uncomment this in order to get collision approach #1
+                        # if not node.has_collision:
+                        #     node.has_collision = has_collision
             self.update_time()
 
         self.find_mean_node_statistic_values()
