@@ -7,7 +7,7 @@ using namespace std;
 
 #define TotScenario 100 //number of scenarios to be simulated
 #define side        30     //side of the sqaure area where nodes are located (in meters) - not used
-#define Tmax        11 //contention window size  //Nmax
+#define Tmax        12 //contention window size  //Nmax
 #define NN          10
 #define Tdata       20   //Tdata packet duration in unit of time  //maggiore uguale 3
 #define Tslot       2     //Slot duration in unit of time - Tidle - Tbeacon
