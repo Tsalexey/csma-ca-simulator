@@ -33,7 +33,7 @@ long seed = -50;  //chiave per la funzione random
 /*-----Scenario Parameters--------------------*/
 
 #define TotScenario 100//number of scenarios to be simulated
-#define TotPacch    100 //number of scenarios to be simulated
+#define TotPacch    1000 //number of scenarios to be simulated
 #define side        30     //side of the sqaure area where nodes are located (in meters) - not used
 #define ray         15     // ray della circonferenza inscritta nel cerchio  - not used
 #define W           12 //contention window size  //Nmax
@@ -41,13 +41,13 @@ long seed = -50;  //chiave per la funzione random
 #define Pt       0.001 //transmit power - not used
 #define Node     10
 #define du       1.13    //source - destionation distance in meters  - not used
-#define data     30   //data packet duration in unit of time  //maggiore uguale 3
+#define data     3   //data packet duration in unit of time  //maggiore uguale 3
 #define Tslot    3//Slot duration in unit of time - Tidle - Tbeacon
 #define Tack     3    //Slot duration in unit of time
 #define Tout     3   //Slot duration in unit of time
 #define Trts     3
 #define Tcts     3
-//#define Twait    6
+#define Twait    6
 #define backoff  3    //backoff duration in unit of time
 #define rmax     3   //max number of retransmissions   
 
@@ -89,6 +89,10 @@ int PoissonRandomNumber(double lambda, double area); //not used
 double ran2(long *idum);
 
 bool Colliso(sensore elenco[], int *vectState, int sorg, int N, FILE * fout1);
+bool Sensing(sensore elenco[], int* vectState,int N, FILE* fout1);
+//void srand(unsigned int);
+//int rand(void);
+int IntCasuale(int, int);
 
 double Ttot; //total time to be simulated per scenario for the tarsnmission of numPacch
 
@@ -101,7 +105,9 @@ double *pacchCTS;
 double *pacchRTS;
 double *pSuccess;
 double *pFailure;
-
+double *pFree;
+double *pBusy;
+double *pChannel;
 double *numCycle;
 int *vectState;
 int* delayNode;
@@ -153,13 +159,13 @@ double mean(vector<double> array) {
 int main()
 {
  FILE *fout1;                                                               //   file 
- char file_out1[200];                                                       //    di
+ char file_out1[800];                                                       //    di
  sprintf(file_out1,"Output.txt");                                      //  output
  if ((fout1=fopen(file_out1,"wt"))==NULL) 
  {printf("\nErrore nell'apertura del file <%s>\n",file_out1);exit(1);}
 
  FILE *fout2;                                                               //   file 
- char file_out2[200];                                                       //    di
+ char file_out2[800];                                                       //    di
  sprintf(file_out2,"Results_N=%d.txt",Node);                                      //  output
  if ((fout2=fopen(file_out2,"wt"))==NULL) 
  {printf("\nErrore nell'apertura del file <%s>\n",file_out2);exit(2);}
@@ -173,10 +179,17 @@ int main()
  //srand(time(NULL));
 
  area=side*side;
- Ttot=20000*Tslot;
+ Ttot=30000*Tslot;
 //Ttot = 100*Tslot;
+ //Ttot = 50 * Tslot;
+ /*averpS=0;
+ averpC = 0;
+ averpF = 0;
+ averpB = 0;
+ averpCTS = 0;
+ averpI = 0;*/
 
- fprintf(fout2, "Nodes;Average pS;Average pC;Average Etc time;Average DATA time;Percentage CTS;Average p{cycle success};Average p{cycle failure}\n");
+ fprintf(fout2, "Nodes;Average pS;Average pC;Average pIgnored;Average pFree;Average pBusy;Average Etc time;Average DATA time;Percentage CTS;Average p{cycle success};Average p{cycle failure}\n");
 
  for (int currentNodesNumber = 1; currentNodesNumber <= Node; currentNodesNumber++) {
 
@@ -210,7 +223,9 @@ int main()
 		 pacchRTS = new double[N];
 		 pSuccess = new double[N];
 		 pFailure = new double[N];
-
+		 pFree = new double[N];
+		 pBusy = new double[N];
+		 pChannel = new double[N];
 		 numCycle = new double[N];
 		 vectState = new int[N];
 		 delayNode= new int[N];
@@ -233,6 +248,10 @@ int main()
 			 pacchRTS[i] = 0;
 			 pSuccess[i] = 0;
 			 pFailure[i] = 0;
+
+			 pFree[i] = 0;
+			 pBusy[i] = 0;
+			 pChannel[i] = 0;
 
 			 numCycle[i] = 0;
 			 vectState[i] = 0;
@@ -269,24 +288,30 @@ int main()
 
 		 for (i = 0; i < N; i++)
 		 {	
-			 averpSnode = averpSnode + pacchCTS[i] / (pacchRTS[i]);
-			 //averpCnode = averpCnode + pacchColl[i] / (pacchColl[i] + pacchCTS[i]);
-			 averpCnode = averpCnode + pacchColl[i] / (pacchTXtot[i]);
+			 averpSnode = averpSnode + (pacchCTS[i] / pacchRTS[i]);
+			 averpCnode = averpCnode + (pacchColl[i] / pacchTXtot[i]);
 			
+			 averpFnode = averpFnode + pFree[i] / (pChannel[i]);
+			 averpBnode = averpBnode + pBusy[i] / (pChannel[i]);
+
 			 avertcnode = avertcnode + mean(pacchCT[i]);
 			 averrtsnode = averrtsnode + mean(pacchRTST[i]);
 			 averpCTSnode = averpCTSnode + mean(pacchCTStime[i]);
+			 //averpCTScycle = averpCTScycle + averpCTSnode / avertcnode;
 			 averpcnnode = averpcnnode + pacchNDATA[i] / pacchNCYCLES[i];
 			 averpfnnode = averpfnnode + pacchNWODATA[i] / pacchNCYCLES[i];
 
 			 //fprintf(fout2, "Pacchetti TX tot; Pacchetti Collisi; RTS; CTS; IGNORED; n FREE; n BUSY; n CHANNEL SENSED\n");
-			 //fprintf(fout2, "%f;%f;%f;%f;%f;%f;%f;%f\n", pacchTXtot[i], pacchColl[i], pacchRTS[i], pacchCTS[i], pacchCollIgnored[i], pFree[i],pBusy[i],pChannel[i]);
-			 //fprintf(fout2, "Pacchetti TX tot; Pacchetti Collisi; CTS; IGNORED;\n");
-			 //fprintf(fout2, "%f;%f;%f;%f\n", pacchTXtot[i], pacchColl[i], pacchCTS[i], pacchCollIgnored[i]);
+		     //fprintf(fout2, "%f;%f;%f;%f;%f;%f;%f;%f\n", pacchTXtot[i], pacchColl[i], pacchRTS[i], pacchCTS[i], pacchCollIgnored[i], pFree[i],pBusy[i],pChannel[i]);
+			 //fprintf(fout2, "Pacchetti TX tot; Pacchetti Collisi; CTS;RTS\n");
+		     //fprintf(fout2, "%f;%f;%f;%f\n", pacchTXtot[i], pacchColl[i], pacchCTS[i],pacchRTS[i]);
 		 }
 
 		 averpS = averpS + averpSnode / ((double)(N));
 		 averpC = averpC + averpCnode / ((double)(N));
+		 
+		 averpF = averpF + averpFnode / ((double)(N));
+		 averpB = averpB + averpBnode / ((double)(N));
 		 
 		 avertc = avertc + avertcnode / ((double)(N));
 		 averpCTScycle = averpCTScycle + averpCTSnode / ((double)(N));
@@ -305,6 +330,9 @@ int main()
 		 free(pacchRTS);
 		 free(pSuccess);
 		 free(pFailure);
+		 free(pFree);
+		 free(pBusy);
+		 free(numCycle);
 		 free(vectState);
 		 free(delayNode);
 		 
@@ -317,8 +345,7 @@ int main()
 
 	 averpS = averpS / TotScenario;
 	 averpC = averpC / TotScenario;
-	 averpI = averpI / TotScenario;
-
+	 
 	 averpF = averpF / TotScenario;
 	 averpB = averpB / TotScenario;
 
@@ -330,8 +357,8 @@ int main()
 	 //fprintf(fout2, "Average pS= %f\n", averpS);
 	 //fprintf(fout2, "Average pC= %f\n", averpC);
 
-	 fprintf(fout2, "%d;%f;%f;%f;%f;%f;%f;%f\n", currentNodesNumber, averpS, averpC,avertc, averrts,averpCTS, averpcn, averpfn);
-	 
+	 fprintf(fout2, "%d;%f;%f;%f;%f;%f;%f;%f;%f;%f;%f\n", currentNodesNumber, averpS, averpC,averpI,averpF,averpB, avertc, averrts,averpCTS, averpcn, averpfn);
+	 //cout << currentNodesNumber << " node: pSuccess= " << averpS << "; pCollsion = " << averpC << "; pFree = " << ";\n" << endl;
  }
  fclose(fout1);
  fclose(fout2);
@@ -375,6 +402,7 @@ void accesso(sensore elenco[], int N, FILE *fout1)
 { int i;
 int z = 0;
   int t = 0; //timer, simulates time passing 
+  int y = 0;
   double prob; //to compute the probability that the node transmits
 
 //  fprintf(fout1,"Inizio l'accesso \n");
@@ -401,41 +429,20 @@ int z = 0;
 					
 					if ((elenco[i].token==1)&&(prob<=g)) // se ha un pacchetto da trasmettere 
 					{
+						delay = (rand() % (W))+1; //generate a random delay between 1 and W(= Nmax=12)
 						
-						delay=rand()%(W);
-						delayNode[i] = delay;
 						elenco[i].numtx++; //increase node attempt
 						
-						if (delay==0) //il nodo tx subito l'RTS
-						{   
-							elenco[i].state=1; 
-							elenco[i].colliso=0;
-							elenco[i].token=0;
-							elenco[i].time=elenco[i].time+Trts; //resto nello stato 1 per Trts
-							
-							elenco[i].cycletime = elenco[i].cycletime + Trts;
-							elenco[i].rtstime = elenco[i].rtstime + Trts;
+						elenco[i].state=2; 
+					    elenco[i].sense = 0;
+					    delayNode[i] = delay; //save delay in a vector for that specific node
 
-							pacchRTS[i]++;  //incremento numero RTS trasmessi
-							pacchTXtot[i]++;
+						elenco[i].time = elenco[i].time + delay*backoff;
+						elenco[i].cycletime = elenco[i].cycletime + delay * backoff;
 							
-							//cout << "Node " << elenco[i].ns << " from IDLE goes directly to TX-RTS until t= " << elenco[i].time << " (attempt " << elenco[i].numtx << " )\n" << endl;
-
-						}
-						else //va in stato di backoff per delay poi TX RTS
-						{	
-						
-						    elenco[i].state=2; 
-							elenco[i].sense = 0;
-							delayNode[i] = delay;
-
-							elenco[i].time = elenco[i].time + delay*backoff;
-							elenco[i].cycletime = elenco[i].cycletime + delay * backoff;
-							
-							//cout << "Node " << elenco[i].ns << " from IDLE goes to BACKOFF with delay " << delay << " until t= " << elenco[i].time << " (attempt: " << elenco[i].numtx << " )\n" << endl;
-						}
+						//cout << "Node " << elenco[i].ns << " from IDLE goes to BACKOFF with delay " << delay << " until t= " << elenco[i].time << " (attempt: " << elenco[i].numtx << " )\n" << endl;
 					}
-					else //resta in idle
+					else //remain in idle
 					{	
 						fprintf(fout1,"Il nodo %d attende uno slot per vedere se arriva un pacchetto\n",elenco[i].ns);
 					    elenco[i].time=elenco[i].time+Tslot; 
@@ -460,8 +467,8 @@ int z = 0;
 							elenco[i].cycletime = elenco[i].cycletime + Tcts;
 							elenco[i].ctstime = elenco[i].ctstime + Tcts;
 							pacchCTStime[i].push_back(elenco[i].ctstime);
-							
-							pacchCTS[i]++; //mando un CTS al nodo che ha avuto successo in RTS_TX
+							pSuccess[i]++;
+							pacchCTS[i]++; //GW sends a CTS to the node that had success
 
 							//cout << "Node " << elenco[i].ns << " does not collide and enters in RX-CTS until t= " << elenco[i].time << "(attempt " << elenco[i].numtx << " )\n" << endl;
 							//cout << "Value of paccCTS[" << elenco[i].ns << "] = " << pacchCTS[i] << "\n" << endl;
@@ -472,7 +479,7 @@ int z = 0;
 						elenco[i].state = 3; //the node enters in Tout state  
 						elenco[i].time = elenco[i].time + Tout;
 						elenco[i].cycletime = elenco[i].cycletime + Tout;
-						
+						pFailure[i]++;
 						pacchColl[i]++; //RTS NOT IGNORED
 						//cout << "Node " << elenco[i].ns << " collides and goes to OUT until t= " << elenco[i].time << " (attempt " << elenco[i].numtx << " )\n" << endl;
 						//cout << "Value of paccColl[" << elenco[i].ns << "] = " << pacchColl[i] << "\n" << endl;
@@ -484,11 +491,14 @@ int z = 0;
 						
 				case 2:  //Backoff                                         
 				{	
+					
+						elenco[i].sense = Sensing(elenco, vectState, N, fout1);
+						
+						if (elenco[i].sense == 0) {
 							
-							elenco[i].state = 1;  //entra in trasmissione RTS
+							elenco[i].state = 1;  // RTS transmission
 							
 							elenco[i].colliso = 0;
-							//elenco[i].sense = 0;
 							elenco[i].token = 0;
 
 							elenco[i].time = elenco[i].time + Trts;
@@ -496,54 +506,48 @@ int z = 0;
 							elenco[i].rtstime = elenco[i].rtstime + Trts;
 							
 							pacchTXtot[i]++; //accounts also for retransmissions
-							
+							pFree[i]++; //channel free
+							pChannel[i]++;
+
 							//cout << "Node " << elenco[i].ns << " senses channel FREE and goes to TX-RTS until t= "<< elenco[i].time<<" (attempt " << elenco[i].numtx << " )\n" << endl;
 
-							if (elenco[i].numtx == 1) //se è la prima trasmissione del pacchetto, incremento il numero di pacchetti trasmessi
+							if (elenco[i].numtx == 1) // first attempt of the node -> I increase paccRTS[i], we don't account for Retransmissions
 							{
 								pacchRTS[i]++;
+								//cout << "Value of paccRTS[" << elenco[i].ns << "] = " << pacchRTS[i] << "\n" << endl;
 								
 							}
+							//cout << "Value of paccTXtot[" << elenco[i].ns << "] = " << pacchTXtot[i] << "\n" << endl;
+						}
+						else {
+							
+							pBusy[i]++;
+							pChannel[i]++;
+							elenco[i].state = 6; //wait
+							elenco[i].time = elenco[i].time + Twait;
+							elenco[i].cycletime = elenco[i].cycletime + Twait;
+							//cout << "Node " << elenco[i].ns << " senses channel BUSY and goes to WAIT until t= " << elenco[i].time << " (attempt " << elenco[i].numtx << " )\n" << endl;
+
+						}
 					
 					break;
 				}
 				case 3:  //out
 				{	
 					elenco[i].numtx++;
-
-				    if (elenco[i].numtx<=rmax+1) //il nodo può ancora ritrasmettere
+					//pFailure[i]++;
+				    if (elenco[i].numtx<=rmax+1) //node can retransmit again
 					{	
-						delay=rand()%((W*elenco[i].numtx));
-						
-						delayNode[i] = delay;
-
+						delay = (rand() % ((W * elenco[i].numtx)))+1; // delay between 1 and W *(node attempt)
 						//cout << "Node " << elenco[i].ns << " has collided, goes to OUT (attempt " << elenco[i].numtx << " ); NEW delay: " << delay << "\n" << endl;
-
-						if (delay==0) //il nodo ritx subito il pacchetto
-						{   
+						elenco[i].state=2; 
+						delayNode[i] = delay;
+						elenco[i].sense = 0;
+						elenco[i].time = elenco[i].time + delay*backoff;
+						elenco[i].cycletime = elenco[i].cycletime + delay * backoff;
 							
-							elenco[i].state=1;
-							elenco[i].colliso=0;
-							elenco[i].token=0;
-							elenco[i].time=elenco[i].time+Trts;
-							elenco[i].cycletime = elenco[i].cycletime + Trts;
-							elenco[i].rtstime = elenco[i].rtstime + Trts;
-							pacchTXtot[i]++;
-							//cout << "Node " << elenco[i].ns << " has delay 0, goes from OUT to TX-RTS until t= "<<elenco[i].time<<" (attempt " << elenco[i].numtx << " )\n" << endl;
+						//cout << "Node " << elenco[i].ns << " has delay " << delay << ", goes from OUT to backoff until t= " <<elenco[i].time <<" (attempt " << elenco[i].numtx << " )\n" << endl;
 						
-						}
-
-						else //va in stato di backoff per delay poi TX 
-						{	
-							if (elenco[i].ns==0){fprintf(fout1,"Il nodo %d entra in BO prima di ritrasmettere \n",elenco[i].ns);}
-							
-							elenco[i].state=2; 
-							elenco[i].sense = 0;
-						    elenco[i].time = elenco[i].time + delay*backoff;
-							elenco[i].cycletime = elenco[i].cycletime + delay * backoff;
-							
-							//cout << "Node " << elenco[i].ns << " has delay " << delay << ", goes from OUT to backoff until t= " <<elenco[i].time <<" (attempt " << elenco[i].numtx << " )\n" << endl;
-						}
 					}
 
 					else //il nodo ha esaurito le ritrasmissioni 
@@ -575,30 +579,26 @@ int z = 0;
 					break;
 				}
 
-				case 4:
+				case 4: //RX-CTS
 				{
 					
-					elenco[i].state = 5; //torno in idle
-					
+					elenco[i].state = 5; //go to transmission of data and reception of ack from the node
 					elenco[i].time = elenco[i].time+elenco[i].tx;
 					elenco[i].cycletime = elenco[i].cycletime + elenco[i].tx;
 					
 					//cout << "Node " << elenco[i].ns << " has received CTS and tx data until t= " << elenco[i].time << " (attempt " << elenco[i].numtx << " )\n" << endl;
 					break;
 				}
-				case 5:
+				case 5://TX-DATA e ACK
 				{
 					
-					elenco[i].state = 0; //torno in idle
+					elenco[i].state = 0; //back to idle
 					
 					elenco[i].colliso = 0;
 					elenco[i].sense = 0;
 					elenco[i].token = 1;
 					elenco[i].time = elenco[i].time + Tack + Tslot;
 					elenco[i].cycletime = elenco[i].cycletime + Tack + Tslot;
-					//pSuccess[i]++; //il nodo ha avuto successo
-					//pacchRX[i]++; //pacchetto ricevuto dal GW con successo
-					//numCycle[i]++; // termine ciclo per il nodo
 					
 					pacchCT[i].push_back(elenco[i].cycletime); //insert element at the end
 					pacchRTST[i].push_back(elenco[i].rtstime);
@@ -612,31 +612,103 @@ int z = 0;
 					//cout << "Node " << elenco[i].ns << " has tx data,receives ack and goes to idle until t= " << elenco[i].time << " (attempt " << elenco[i].numtx << " )\n" << endl;
 					break;
 				}
+				case 6: //WAIT
+				{
+					delay = (rand() % (((W+1) * elenco[i].numtx))); // delay from 0 to W*(node attempt)
 
+					if (delay == 0) { //if delay is 0 we go directly to RTS transmission
+						elenco[i].state = 1;
+						elenco[i].time = elenco[i].time + Trts;
+						//cout << "Node " << elenco[i].ns << " goes from WAIT directly to TX-RTS; attempt: "<<elenco[i].numtx<<"\n" << endl;
+						elenco[i].colliso = 0;
+						elenco[i].token = 0;
+						
+						pacchTXtot[i]++;
+						
+						if (elenco[i].numtx == 1) { //first attempt of the node
+							pacchRTS[i]++;
+							//cout << "Value of paccRTS[" << elenco[i].ns << "] = " << pacchRTS[i] << "\n" << endl;
+						}
+
+						//cout << "Value of paccTXtot[" << elenco[i].ns << "] = " << pacchTXtot[i] << "\n" << endl;
+					}
+
+					else {
+						elenco[i].state = 2; //back to backoff
+						elenco[i].sense = 0;
+						elenco[i].token = 0;
+
+						delayNode[i] = delay; // save delay in a vector for that specific node
+
+						elenco[i].time = elenco[i].time + delay * backoff;
+						elenco[i].cycletime = elenco[i].cycletime + delay * backoff;
+						//cout << "Node " << elenco[i].ns << " goes from WAIT to backoff until t = " << elenco[i].time << " and delay " << delay << " attempt: " << elenco[i].numtx << "\n" << endl;
+					}
+				}
 
 			} //chiudo lo switch
 		 } //chiude if
 		 
 		 
-		else  //sto ancora svolgendo la mia operazione di Idle o di TX-RTS o BACKOFF
+		else  //during RTS or backoff state
 		{	switch (elenco[i].state)
-			{	case 1:  //TX-RTS
+			{	/*case 1:  //TX-RTS
 				{	
 					if (elenco[i].colliso == 0) {
 						elenco[i].colliso = Colliso(elenco, vectState, elenco[i].ns, N, fout1);
 					}
 				
 					break;
+				}*/
+
+			case 2:  //backoff
+			{
+				elenco[i].sense = Sensing(elenco, vectState, N, fout1);
+				//cout << "Node " << elenco[i].ns << " during backoff senses the channel at t= "<<t<<"\n" << endl;
+				if (elenco[i].sense == 0) {
+					for (int j = 1; j <= delayNode[i]; j++) {
+						if (t == elenco[i].time - (j * backoff)) {
+							elenco[i].state = 2;
+							pFree[i]++;
+							pChannel[i]++;
+							//cout << "Node " << elenco[i].ns << " senses the channel FREE at t= "<<t<<" and continues backoff \n" << endl;
+							//cout << "pFree for node " << elenco[i].ns << "= " << pFree[i] << "\n" << endl;
+						}
+					}
 				}
+					
+				else {
+					for (int j = 1; j <= delayNode[i]; j++) {
+						if (t == elenco[i].time - (j * backoff)) {
+							elenco[i].state = 6;
+							//elenco[i].time = elenco[i].time + Twait; // aspetto di terminare backoff prima di andare in wait
+							elenco[i].time = t + Twait; //vado in wait appena sento il canale occupato
+							pBusy[i]++;
+							pChannel[i]++;
+							elenco[i].sense=0;
+							//cout << "Node " << elenco[i].ns << " senses the channel BUSY at t= "<<t<<" and goes to wait until t = " << elenco[i].time << "\n" << endl;
+							//cout << "pBusy for node " << elenco[i].ns << "= " << pBusy[i] << "\n" << endl;
+							break;
+						}
+					}
+				}
+					
+					
+
+				break;
+			}
 			} //chiude switch
 	    } //chiude else
     } //chiude for
   } //chiude for
-  if (t >= Ttot) {
-	  cout << "TEMPO t= " << t << endl;
+  if (t >= Ttot ) {
+	 // cout << "TEMPO t= " << t << endl;
 	  for (int i = 0; i < N; i++) {
 		  if (elenco[i].state == 1) {
 			  pacchTXtot[i] = pacchTXtot[i] - 1;
+			  if (elenco[i].numtx == 1) {
+				  pacchRTS[i] = pacchRTS[i] - 1;
+			  }
 		  }
 	  }
 	  
@@ -651,7 +723,7 @@ bool Colliso(sensore elenco[],int *vectState, int sorg, int N, FILE* fout1)
 	
 	for (i = 0; i < N; i++)
 	{
-		if (elenco[i].ns != sorg && vectState[i] == 1) //it is node the source we are considering and it is transmitting 
+		if (elenco[i].ns != sorg && vectState[i] == 1)
 		{
 
 				collis = 1;
@@ -659,13 +731,39 @@ bool Colliso(sensore elenco[],int *vectState, int sorg, int N, FILE* fout1)
 		}
 	}
 
-	if (collis==0) //il nodo non ha colliso
+	if (collis==0) //no collision
 	{return 0;}
 	else
 	{	//fprintf(fout1,"Pacchetto non catturato\n"); 
 			return 1;
 	}
 }
+
+bool Sensing(sensore elenco[], int* vectState, int N, FILE* fout1)
+{
+	int i;
+	bool sense = 0;
+
+	for (i = 0; i < N; i++)
+	{
+		if (vectState[i] == 4)
+		{
+			sense = 1; //c'è un nodo che ha avuto successo a trasmettere l'RTS e si trova in 4.	
+			//cout << "Node " << sorg <<" sensed channel BUSY from node "<< elenco[i].ns << endl;
+		}
+
+	}
+
+	if (sense == 0) 
+	{
+		return 0;
+	}
+	else
+	{
+		return 1;
+	}
+}
+
 
 /*-----------------generates a uniform RV between 0 and 1---------------*/
 double uniforme(void)    
@@ -740,4 +838,9 @@ int PoissonRandomNumber(double lambda, double area)
     t = t + dt;
   }
   return n;
+}
+
+int IntCasuale(int min, int max)
+{
+	return rand() % (max - min + 1) + min;
 }
