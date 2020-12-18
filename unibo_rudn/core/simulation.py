@@ -41,10 +41,10 @@ class Simulation:
                 else:
                     if node.state == NodeState.TX_RTS:
                         has_collision = self.check_collisions(node)
-                        node.has_collision = has_collision
+                        # node.has_collision = has_collision
                         # uncomment this in order to get collision approach #1
-                        # if not node.has_collision:
-                        #     node.has_collision = has_collision
+                        if not node.has_collision:
+                            node.has_collision = has_collision
             self.update_time()
 
         self.find_mean_node_statistic_values()
@@ -408,7 +408,7 @@ class Simulation:
         node.event_time = self.time
 
     def generate_backoff_time(self, node):
-        return random.randrange(0, node.attempt * self.input.Tmax) * self.input.Tbo
+        return random.randrange(1, node.attempt * self.input.Tmax) * self.input.Tbo
 
     def find_mean_node_statistic_values(self):
         for node in self.nodes:

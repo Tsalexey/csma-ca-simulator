@@ -3,17 +3,17 @@ class Case3Input:
     def __init__(self):
         self.is_debug = False
         self.auto_continue = True
-        self.is_debug_cycle_info = True
+        self.is_debug_cycle_info = False
         self.is_debug_cycle_error = False
         self.is_debug_node_info = False
 
         self.sensing = True
-        self.repeats = 1
+        self.repeats = 500
 
-        self.simulation_time = 0.000000001 # seconds
+        self.simulation_time = 0.00003 # seconds
 
         self.Nretx = 3  # retransmission attemps, None = unlimited
-        self.NN = 3 # nodes number
+        self.NN = 25 # nodes number
         self.p_a = 1.0 # probability that node has RTS message to transmit
 
         self.B = 100 * pow(10, 9) # Bandwidth
