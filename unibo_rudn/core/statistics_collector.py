@@ -301,6 +301,8 @@ class StatisticCollector:
         kwargs = {'newline': ''}
         mode = 'w'
 
+        print("Saved results to " + filename)
+
         with open(filename, mode, **kwargs) as fp:
             writer = csv.writer(fp, delimiter=';')
 

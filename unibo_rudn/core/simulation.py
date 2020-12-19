@@ -8,6 +8,7 @@ class Simulation:
         self.input = input
         self.time = 0
         self.nodes = []
+        self.node_state = {}
         for i in range(1, self.input.NN + 1):
             self.nodes.append(Node(i, self.input.sphere_radius, self.input))
 
@@ -17,29 +18,32 @@ class Simulation:
 
         while self.time <= self.input.simulation_time:
             for node in self.nodes:
+                self.node_state[node.id] = node.state
+
+            for node in self.nodes:
                 if node.event_time == self.time:
-                    if node.state == NodeState.IDLE:
+                    if self.node_state[node.id] == NodeState.IDLE:
                         self.collect_node_cycle_statistics(node)
                         self.serve_node_idle(node)
-                    elif node.state == NodeState.BACKOFF:
+                    elif self.node_state[node.id] == NodeState.BACKOFF:
                         self.serve_node_backoff(node)
-                    elif node.state == NodeState.TX_RTS:
+                    elif self.node_state[node.id] == NodeState.TX_RTS:
                         self.serve_node_tx_rts(node)
-                    elif node.state == NodeState.OUT:
+                    elif self.node_state[node.id] == NodeState.OUT:
                         self.serve_node_out(node)
-                    elif node.state == NodeState.RX_CTS:
+                    elif self.node_state[node.id] == NodeState.RX_CTS:
                         self.serve_node_rx_cts(node)
-                    elif node.state == NodeState.WAIT:
+                    elif self.node_state[node.id] == NodeState.WAIT:
                         self.serve_node_wait(node)
-                    elif node.state == NodeState.TX_DATA:
+                    elif self.node_state[node.id] == NodeState.TX_DATA:
                         self.serve_node_tx_data(node)
 
-                    if node.state == NodeState.SUCCESS:
+                    if self.node_state[node.id] == NodeState.SUCCESS:
                         self.serve_node_success(node)
-                    if node.state == NodeState.FAILURE:
+                    if self.node_state[node.id] == NodeState.FAILURE:
                         self.serve_node_failure(node)
                 else:
-                    if node.state == NodeState.TX_RTS:
+                    if self.node_state[node.id] == NodeState.TX_RTS:
                         has_collision = self.check_collisions(node)
                         # node.has_collision = has_collision
                         # uncomment this in order to get collision approach #1

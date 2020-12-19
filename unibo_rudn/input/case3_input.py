@@ -8,9 +8,9 @@ class Case3Input:
         self.is_debug_node_info = False
 
         self.sensing = True
-        self.repeats = 500
+        self.repeats = 100
 
-        self.simulation_time = 0.00003 # seconds
+        self.simulation_time = 0.000001 # seconds
 
         self.Nretx = 3  # retransmission attemps, None = unlimited
         self.NN = 25 # nodes number
