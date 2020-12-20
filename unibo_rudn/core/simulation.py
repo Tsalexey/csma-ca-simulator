@@ -58,7 +58,7 @@ class Simulation:
 
     def check_collisions(self, node):
         for another_node in self.nodes:
-            if another_node.id != node.id and another_node.state == NodeState.TX_RTS:
+            if another_node.id != node.id and self.node_state[another_node.id] == NodeState.TX_RTS and self.node_state[node.id] == NodeState.TX_RTS:
                 return True
         return False
 
@@ -300,7 +300,7 @@ class Simulation:
     def serve_node_tx_rts(self, node):
         if node.has_collision == False:
             for another_node in self.nodes:
-                if another_node.id == node.id or (self.input.sensing == True and another_node.state == NodeState.BACKOFF):
+                if another_node.id == node.id or (self.input.sensing == True and self.node_state[another_node.id] == NodeState.BACKOFF):
                     cts_message = CTSMessage(node.id)
                     cts_message.id = str(node.id) + "_" + str(self.time)
                     cts_message.reached_node_at = self.time + self.input.Tcts + node.get_propagation_time()
@@ -348,6 +348,8 @@ class Simulation:
             node.cycle_states_stacktrace.append({NodeState.WAIT._name_: {"start": self.time, "end": node.event_time}})
         else:
             node.cts_message = None
+            node.rts_message = None
+            node.has_collision = False
             node.state = NodeState.TX_DATA
             node.event_time = self.time + self.input.Tdata + node.get_propagation_time()
             node.cycle_states_stacktrace.append({NodeState.TX_DATA._name_: {"start": self.time, "end": node.event_time}})
