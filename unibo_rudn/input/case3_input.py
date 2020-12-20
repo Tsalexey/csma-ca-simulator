@@ -8,12 +8,12 @@ class Case3Input:
         self.is_debug_node_info = False
 
         self.sensing = True
-        self.repeats = 100
+        self.repeats = 50
 
-        self.simulation_time = 0.000001 # seconds
+        self.simulation_time = 0.00005 # seconds
 
         self.Nretx = 3  # retransmission attemps, None = unlimited
-        self.NN = 25 # nodes number
+        self.NN = 50 # nodes number
         self.p_a = 1.0 # probability that node has RTS message to transmit
 
         self.B = 100 * pow(10, 9) # Bandwidth
@@ -33,17 +33,16 @@ class Case3Input:
 
         # times
         # self.tau_p_max = 0 # self.sphere_radius / self.c # sec - maximal propagation time
-        self.Tslot = 1*pow(10,-9)  # (self.Lbeacon * 4) / self.rb
+        self.Tslot = pow(10, -9) # self.Lbeacon * 8) / self.rb
 
-        self.Tdata = 1*pow(10,-9) # (self.Ldata * 8) / self.rb
-        self.Tack = 1*pow(10,-9) # (self.Lack * 8) / self.rb
-        self.Trts = 1*pow(10,-9) # (self.Lrts * 8) / self.rb
-        self.Tcts = 1*pow(10,-9) # (self.Lcts * 8) / self.rb
-        self.Tbeacon = 1*pow(10,-9) # (self.Lbeacon * 8) / self.rb
-        self.Tbo = 1*pow(10,-9) # (self.Lcts * 8) / self.rb
-        self.Tdatacts = 3*pow(10,-9) # self.Tcts + self.Tdata + self.Tack
-        self.Tout = 1*pow(10,-9) # self.Tcts
-        self.Tidle = 1*pow(10,-9) # self.Trts # o be set according to the Application - it could be also zero
+        self.Tdata = pow(10, -9) # (self.Ldata * 8) / self.rb
+        self.Tack = pow(10, -9) # (self.Lack * 8) / self.rb
+        self.Trts = pow(10, -9) # (self.Lrts * 8) / self.rb
+        self.Tcts = pow(10, -9) # (self.Lcts * 8) / self.rb
+        self.Tbeacon = pow(10, -9) # (self.Lbeacon * 8) / self.rb
+        self.Tbo = pow(10, -9) # (self.Lcts * 8) / self.rb
+        self.Tout = self.Tcts
+        self.Tidle = self.Trts # o be set according to the Application - it could be also zero
         self.Twait = self.Tdata + self.Tack
         self.Tmax = 12 # parameter of the mathematical model
 
@@ -72,7 +71,6 @@ class Case3Input:
         print("     Tcts - ", self.Tcts * pow(10, 9), " ns")
         print("     Tbeacon - ", self.Tbeacon * pow(10, 9), " ns")
         print("     Tbo - ", self.Tbo * pow(10, 9), " ns")
-        print("     Tdatacts - ", self.Tdatacts * pow(10, 9), " ns")
         print("     Tout - ", self.Tout * pow(10, 9), " ns")
         print("     Tidle - ", self.Tidle * pow(10, 9), " ns")
         print("     Twait - ", self.Twait * pow(10, 9), " ns")
