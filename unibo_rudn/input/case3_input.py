@@ -8,9 +8,9 @@ class Case3Input:
         self.is_debug_node_info = False
 
         self.sensing = True
-        self.repeats = 50
+        self.repeats = 1
 
-        self.simulation_time = 0.00005 # seconds
+        self.simulation_time = 0.0001 # seconds
 
         self.Nretx = 3  # retransmission attemps, None = unlimited
         self.NN = 50 # nodes number
@@ -52,7 +52,7 @@ class Case3Input:
         return "../results/" \
                + file_name \
                + "_pa[" + str(self.p_a) + "]" \
-               + "_sensing[" + str(self.repeats) + "]" \
+               + "_sensing[" + str(self.sensing) + "]" \
                + "_nodes[" + str(1) + "-" + str(self.NN) + "]" \
                + "_radius[" + str(self.sphere_radius) + "]" \
                + "_retry[" + str(self.Nretx) + "]" \

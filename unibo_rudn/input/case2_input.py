@@ -1,3 +1,5 @@
+# not normilized nRetx = 3
+
 
 class Case2Input:
     def __init__(self):
@@ -8,12 +10,12 @@ class Case2Input:
         self.is_debug_node_info = False
 
         self.sensing = False
-        self.repeats = 1
+        self.repeats = 75
 
-        self.simulation_time = 0.0001 # seconds
+        self.simulation_time = 0.00008 # seconds
 
         self.Nretx = 3  # retransmission attemps, None = unlimited
-        self.NN = 30 # nodes number
+        self.NN = 50 # nodes number
         self.p_a = 1.0 # probability that node has RTS message to transmit
 
         self.B = 100 * pow(10, 9) # Bandwidth
@@ -33,7 +35,8 @@ class Case2Input:
 
         # times
         # self.tau_p_max = 0 # self.sphere_radius / self.c # sec - maximal propagation time
-        self.Tslot = (self.Lbeacon * 4) / self.rb
+        self.Tslot = (self.Lbeacon * 8) / self.rb / 2.0
+        # self.Tslot = pow(10, -9) / 2.0
 
         self.Tdata = (self.Ldata * 8) / self.rb
         self.Tack = (self.Lack * 8) / self.rb
@@ -41,6 +44,14 @@ class Case2Input:
         self.Tcts = (self.Lcts * 8) / self.rb
         self.Tbeacon = (self.Lbeacon * 8) / self.rb
         self.Tbo = (self.Lcts * 8) / self.rb
+
+        # self.Tdata = pow(10, -9)
+        # self.Tack = pow(10, -9)
+        # self.Trts = pow(10, -9)
+        # self.Tcts = pow(10, -9)
+        # self.Tbeacon = pow(10, -9)
+        # self.Tbo = pow(10, -9)
+
         self.Tdatacts = self.Tcts + self.Tdata + self.Tack
         self.Tout = self.Tcts
         self.Tidle = self.Trts # o be set according to the Application - it could be also zero
@@ -53,7 +64,7 @@ class Case2Input:
         return "../results/" \
                + file_name \
                + "_pa[" + str(self.p_a) + "]" \
-               + "_sensing[" + str(self.repeats) + "]" \
+               + "_sensing[" + str(self.sensing) + "]" \
                + "_nodes[" + str(1) + "-" + str(self.NN) + "]" \
                + "_radius[" + str(self.sphere_radius) + "]" \
                + "_retry[" + str(self.Nretx) + "]" \

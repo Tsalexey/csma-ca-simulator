@@ -414,7 +414,7 @@ class Simulation:
         node.event_time = self.time
 
     def generate_backoff_time(self, node):
-        return random.randrange(1, node.attempt * self.input.Tmax) * self.input.Tbo
+        return random.randrange(0, node.attempt * (self.input.Tmax)) * self.input.Tbo
 
     def find_mean_node_statistic_values(self):
         for node in self.nodes:
