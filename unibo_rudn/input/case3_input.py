@@ -8,9 +8,10 @@ class Case3Input:
         self.is_debug_node_info = False
 
         self.sensing = True
-        self.repeats = 1
+        self.refrain_from_transmit = False
+        self.repeats = 5
 
-        self.simulation_time = 0.0001 # seconds
+        self.simulation_time = 0.00000005 # seconds
 
         self.Nretx = 3  # retransmission attemps, None = unlimited
         self.NN = 50 # nodes number
@@ -44,6 +45,7 @@ class Case3Input:
         self.Tout = self.Tcts
         self.Tidle = self.Trts # o be set according to the Application - it could be also zero
         self.Twait = self.Tdata + self.Tack
+        self.Trft = self.Tdata + self.Tack
         self.Tmax = 12 # parameter of the mathematical model
 
         self.print()
@@ -53,6 +55,7 @@ class Case3Input:
                + file_name \
                + "_pa[" + str(self.p_a) + "]" \
                + "_sensing[" + str(self.sensing) + "]" \
+               + "_refrain[" + str(self.refrain_from_transmit) + "]" \
                + "_nodes[" + str(1) + "-" + str(self.NN) + "]" \
                + "_radius[" + str(self.sphere_radius) + "]" \
                + "_retry[" + str(self.Nretx) + "]" \
@@ -62,6 +65,7 @@ class Case3Input:
     def print(self):
         print("Input parameters:")
         print("     sensing - ", self.sensing)
+        print("     refrain from transmit - ", self.refrain_from_transmit)
         print("     Nretx - ", self.Nretx)
         print("     NN - ", self.NN)
         print("     p_a - ", self.p_a)
@@ -74,5 +78,6 @@ class Case3Input:
         print("     Tout - ", self.Tout * pow(10, 9), " ns")
         print("     Tidle - ", self.Tidle * pow(10, 9), " ns")
         print("     Twait - ", self.Twait * pow(10, 9), " ns")
+        print("     Trft - ", self.Trts * pow(10, 9), " ns")
         print("     Tmax - ", self.Tmax)
         print("")

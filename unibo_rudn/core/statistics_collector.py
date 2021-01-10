@@ -28,12 +28,13 @@ class StatisticCollector:
             11 : "cts_time",
             12 : "out_time",
             13 : "data_time",
-            14 : "wait_time",
-            15 : "Cycle_time",
-            16 : "time_between_tx",
-            17 : "time_w/o_tx",
-            18 : "tau",
-            19 : "tau_data"
+            14 : "refrain_time",
+            15 : "wait_time",
+            16 : "Cycle_time",
+            17 : "time_between_tx",
+            18 : "time_w/o_tx",
+            19 : "tau",
+            20 : "tau_data"
         }
 
         self.detailed_statistics_description = {
@@ -92,6 +93,7 @@ class StatisticCollector:
             out_time = 0.0
             data_time = 0.0
             wait_time = 0.0
+            refrain_time = 0.0
             time_between_tx = 0.0
             not_tx_rx_time = 0.0
             channel_busy_time = 0.0
@@ -106,6 +108,7 @@ class StatisticCollector:
             total_rts_time = 0.0
             total_cts_time = 0.0
             total_out_time = 0.0
+            total_refrain_time = 0.0
             total_data_time = 0.0
             total_wait_time = 0.0
 
@@ -129,6 +132,7 @@ class StatisticCollector:
                 temp_cts_time = 0.0
                 temp_out_time = 0.0
                 temp_data_time = 0.0
+                temp_refrain_time = 0.0
                 temp_wait_time = 0.0
                 temp_time_between_tx = 0.0
                 temp_not_tx_rx_time = 0.0
@@ -151,6 +155,7 @@ class StatisticCollector:
                     temp_cts_time += node.statistics.cts_time
                     temp_out_time += node.statistics.out_time
                     temp_data_time += node.statistics.data_time
+                    temp_refrain_time += node.statistics.refrain_time
                     temp_wait_time += node.statistics.wait_time
                     temp_time_between_tx += node.idle_series_statistics.time
                     temp_not_tx_rx_time += node.statistics.not_tx_rx_time
@@ -178,6 +183,7 @@ class StatisticCollector:
                 cts_time += temp_cts_time / len(simulation.nodes)
                 out_time += temp_out_time / len(simulation.nodes)
                 data_time += temp_data_time / len(simulation.nodes)
+                refrain_time += temp_refrain_time / len(simulation.nodes)
                 wait_time += temp_wait_time / len(simulation.nodes)
                 time_between_tx += temp_time_between_tx / len(simulation.nodes)
                 not_tx_rx_time += temp_not_tx_rx_time / len(simulation.nodes)
@@ -210,6 +216,7 @@ class StatisticCollector:
             cts_time = cts_time / self.input.repeats
             out_time = out_time / self.input.repeats
             data_time = data_time / self.input.repeats
+            refrain_time = refrain_time / self.input.repeats
             wait_time = wait_time / self.input.repeats
             channel_busy_time = channel_busy_time / self.input.repeats
 
@@ -224,6 +231,7 @@ class StatisticCollector:
             total_cts_time /= self.input.repeats
             total_out_time /= self.input.repeats
             total_data_time /= self.input.repeats
+            total_refrain_time /= self.input.repeats
             total_wait_time /= self.input.repeats
 
             self.statistics[i] = [
@@ -240,6 +248,7 @@ class StatisticCollector:
                 pow(10, 9) * cts_time,
                 pow(10, 9) * out_time,
                 pow(10, 9) * data_time,
+                pow(10, 9) * refrain_time,
                 pow(10, 9) * wait_time,
                 pow(10,9) * cycle_time,
                 pow(10, 9) * time_between_tx,

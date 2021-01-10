@@ -20,6 +20,7 @@ class Node:
         self.cts_message = None
 
         self.has_collision = False
+        self.has_refrain = False
 
         self.attempt = 0
 
@@ -28,6 +29,7 @@ class Node:
         self.rts_state = 0
         self.out_state = 0
         self.wait_state = 0
+        self.refrain_state = 0
         self.cts_state = 0
         self.data_state = 0
         self.ack_state = 0
@@ -60,6 +62,7 @@ class NodeState(Enum):
     OUT = "out"
     RX_CTS = "cts"
     WAIT = "wait"
+    REFRAIN = "refrain"
     TX_DATA = "data"
     RX_ACK = "ack"
     SUCCESS = "success"
@@ -85,6 +88,7 @@ class NodeStatistics:
         self.cts_time = 0.0
         self.out_time = 0.0
         self.data_time = 0.0
+        self.refrain_time = 0.0
         self.ack_time = 0.0
         self.wait_time = 0.0
         self.not_tx_rx_time = 0.0 # part of cycle time where there are not RTS/CTS/DATA/ACK transmission
@@ -98,6 +102,7 @@ class NodeStatistics:
         self.total_data_time = 0.0
         self.total_ack_time = 0.0
         self.total_wait_time = 0.0
+        self.total_refrain_time = 0.0
         self.total_not_tx_rx_time = 0.0
         self.total_failure_cycle_time = 0.0
         self.total_success_cycle_time = 0.0
