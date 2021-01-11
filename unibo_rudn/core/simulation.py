@@ -91,6 +91,7 @@ class Simulation:
 
         s = 0.0
         sent_rts_count = 0
+        refrained_rts_count = 0
         has_idle = False
         finished_in_success = False
         finished_in_failure = False
@@ -151,7 +152,7 @@ class Simulation:
             if NodeState.REFRAIN._name_ in e:
                 node.refrain_state +=1
                 refrain_time = e[NodeState.REFRAIN._name_]["end"] - e[NodeState.REFRAIN._name_]["start"]
-
+                refrained_rts_count += 1
                 node.statistics.refrain_time += refrain_time
                 node.statistics.total_refrain_time += refrain_time
 
@@ -221,7 +222,7 @@ class Simulation:
                         node.statistics.trajectory_cycle_count["failure"] += 1
                         
                     node.statistics.total_failure_cycle_time += s
-                    node.statistics.rts_collision_messages += sent_rts_count
+                    node.statistics.rts_collision_messages += sent_rts_count - refrained_rts_count
 
                 if finished_in_success:
                     if not node.statistics.trajectory_times.__contains__("success with " + str(sent_rts_count) + " rts"):
@@ -236,7 +237,7 @@ class Simulation:
 
                     node.statistics.total_success_cycle_time += s
                     node.statistics.rts_success_messages += 1
-                    node.statistics.rts_collision_messages += 0 if sent_rts_count == 1 else sent_rts_count - 1
+                    node.statistics.rts_collision_messages += 0 if sent_rts_count == 1 else sent_rts_count - refrained_rts_count - 1
 
                 if node.idle_series_statistics.is_prev_cycled_closed_idle:
                     # this is last closed idle cycle in the serie
