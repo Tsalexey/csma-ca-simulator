@@ -17,22 +17,22 @@ class StatisticCollector:
         self.statistics_description = {
             1 : "Nodes",
             2 : "p_a",
-            3 : "p{cycle_failure}",
-            4 : "p{cycle_success}",
-            5 : "p{rts_collision}",
-            6 : "p{rts_success}",
-            7 : "p{wait}",
-            8 : "idle_time",
-            9 : "backoff_time",
-            10 : "rts_time",
-            11 : "cts_time",
-            12 : "out_time",
-            13 : "data_time",
-            14 : "refrain_time",
-            15 : "wait_time",
-            16 : "Cycle_time",
-            17 : "time_between_tx",
-            18 : "time_w/o_tx",
+            3: "p{rts_success}",
+            4: "p{rts_collision}",
+            5: "p{cycle_success}",
+            6 : "p{cycle_failure}",
+            7 : "p{channel_free}",
+            8 : "p{channel_busy}",
+            9 : "p{wait}",
+            10 : "idle_time",
+            11 : "backoff_time",
+            12 : "rts_time",
+            13 : "cts_time",
+            14 : "out_time",
+            15 : "data_time",
+            16 : "refrain_time",
+            17 : "wait_time",
+            18 : "Cycle_time",
             19 : "tau",
             20 : "tau_data"
         }
@@ -79,6 +79,8 @@ class StatisticCollector:
             total_cycle_count = 0.0
             probability_of_rts_success = 0.0
             probability_of_rts_collision = 0.0
+            probability_of_channel_free = 0.0
+            probability_of_channel_busy = 0.0
             probability_of_failure = 0.0
             probability_of_success = 0.0
             probability_of_wait = 0.0
@@ -120,6 +122,8 @@ class StatisticCollector:
                 temp_total_cycle_count = 0.0
                 temp_probability_of_rts_success = 0.0
                 temp_probability_of_rts_collision = 0.0
+                temp_probability_of_channel_free = 0.0
+                temp_probability_of_channel_busy = 0.0
                 temp_failure_count = 0.0
                 temp_success_count = 0.0
                 temp_wait_count = 0.0
@@ -143,6 +147,8 @@ class StatisticCollector:
                     temp_total_cycle_count += node.statistics.total_cycle_count
                     temp_probability_of_rts_success += node.statistics.probability_of_rts_success
                     temp_probability_of_rts_collision += node.statistics.probability_of_rts_collision
+                    temp_probability_of_channel_free += node.statistics.probability_of_channel_free
+                    temp_probability_of_channel_busy += node.statistics.probability_of_channel_busy
                     temp_failure_count += node.statistics.probability_of_failure
                     temp_success_count += node.statistics.probability_of_success
                     temp_wait_count += node.statistics.probability_of_wait
@@ -171,6 +177,8 @@ class StatisticCollector:
                 total_cycle_count += temp_total_cycle_count / len(simulation.nodes)
                 probability_of_rts_success += temp_probability_of_rts_success / len(simulation.nodes)
                 probability_of_rts_collision += temp_probability_of_rts_collision / len(simulation.nodes)
+                probability_of_channel_free += temp_probability_of_channel_free / len(simulation.nodes)
+                probability_of_channel_busy += temp_probability_of_channel_busy / len(simulation.nodes)
                 probability_of_failure += temp_failure_count / len(simulation.nodes)
                 probability_of_success += temp_success_count / len(simulation.nodes)
                 probability_of_wait += temp_wait_count / len(simulation.nodes)
@@ -203,6 +211,8 @@ class StatisticCollector:
             total_cycle_count = total_cycle_count / self.input.repeats
             probability_of_rts_success = probability_of_rts_success / self.input.repeats
             probability_of_rts_collision = probability_of_rts_collision / self.input.repeats
+            probability_of_channel_free = probability_of_channel_free / self.input.repeats
+            probability_of_channel_busy = probability_of_channel_busy / self.input.repeats
             probability_of_failure = probability_of_failure / self.input.repeats
             probability_of_success = probability_of_success / self.input.repeats
             probability_of_wait = probability_of_wait / self.input.repeats
@@ -237,10 +247,12 @@ class StatisticCollector:
             self.statistics[i] = [
                 i,
                 self.input.p_a,
-                probability_of_failure,
-                probability_of_success,
-                probability_of_rts_collision,
                 probability_of_rts_success,
+                probability_of_rts_collision,
+                probability_of_success,
+                probability_of_failure,
+                probability_of_channel_free,
+                probability_of_channel_busy,
                 probability_of_wait,
                 pow(10, 9) * idle_time,
                 pow(10, 9) * backoff_time,
@@ -251,8 +263,6 @@ class StatisticCollector:
                 pow(10, 9) * refrain_time,
                 pow(10, 9) * wait_time,
                 pow(10,9) * cycle_time,
-                pow(10, 9) * time_between_tx,
-                pow(10, 9) * not_tx_rx_time,
                 0 if cycle_time2 == 0 else (rts_time) / cycle_time2,
                 data_time / cycle_time2,
             ]

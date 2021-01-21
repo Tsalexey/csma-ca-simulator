@@ -49,9 +49,8 @@ class Simulation:
                         has_collision = self.check_collisions(node)
                         node.has_collision = has_collision
 
-                        if not has_collision:
-                            has_refrain = self.check_refrain(node)
-                            node.has_refrain = has_refrain
+                        channel_free = self.check_channel_free(node)
+                        node.channel_free = channel_free
 
                         # uncomment this in order to get collision approach #1
                         # if not node.has_collision:
@@ -69,11 +68,13 @@ class Simulation:
                 return True
         return False
 
-    def check_refrain(self, node):
+    def check_channel_free(self, node):
         for another_node in self.nodes:
-            if another_node.id != node.id and self.node_state[another_node.id] == NodeState.RX_CTS and self.node_state[node.id] == NodeState.TX_RTS:
-                return True
-        return False
+            if another_node.id != node.id \
+                    and self.node_state[another_node.id] in [NodeState.RX_CTS, NodeState.TX_DATA, NodeState.RX_ACK] \
+                    and self.node_state[node.id] == NodeState.TX_RTS:
+                return False
+        return True
 
     def update_time(self):
         event_time = None
@@ -147,12 +148,14 @@ class Simulation:
                 node.statistics.out_time += out_time
                 node.statistics.total_out_time += out_time
 
+                node.statistics.from_rts_to_out_count += 1.0
                 node.statistics.not_tx_rx_time += out_time
                 node.statistics.total_not_tx_rx_time += out_time
             if NodeState.REFRAIN._name_ in e:
                 node.refrain_state +=1
                 refrain_time = e[NodeState.REFRAIN._name_]["end"] - e[NodeState.REFRAIN._name_]["start"]
                 refrained_rts_count += 1
+                node.statistics.from_rts_to_refrain_count += 1.0
                 node.statistics.refrain_time += refrain_time
                 node.statistics.total_refrain_time += refrain_time
 
@@ -174,6 +177,7 @@ class Simulation:
                 node.statistics.data_time += data_time
                 node.statistics.total_data_time += data_time
                 node.statistics.channel_busy_time += self.input.Tcts + data_time + self.input.Tack
+                node.statistics.from_rts_to_data_count += 1.0
             if NodeState.RX_ACK._name_ in e:
                 node.ack_state += 1
 
@@ -319,33 +323,38 @@ class Simulation:
         node.cycle_states_stacktrace.append({NodeState.TX_RTS._name_: {"start": self.time, "end": node.event_time}})
 
     def serve_node_tx_rts(self, node):
-        if node.has_refrain:
-            node.state = NodeState.REFRAIN
-            node.event_time = self.time + self.input.Trft
-            node.has_collision = False
-            node.has_refrain = False
-            node.rts_message = None
-            node.cycle_states_stacktrace.append({NodeState.REFRAIN._name_: {"start": self.time, "end": node.event_time}})
-        elif node.has_collision == False:
-            for another_node in self.nodes:
-                if another_node.id == node.id or (self.input.sensing == True and self.node_state[another_node.id] == NodeState.BACKOFF):
-                    cts_message = CTSMessage(node.id)
-                    cts_message.id = str(node.id) + "_" + str(self.time)
-                    cts_message.reached_node_at = self.time + self.input.Tcts + node.get_propagation_time()
-                    cts_message.transmission_time = self.input.Tcts
-                    cts_message.propagation_time = node.get_propagation_time()
-
-                    another_node.cts_message = cts_message
-                    another_node.state = NodeState.RX_CTS
-                    another_node.event_time = self.time + self.input.Tcts
-
-                    another_node.cycle_states_stacktrace.append({NodeState.RX_CTS._name_: {"start": self.time, "end": another_node.event_time}})
-        else:
+        if node.has_collision:
             node.state = NodeState.OUT
             node.event_time = self.time + self.input.Tout
             node.has_collision = False
             node.rts_message = None
+
+            if not node.channel_free:
+                node.statistics.from_rts_to_out_while_channel_busy += 1.0
+
             node.cycle_states_stacktrace.append({NodeState.OUT._name_: {"start": self.time, "end": node.event_time}})
+        else:
+            if self.input.refrain_from_transmit == False or node.channel_free:
+                for another_node in self.nodes:
+                    if another_node.id == node.id or (self.input.sensing == True and self.node_state[another_node.id] == NodeState.BACKOFF):
+                        cts_message = CTSMessage(node.id)
+                        cts_message.id = str(node.id) + "_" + str(self.time)
+                        cts_message.reached_node_at = self.time + self.input.Tcts + node.get_propagation_time()
+                        cts_message.transmission_time = self.input.Tcts
+                        cts_message.propagation_time = node.get_propagation_time()
+
+                        another_node.cts_message = cts_message
+                        another_node.state = NodeState.RX_CTS
+                        another_node.event_time = self.time + self.input.Tcts
+
+                        another_node.cycle_states_stacktrace.append({NodeState.RX_CTS._name_: {"start": self.time, "end": another_node.event_time}})
+            else:
+                node.state = NodeState.REFRAIN
+                node.event_time = self.time + self.input.Trft
+                node.has_collision = False
+                node.channel_free = True
+                node.rts_message = None
+                node.cycle_states_stacktrace.append({NodeState.REFRAIN._name_: {"start": self.time, "end": node.event_time}})
 
     def serve_node_out(self, node):
         node.statistics.pacchColl += 1
@@ -480,6 +489,11 @@ class Simulation:
             node.statistics.probability_of_wait = node.statistics.probability_of_wait * self.input.Twait / node.statistics.cycle_time2
             node.statistics.probability_of_rts_collision = node.statistics.rts_collision_messages / node.statistics.total_transmitted_rts_messages
             node.statistics.probability_of_rts_success = node.statistics.rts_success_messages / node.statistics.total_transmitted_rts_messages
+
+            temp = node.statistics.from_rts_to_refrain_count + node.statistics.from_rts_to_out_count + node.statistics.from_rts_to_data_count + node.statistics.from_rts_to_out_while_channel_busy
+
+            node.statistics.probability_of_channel_busy = (node.statistics.from_rts_to_refrain_count + node.statistics.from_rts_to_out_while_channel_busy) / (temp if temp != 0 else 1)
+            node.statistics.probability_of_channel_free = 1 - node.statistics.probability_of_channel_busy
 
             node.idle_series_statistics.time = node.idle_series_statistics.time / (
                 1 if node.idle_series_statistics.cycles_count == 0 else node.idle_series_statistics.cycles_count)

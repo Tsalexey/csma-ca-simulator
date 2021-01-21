@@ -20,7 +20,7 @@ class Node:
         self.cts_message = None
 
         self.has_collision = False
-        self.has_refrain = False
+        self.channel_free = True
 
         self.attempt = 0
 
@@ -75,6 +75,8 @@ class NodeStatistics:
 
         self.probability_of_rts_collision = 0.0
         self.probability_of_rts_success = 0.0
+        self.probability_of_channel_free = 0.0
+        self.probability_of_channel_busy = 0.0
 
         self.probability_of_failure = 0.0 # cycle failure
         self.probability_of_success = 0.0 # cycle success
@@ -123,6 +125,11 @@ class NodeStatistics:
 
         self.pS = 0.0
         self.pC = 0.0
+
+        self.from_rts_to_out_count = 0.0
+        self.from_rts_to_refrain_count = 0.0
+        self.from_rts_to_data_count = 0.0
+        self.from_rts_to_out_while_channel_busy = 0.0
 
 class IdleSeriesStatistics:
     def __init__(self):
