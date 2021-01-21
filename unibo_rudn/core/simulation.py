@@ -490,7 +490,7 @@ class Simulation:
             node.statistics.probability_of_rts_collision = node.statistics.rts_collision_messages / node.statistics.total_transmitted_rts_messages
             node.statistics.probability_of_rts_success = node.statistics.rts_success_messages / node.statistics.total_transmitted_rts_messages
 
-            temp = node.statistics.from_rts_to_refrain_count + node.statistics.from_rts_to_out_count + node.statistics.from_rts_to_data_count + node.statistics.from_rts_to_out_while_channel_busy
+            temp = node.statistics.from_rts_to_refrain_count + node.statistics.from_rts_to_out_count + node.statistics.from_rts_to_data_count
 
             node.statistics.probability_of_channel_busy = (node.statistics.from_rts_to_refrain_count + node.statistics.from_rts_to_out_while_channel_busy) / (temp if temp != 0 else 1)
             node.statistics.probability_of_channel_free = 1 - node.statistics.probability_of_channel_busy
