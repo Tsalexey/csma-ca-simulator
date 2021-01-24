@@ -11,9 +11,9 @@ class Case3Input:
         self.refrain_from_transmit = False
         self.repeats = 5
 
-        self.simulation_time = 0.00000005 # seconds
+        self.simulation_time = 0.000001 # seconds
 
-        self.Nretx = 3  # retransmission attemps, None = unlimited
+        self.Nretx = 0  # retransmission attemps, None = unlimited
         self.NN = 50 # nodes number
         self.p_a = 1.0 # probability that node has RTS message to transmit
 
@@ -34,17 +34,17 @@ class Case3Input:
 
         # times
         # self.tau_p_max = 0 # self.sphere_radius / self.c # sec - maximal propagation time
-        self.Tslot = pow(10, -9) # self.Lbeacon * 8) / self.rb
 
+        self.Tslot = pow(10, -9) # self.Lbeacon * 8) / self.rb
         self.Tdata = pow(10, -9) # (self.Ldata * 8) / self.rb
         self.Tack = pow(10, -9) # (self.Lack * 8) / self.rb
         self.Trts = pow(10, -9) # (self.Lrts * 8) / self.rb
         self.Tcts = pow(10, -9) # (self.Lcts * 8) / self.rb
         self.Tbeacon = pow(10, -9) # (self.Lbeacon * 8) / self.rb
         self.Tbo = pow(10, -9) # (self.Lcts * 8) / self.rb
-        self.Tout = self.Tcts
+        self.Tout = self.Tdata + self.Tack
         self.Tidle = self.Trts # o be set according to the Application - it could be also zero
-        self.Twait = self.Tdata + self.Tack
+        self.Twait = self.Tout
         self.Trft = self.Tdata + self.Tack
         self.Tmax = 12 # parameter of the mathematical model
 

@@ -382,11 +382,13 @@ class Simulation:
             node.cts_message = None
             node.rts_message = None
             node.has_collision = False
+            node.channel_free = True
             node.cycle_states_stacktrace.append({NodeState.WAIT._name_: {"start": self.time, "end": node.event_time}})
         else:
             node.cts_message = None
             node.rts_message = None
             node.has_collision = False
+            node.channel_free = True
             node.state = NodeState.TX_DATA
             node.event_time = self.time + self.input.Tdata + node.get_propagation_time()
             node.cycle_states_stacktrace.append({NodeState.TX_DATA._name_: {"start": self.time, "end": node.event_time}})
