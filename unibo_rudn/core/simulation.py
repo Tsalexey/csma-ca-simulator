@@ -49,6 +49,7 @@ class Simulation:
                         has_collision = self.check_collisions(node)
                         node.has_collision = has_collision
 
+                    if self.node_state[node.id] in [NodeState.BACKOFF, NodeState.TX_RTS]:
                         channel_free = self.check_channel_free(node)
                         node.channel_free = channel_free
 
@@ -307,22 +308,37 @@ class Simulation:
             node.cycle_states_stacktrace.append({NodeState.IDLE._name_: {"start": self.time, "end": node.event_time}})
 
     def serve_node_backoff(self, node):
-        node.state = NodeState.TX_RTS
-        node.event_time = self.time + self.input.Trts
-        node.has_collision = False
-        node.rts_message = None
+        if node.channel_free:
+            node.channel_free = self.check_channel_free(node)
 
-        rts_msg = RTSMessage(node.id)
-        rts_msg.id = str(node.id) + "_" + str(self.time)
-        rts_msg.reached_gateway_at = self.time + self.input.Trts + node.get_propagation_time()
-        rts_msg.transmission_time = self.input.Trts
-        rts_msg.propagation_time = node.get_propagation_time()
+        if node.channel_free:
+            node.state = NodeState.TX_RTS
+            node.event_time = self.time + self.input.Trts
+            node.has_collision = False
+            node.rts_message = None
 
-        node.rts_message = rts_msg
+            rts_msg = RTSMessage(node.id)
+            rts_msg.id = str(node.id) + "_" + str(self.time)
+            rts_msg.reached_gateway_at = self.time + self.input.Trts + node.get_propagation_time()
+            rts_msg.transmission_time = self.input.Trts
+            rts_msg.propagation_time = node.get_propagation_time()
 
-        node.cycle_states_stacktrace.append({NodeState.TX_RTS._name_: {"start": self.time, "end": node.event_time}})
+            node.rts_message = rts_msg
+
+            node.cycle_states_stacktrace.append({NodeState.TX_RTS._name_: {"start": self.time, "end": node.event_time}})
+        else:
+            node.state = NodeState.WAIT
+            node.event_time = self.time + self.input.Twait
+            node.cts_message = None
+            node.rts_message = None
+            node.has_collision = False
+            node.channel_free = False
+            node.cycle_states_stacktrace.append({NodeState.WAIT._name_: {"start": self.time, "end": node.event_time}})
 
     def serve_node_tx_rts(self, node):
+        if not node.has_collision:
+            node.has_collision = self.check_collisions(node)
+
         if node.has_collision:
             node.state = NodeState.OUT
             node.event_time = self.time + self.input.Tout
