@@ -64,7 +64,7 @@ class Simulation:
 
     def check_collisions(self, node):
         for another_node in self.nodes:
-            if another_node.id != node.id and self.node_state[another_node.id] == NodeState.TX_RTS and self.node_state[node.id] == NodeState.TX_RTS:
+            if another_node.id != node.id and self.node_state[another_node.id] == NodeState.TX_RTS:
                 return True
         return False
 
@@ -72,8 +72,7 @@ class Simulation:
         # in Sara model we count only [NodeState.RX_CTS]
         for another_node in self.nodes:
             if another_node.id != node.id \
-                    and self.node_state[another_node.id] in [NodeState.RX_CTS, NodeState.TX_DATA, NodeState.RX_ACK] \
-                    and self.node_state[node.id] == NodeState.TX_RTS:
+                    and self.node_state[another_node.id] in [NodeState.RX_CTS, NodeState.TX_DATA, NodeState.RX_ACK]:
                 return False
         return True
 
