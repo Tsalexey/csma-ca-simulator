@@ -46,12 +46,11 @@ class Simulation:
                         self.serve_node_failure(node)
                 else:
                     if self.node_state[node.id] == NodeState.TX_RTS:
-                        has_collision = self.check_collisions(node)
-                        node.has_collision = has_collision
+                        if not node.has_collision:
+                            node.has_collision = self.check_collisions(node)
 
                     if self.node_state[node.id] in [NodeState.BACKOFF, NodeState.TX_RTS]:
-                        channel_free = self.check_channel_free(node)
-                        node.channel_free = channel_free
+                        node.channel_free = self.check_channel_free(node)
 
                         # uncomment this in order to get collision approach #1
                         # if not node.has_collision:
@@ -70,6 +69,7 @@ class Simulation:
         return False
 
     def check_channel_free(self, node):
+        # in Sara model we count only [NodeState.RX_CTS]
         for another_node in self.nodes:
             if another_node.id != node.id \
                     and self.node_state[another_node.id] in [NodeState.RX_CTS, NodeState.TX_DATA, NodeState.RX_ACK] \
@@ -338,8 +338,10 @@ class Simulation:
     def serve_node_tx_rts(self, node):
         if not node.has_collision:
             node.has_collision = self.check_collisions(node)
+        if node.channel_free:
+            node.channel_free = self.check_channel_free(node)
 
-        if node.has_collision:
+        if node.has_collision or (self.input.sensing and not node.channel_free):
             node.state = NodeState.OUT
             node.event_time = self.time + self.input.Tout
             node.has_collision = False
