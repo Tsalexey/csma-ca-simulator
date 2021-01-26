@@ -52,6 +52,12 @@ class Simulation:
                     if self.node_state[node.id] in [NodeState.BACKOFF, NodeState.TX_RTS]:
                         node.channel_free = self.check_channel_free(node)
 
+                        if self.node_state[node.id] == NodeState.BACKOFF:
+                            if node.channel_free:
+                                node.statistics.pChannel += 1
+                            else:
+                                node.statistics.pChannel += 1
+                                node.statistics.pBusy += 1
                         # uncomment this in order to get collision approach #1
                         # if not node.has_collision:
                         #     node.has_collision = has_collision
@@ -316,6 +322,8 @@ class Simulation:
             node.has_collision = False
             node.rts_message = None
 
+            node.statistics.pChannel += 1
+
             rts_msg = RTSMessage(node.id)
             rts_msg.id = str(node.id) + "_" + str(self.time)
             rts_msg.reached_gateway_at = self.time + self.input.Trts + node.get_propagation_time()
@@ -424,6 +432,10 @@ class Simulation:
         node.statistics.probability_of_wait += 1
         node.state = NodeState.BACKOFF
         node.event_time = self.time + self.generate_backoff_time(node)
+
+        node.statistics.pChannel += 1
+        node.statistics.pBusy += 1
+
         node.cycle_states_stacktrace.append({NodeState.BACKOFF._name_: {"start": self.time, "end": node.event_time}})
 
     def serve_node_tx_data(self, node):
@@ -509,9 +521,16 @@ class Simulation:
             node.statistics.probability_of_rts_collision = node.statistics.rts_collision_messages / node.statistics.total_transmitted_rts_messages
             node.statistics.probability_of_rts_success = node.statistics.rts_success_messages / node.statistics.total_transmitted_rts_messages
 
-            temp = node.statistics.from_rts_to_refrain_count + node.statistics.from_rts_to_out_count + node.statistics.from_rts_to_data_count
+            channel_busy = node.statistics.from_rts_to_refrain_count \
+                           + node.statistics.from_rts_to_out_while_channel_busy \
+                           + node.statistics.pBusy
 
-            node.statistics.probability_of_channel_busy = (node.statistics.from_rts_to_refrain_count + node.statistics.from_rts_to_out_while_channel_busy) / (temp if temp != 0 else 1)
+            channel = node.statistics.from_rts_to_refrain_count \
+                   + node.statistics.from_rts_to_out_count \
+                   + node.statistics.from_rts_to_data_count \
+                   + node.statistics.pChannel
+
+            node.statistics.probability_of_channel_busy = channel_busy / (channel if channel != 0 else 1)
             node.statistics.probability_of_channel_free = 1 - node.statistics.probability_of_channel_busy
 
             node.idle_series_statistics.time = node.idle_series_statistics.time / (
