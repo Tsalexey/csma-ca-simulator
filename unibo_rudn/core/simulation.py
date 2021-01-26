@@ -54,10 +54,9 @@ class Simulation:
 
                         if self.node_state[node.id] == NodeState.BACKOFF:
                             if node.channel_free:
-                                node.statistics.pChannel += 1
+                                node.statistics.from_bo_to_bo_count += 1
                             else:
-                                node.statistics.pChannel += 1
-                                node.statistics.pBusy += 1
+                                node.statistics.from_bo_to_wait_count += 1
                         # uncomment this in order to get collision approach #1
                         # if not node.has_collision:
                         #     node.has_collision = has_collision
@@ -70,7 +69,7 @@ class Simulation:
 
     def check_collisions(self, node):
         for another_node in self.nodes:
-            if another_node.id != node.id and self.node_state[another_node.id] == NodeState.TX_RTS:
+            if another_node.id != node.id and self.node_state[another_node.id] in [NodeState.TX_RTS, NodeState.RX_CTS]:
                 return True
         return False
 
@@ -78,7 +77,7 @@ class Simulation:
         # in Sara model we count only [NodeState.RX_CTS]
         for another_node in self.nodes:
             if another_node.id != node.id \
-                    and self.node_state[another_node.id] in [NodeState.RX_CTS, NodeState.TX_DATA, NodeState.RX_ACK]:
+                    and self.node_state[another_node.id] in [NodeState.RX_CTS]:
                 return False
         return True
 
@@ -322,8 +321,6 @@ class Simulation:
             node.has_collision = False
             node.rts_message = None
 
-            node.statistics.pChannel += 1
-
             rts_msg = RTSMessage(node.id)
             rts_msg.id = str(node.id) + "_" + str(self.time)
             rts_msg.reached_gateway_at = self.time + self.input.Trts + node.get_propagation_time()
@@ -433,8 +430,7 @@ class Simulation:
         node.state = NodeState.BACKOFF
         node.event_time = self.time + self.generate_backoff_time(node)
 
-        node.statistics.pChannel += 1
-        node.statistics.pBusy += 1
+        node.statistics.from_bo_to_wait_count += 1
 
         node.cycle_states_stacktrace.append({NodeState.BACKOFF._name_: {"start": self.time, "end": node.event_time}})
 
@@ -523,12 +519,13 @@ class Simulation:
 
             channel_busy = node.statistics.from_rts_to_refrain_count \
                            + node.statistics.from_rts_to_out_while_channel_busy \
-                           + node.statistics.pBusy
+                           + node.statistics.from_bo_to_wait_count
 
             channel = node.statistics.from_rts_to_refrain_count \
                    + node.statistics.from_rts_to_out_count \
                    + node.statistics.from_rts_to_data_count \
-                   + node.statistics.pChannel
+                   + node.statistics.from_bo_to_wait_count \
+                   + node.statistics.from_bo_to_bo_count
 
             node.statistics.probability_of_channel_busy = channel_busy / (channel if channel != 0 else 1)
             node.statistics.probability_of_channel_free = 1 - node.statistics.probability_of_channel_busy

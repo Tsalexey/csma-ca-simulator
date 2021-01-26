@@ -130,6 +130,8 @@ class NodeStatistics:
         self.from_rts_to_refrain_count = 0.0
         self.from_rts_to_data_count = 0.0
         self.from_rts_to_out_while_channel_busy = 0.0
+        self.from_bo_to_bo_count = 0.0
+        self.from_bo_to_wait_count = 0.0
 
 class IdleSeriesStatistics:
     def __init__(self):
