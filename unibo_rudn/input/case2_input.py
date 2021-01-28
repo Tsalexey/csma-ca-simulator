@@ -17,6 +17,7 @@ class Case2Input:
 
         self.Nretx = 3  # retransmission attemps, None = unlimited
         self.NN = 50 # nodes number
+        self.start_from = 1
         self.p_a = 1.0 # probability that node has RTS message to transmit
 
         self.B = 100 * pow(10, 9) # Bandwidth
@@ -68,7 +69,7 @@ class Case2Input:
                + "_pa[" + str(self.p_a) + "]" \
                + "_sensing[" + str(self.sensing) + "]" \
                + "refrain[" + str(self.refrain_from_transmit) + "]" \
-               + "_nodes[" + str(1) + "-" + str(self.NN) + "]" \
+               + "_nodes[" + str(self.start_from) + "-" + str(self.NN) + "]" \
                + "_radius[" + str(self.sphere_radius) + "]" \
                + "_retry[" + str(self.Nretx) + "]" \
                + "_repeats[" + str(self.repeats) + "]" \

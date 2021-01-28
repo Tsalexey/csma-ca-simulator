@@ -71,7 +71,7 @@ class StatisticCollector:
     def run(self):
         start_time = time.time()
 
-        for i in range(1, self.input.NN + 1):
+        for i in range(self.input.start_from, self.input.NN + 1):
 
             t1 = time.time()
             print("Simulation run for ", i, " Nodes, radius", self.input.sphere_radius, ", repeats =", self.input.repeats)

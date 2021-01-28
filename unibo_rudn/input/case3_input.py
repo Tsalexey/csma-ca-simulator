@@ -9,12 +9,13 @@ class Case3Input:
 
         self.sensing = True
         self.refrain_from_transmit = False
-        self.repeats = 5
+        self.repeats = 50
 
         self.simulation_time = 0.000001 # seconds
 
-        self.Nretx = 0  # retransmission attemps, None = unlimited
-        self.NN = 50 # nodes number
+        self.Nretx = 3 # retransmission attemps, None = unlimited
+        self.NN = 35 # nodes number
+        self.start_from = 25
         self.p_a = 1.0 # probability that node has RTS message to transmit
 
         self.B = 100 * pow(10, 9) # Bandwidth
@@ -42,9 +43,9 @@ class Case3Input:
         self.Tcts = pow(10, -9) # (self.Lcts * 8) / self.rb
         self.Tbeacon = pow(10, -9) # (self.Lbeacon * 8) / self.rb
         self.Tbo = pow(10, -9) # (self.Lcts * 8) / self.rb
-        self.Tout = self.Tdata + self.Tack
-        self.Tidle = self.Trts # o be set according to the Application - it could be also zero
-        self.Twait = self.Tout
+        self.Tout = self.Tdata + self.Tack #self.Trts
+        self.Tidle = self.Tslot # o be set according to the Application - it could be also zero
+        self.Twait = self.Tdata + self.Tack
         self.Trft = self.Tdata + self.Tack
         self.Tmax = 12 # parameter of the mathematical model
 
@@ -56,7 +57,7 @@ class Case3Input:
                + "_pa[" + str(self.p_a) + "]" \
                + "_sensing[" + str(self.sensing) + "]" \
                + "_refrain[" + str(self.refrain_from_transmit) + "]" \
-               + "_nodes[" + str(1) + "-" + str(self.NN) + "]" \
+               + "_nodes[" + str(self.start_from) + "-" + str(self.NN) + "]" \
                + "_radius[" + str(self.sphere_radius) + "]" \
                + "_retry[" + str(self.Nretx) + "]" \
                + "_repeats[" + str(self.repeats) + "]" \
@@ -73,7 +74,6 @@ class Case3Input:
         print("     Tack - ", self.Tack * pow(10, 9), " ns")
         print("     Trts - ", self.Trts * pow(10, 9), " ns")
         print("     Tcts - ", self.Tcts * pow(10, 9), " ns")
-        print("     Tbeacon - ", self.Tbeacon * pow(10, 9), " ns")
         print("     Tbo - ", self.Tbo * pow(10, 9), " ns")
         print("     Tout - ", self.Tout * pow(10, 9), " ns")
         print("     Tidle - ", self.Tidle * pow(10, 9), " ns")
