@@ -267,16 +267,16 @@ class Simulation:
         node.cycle_states_stacktrace = []
 
         if self.input.is_debug or self.input.is_debug_cycle_info:
-            print("Node", node.id, " finished cycle with duration", f'{s * pow(10, 9) :.4f}', "! \nCycle stacktrace:")
+            print("Node", node.id, " finished cycle with duration", f'{s * self.input.time_multiplier :.4f}', "! \nCycle stacktrace:")
 
             if not temp:
                 print("     > cycle is empty")
 
             for item in temp:
                 for key, value in item.items():
-                    print("     ", key, ": start[", pow(10, 9) * value["start"], "] end[", pow(10, 9) * value["end"],
+                    print("     ", key, ": start[", self.input.time_multiplier * value["start"], "] end[", self.input.time_multiplier * value["end"],
                           "] = ",
-                          f'{(value["end"] - value["start"]) * pow(10, 9) :.4f}', "ns")
+                          f'{(value["end"] - value["start"]) * self.input.time_multiplier :.4f}', "ns")
             print()
 
         if node.cycle_start_time is None:
@@ -551,7 +551,7 @@ class Simulation:
             for state, times in time.items():
                 string += state + ": "
                 for k, v in times.items():
-                    string += str(k) + " = " + str(pow(10, 9) * v) + " ns, "
+                    string += str(k) + " = " + str(self.input.time_multiplier * v) + " ns, "
             string = string[:-2]
             print("                 ", string)
 
@@ -793,48 +793,48 @@ class Simulation:
         print("             p{s}", p_s)
         print("             p{c}", p_c)
         print("     - times -")
-        print("             idle time: " + f'{idle_time * pow(10, 9) :.4f}' + " ns")
-        print("             backoff time: " + f'{backoff_time * pow(10, 9) :.4f}' + " ns")
-        print("             rts time: " + f'{rts_time * pow(10, 9) :.4f}' + " ns")
-        print("             cts time: " + f'{cts_time * pow(10, 9) :.4f}' + " ns")
-        print("             out time: " + f'{out_time * pow(10, 9) :.4f}' + " ns")
-        print("             data_time: " + f'{data_time * pow(10, 9) :.4f}' + " ns")
-        print("             ack_time: " + f'{ack_time * pow(10, 9) :.4f}' + " ns")
-        print("             wait_time: " + f'{wait_time * pow(10, 9) :.4f}' + " ns")
-        print("             time between tx: " + f'{time_between_tx * pow(10, 9) :.4f}' + " ns")
-        print("             time w/o tx/rx: " + f'{not_tx_rx_time * pow(10, 9) :.4f}' + " ns")
-        print("             cycle time: " + f'{cycle_time * pow(10, 9) :.4f}' + " ns")
-        print("             cycle time2: " + f'{cycle_time2 * pow(10, 9) :.4f}' + " ns")
-        print("             cycle time3: " + f'{(cycle_time3 / total_cycle_count) * pow(10, 9) :.4f}' + " ns")
+        print("             idle time: " + f'{idle_time * self.input.time_multiplier :.4f}' + " ns")
+        print("             backoff time: " + f'{backoff_time * self.input.time_multiplier :.4f}' + " ns")
+        print("             rts time: " + f'{rts_time * self.input.time_multiplier :.4f}' + " ns")
+        print("             cts time: " + f'{cts_time * self.input.time_multiplier :.4f}' + " ns")
+        print("             out time: " + f'{out_time * self.input.time_multiplier :.4f}' + " ns")
+        print("             data_time: " + f'{data_time * self.input.time_multiplier :.4f}' + " ns")
+        print("             ack_time: " + f'{ack_time * self.input.time_multiplier :.4f}' + " ns")
+        print("             wait_time: " + f'{wait_time * self.input.time_multiplier :.4f}' + " ns")
+        print("             time between tx: " + f'{time_between_tx * self.input.time_multiplier :.4f}' + " ns")
+        print("             time w/o tx/rx: " + f'{not_tx_rx_time * self.input.time_multiplier :.4f}' + " ns")
+        print("             cycle time: " + f'{cycle_time * self.input.time_multiplier :.4f}' + " ns")
+        print("             cycle time2: " + f'{cycle_time2 * self.input.time_multiplier :.4f}' + " ns")
+        print("             cycle time3: " + f'{(cycle_time3 / total_cycle_count) * self.input.time_multiplier :.4f}' + " ns")
         print(
-            "             mean_idle_cycles * Tidle / avg_cycles_count = " + f'{mean_idle_cycles * self.input.Tidle / total_cycle_count * pow(10, 9) :.4f}' + " ns")
+            "             mean_idle_cycles * Tidle / avg_cycles_count = " + f'{mean_idle_cycles * self.input.Tidle / total_cycle_count * self.input.time_multiplier :.4f}' + " ns")
         print(
-            "             mean_rts_cycles * tau_rts / avg_cycles_count = " + f'{mean_rts_cycles * self.input.Trts / total_cycle_count * pow(10, 9) :.4f}' + " ns")
+            "             mean_rts_cycles * tau_rts / avg_cycles_count = " + f'{mean_rts_cycles * self.input.Trts / total_cycle_count * self.input.time_multiplier :.4f}' + " ns")
         print(
-            "             mean_data_cycles * tau_data / avg_cycles_count = " + f'{mean_data_cycles * self.input.Tdata / total_cycle_count * pow(10, 9) :.4f}' + " ns")
+            "             mean_data_cycles * tau_data / avg_cycles_count = " + f'{mean_data_cycles * self.input.Tdata / total_cycle_count * self.input.time_multiplier :.4f}' + " ns")
         print(
-            "             mean_wait_cycles * Twait / avg_cycles_count = " + f'{mean_wait_cycles * self.input.Twait / total_cycle_count * pow(10, 9) :.4f}' + " ns")
+            "             mean_wait_cycles * Twait / avg_cycles_count = " + f'{mean_wait_cycles * self.input.Twait / total_cycle_count * self.input.time_multiplier :.4f}' + " ns")
         print("     - Total times -")
-        print("             total simulation time: " + f'{self.time * pow(10, 9) :.4f}' + " ns")
-        print("             total idle time: " + f'{total_idle_time * pow(10, 9) :.4f}' + " ns")
-        print("             total backoff time: " + f'{total_backoff_time * pow(10, 9) :.4f}' + " ns")
-        print("             total rts time: " + f'{total_rts_time * pow(10, 9) :.4f}' + " ns")
+        print("             total simulation time: " + f'{self.time * self.input.time_multiplier :.4f}' + " ns")
+        print("             total idle time: " + f'{total_idle_time * self.input.time_multiplier :.4f}' + " ns")
+        print("             total backoff time: " + f'{total_backoff_time * self.input.time_multiplier :.4f}' + " ns")
+        print("             total rts time: " + f'{total_rts_time * self.input.time_multiplier :.4f}' + " ns")
         print("             total rts time / total time: " + f'{(total_rts_time / self.time)  :.4f}')
-        print("             total cts time: " + f'{total_cts_time * pow(10, 9) :.4f}' + " ns")
-        print("             total out time: " + f'{total_out_time * pow(10, 9) :.4f}' + " ns")
-        print("             total data time: " + f'{total_data_time * pow(10, 9) :.4f}' + " ns")
+        print("             total cts time: " + f'{total_cts_time * self.input.time_multiplier :.4f}' + " ns")
+        print("             total out time: " + f'{total_out_time * self.input.time_multiplier :.4f}' + " ns")
+        print("             total data time: " + f'{total_data_time * self.input.time_multiplier :.4f}' + " ns")
         print("             total data time / total time: " + f'{(total_data_time / self.time)  :.4f}')
-        print("             total wait time: " + f'{total_wait_time * pow(10, 9) :.4f}' + " ns")
+        print("             total wait time: " + f'{total_wait_time * self.input.time_multiplier :.4f}' + " ns")
         print("             total wait time / total time: " + f'{(total_wait_time / self.time)  :.4f}')
-        print("             total ack time: " + f'{total_ack_time * pow(10, 9) :.4f}' + " ns")
-        print("             total time w/o tx/rx: " + f'{total_not_tx_rx_time * pow(10, 9) :.4f}' + " ns")
-        print("             total success time: " + f'{total_success_time * pow(10, 9) :.4f}' + " ns")
+        print("             total ack time: " + f'{total_ack_time * self.input.time_multiplier :.4f}' + " ns")
+        print("             total time w/o tx/rx: " + f'{total_not_tx_rx_time * self.input.time_multiplier :.4f}' + " ns")
+        print("             total success time: " + f'{total_success_time * self.input.time_multiplier :.4f}' + " ns")
         print("             total success time / total time: " + f'{(total_success_time / self.time)  :.4f}')
-        print("             total failure time: " + f'{total_failure_time * pow(10, 9) :.4f}' + " ns")
+        print("             total failure time: " + f'{total_failure_time * self.input.time_multiplier :.4f}' + " ns")
         print("             total failure time / total time: " + f'{total_failure_time / self.time  :.4f}')
         print("     - Trajectory times -")
         for k, v in trajectory_times.items():
-            print("         ", k, ": ", f'{v * pow(10, 9) :.4f}' + " ns", " (", trajectory_cycle_count[k], "cycles)")
+            print("         ", k, ": ", f'{v * self.input.time_multiplier :.4f}' + " ns", " (", trajectory_cycle_count[k], "cycles)")
         print("     - State visits - ")
         print("             total state visits: ", sum(
             [mean_idle_cycles, mean_bo_cycles, mean_rts_cycles, mean_out_cycles, mean_cts_cycles, mean_wait_cycles,
@@ -850,24 +850,24 @@ class Simulation:
         print("             mean_failure_cycles =", mean_failure_cycles)
         print("     - Times validation - ")
         print(
-            "             mean_rts_cycles * tau_rts = " + f'{mean_rts_cycles * self.input.Trts * pow(10, 9) :.4f}' + " ns")
+            "             mean_rts_cycles * tau_rts = " + f'{mean_rts_cycles * self.input.Trts * self.input.time_multiplier :.4f}' + " ns")
         print(
-            "             mean rts time * avg. cycles count = " + f'{total_cycle_count * rts_time * pow(10, 9) :.4f}' + " ns")
+            "             mean rts time * avg. cycles count = " + f'{total_cycle_count * rts_time * self.input.time_multiplier :.4f}' + " ns")
         print("             -")
         print(
-            "             mean_data_cycles * tau_data = " + f'{mean_data_cycles * self.input.Tdata * pow(10, 9) :.4f}' + " ns")
+            "             mean_data_cycles * tau_data = " + f'{mean_data_cycles * self.input.Tdata * self.input.time_multiplier :.4f}' + " ns")
         print(
-            "             mean data time * avg. cycles count =" + f'{total_cycle_count * data_time * pow(10, 9) :.4f}' + " ns")
+            "             mean data time * avg. cycles count =" + f'{total_cycle_count * data_time * self.input.time_multiplier :.4f}' + " ns")
         print("             -")
         print(
-            "             mean_rts_cycles * tau_rts / mean_rts_cycles = " + f'{mean_rts_cycles * self.input.Trts / mean_rts_cycles * pow(10, 9) :.4f}' + " ns")
+            "             mean_rts_cycles * tau_rts / mean_rts_cycles = " + f'{mean_rts_cycles * self.input.Trts / mean_rts_cycles * self.input.time_multiplier :.4f}' + " ns")
         print(
-            "             mean rts time * avg. cycles count / mean_rts_cyces = " + f'{total_cycle_count * rts_time / mean_rts_cycles * pow(10, 9) :.4f}' + " ns")
+            "             mean rts time * avg. cycles count / mean_rts_cyces = " + f'{total_cycle_count * rts_time / mean_rts_cycles * self.input.time_multiplier :.4f}' + " ns")
         print("             -")
         print(
-            "             mean_data_cycles * tau_data / mean_rts_cycles = " + f'{mean_data_cycles * self.input.Tdata / (1 if mean_data_cycles == 0 else mean_data_cycles) * pow(10, 9) :.4f}' + " ns")
+            "             mean_data_cycles * tau_data / mean_rts_cycles = " + f'{mean_data_cycles * self.input.Tdata / (1 if mean_data_cycles == 0 else mean_data_cycles) * self.input.time_multiplier :.4f}' + " ns")
         print(
-            "             mean data time * avg. cycles count / mean_data_cycles =" + f'{total_cycle_count * data_time / (1 if mean_data_cycles == 0 else mean_data_cycles) * pow(10, 9) :.4f}' + " ns")
+            "             mean data time * avg. cycles count / mean_data_cycles =" + f'{total_cycle_count * data_time / (1 if mean_data_cycles == 0 else mean_data_cycles) * self.input.time_multiplier :.4f}' + " ns")
         print("             -")
         print("     - tau -")
         print("             tau:", tau)
@@ -904,41 +904,41 @@ class Simulation:
                 print("         failure:", node.statistics.probability_of_failure)
                 print("         wait:", node.statistics.probability_of_wait)
                 print("     - Average times -")
-                print("         idle time: " + f'{node.statistics.idle_time * pow(10, 9) :.4f}' + " ns")
-                print("         backoff time: " + f'{node.statistics.backoff_time * pow(10, 9) :.4f}' + " ns")
-                print("         rts time: " + f'{node.statistics.rts_time * pow(10, 9) :.4f}' + " ns")
-                print("         cts time: " + f'{node.statistics.cts_time * pow(10, 9) :.4f}' + " ns")
-                print("         out time: " + f'{node.statistics.out_time * pow(10, 9) :.4f}' + " ns")
-                print("         data time: " + f'{node.statistics.data_time * pow(10, 9) :.4f}' + " ns")
-                print("         ack time: " + f'{node.statistics.ack_time * pow(10, 9) :.4f}' + " ns")
-                print("         wait time: " + f'{node.statistics.wait_time * pow(10, 9) :.4f}' + " ns")
-                print("         channel busy time: " + f'{node.statistics.channel_busy_time * pow(10, 9) :.4f}' + " ns")
-                print("         time w/o tx/rx: " + f'{node.statistics.not_tx_rx_time * pow(10, 9) :.4f}' + " ns")
-                print("         cycle time: " + f'{node.statistics.cycle_time * pow(10, 9) :.4f}' + " ns")
-                print("         cycle time2: " + f'{node.statistics.cycle_time2 * pow(10, 9) :.4f}' + " ns")
+                print("         idle time: " + f'{node.statistics.idle_time * self.input.time_multiplier :.4f}' + " ns")
+                print("         backoff time: " + f'{node.statistics.backoff_time * self.input.time_multiplier :.4f}' + " ns")
+                print("         rts time: " + f'{node.statistics.rts_time * self.input.time_multiplier :.4f}' + " ns")
+                print("         cts time: " + f'{node.statistics.cts_time * self.input.time_multiplier :.4f}' + " ns")
+                print("         out time: " + f'{node.statistics.out_time * self.input.time_multiplier :.4f}' + " ns")
+                print("         data time: " + f'{node.statistics.data_time * self.input.time_multiplier :.4f}' + " ns")
+                print("         ack time: " + f'{node.statistics.ack_time * self.input.time_multiplier :.4f}' + " ns")
+                print("         wait time: " + f'{node.statistics.wait_time * self.input.time_multiplier :.4f}' + " ns")
+                print("         channel busy time: " + f'{node.statistics.channel_busy_time * self.input.time_multiplier :.4f}' + " ns")
+                print("         time w/o tx/rx: " + f'{node.statistics.not_tx_rx_time * self.input.time_multiplier :.4f}' + " ns")
+                print("         cycle time: " + f'{node.statistics.cycle_time * self.input.time_multiplier :.4f}' + " ns")
+                print("         cycle time2: " + f'{node.statistics.cycle_time2 * self.input.time_multiplier :.4f}' + " ns")
                 print("     - Total times - ")
-                print("         total simulation time:" + f'{self.time * pow(10, 9) :.4f}' + " ns")
-                print("         total idle time:" + f'{node.statistics.total_idle_time * pow(10, 9) :.4f}' + " ns")
-                print("         total backoff time:" + f'{node.statistics.total_backoff_time * pow(10, 9) :.4f}' + " ns")
-                print("         total rts time:" + f'{node.statistics.total_rts_time * pow(10, 9) :.4f}' + " ns")
+                print("         total simulation time:" + f'{self.time * self.input.time_multiplier :.4f}' + " ns")
+                print("         total idle time:" + f'{node.statistics.total_idle_time * self.input.time_multiplier :.4f}' + " ns")
+                print("         total backoff time:" + f'{node.statistics.total_backoff_time * self.input.time_multiplier :.4f}' + " ns")
+                print("         total rts time:" + f'{node.statistics.total_rts_time * self.input.time_multiplier :.4f}' + " ns")
                 print(
                     "         total total rts time / total simulation time:" + f'{(node.statistics.total_rts_time / self.time) :.4f}')
-                print("         total cts time:" + f'{node.statistics.total_cts_time * pow(10, 9) :.4f}' + " ns")
-                print("         total out time:" + f'{node.statistics.total_out_time * pow(10, 9) :.4f}' + " ns")
-                print("         total data time:" + f'{node.statistics.total_data_time * pow(10, 9) :.4f}' + " ns")
+                print("         total cts time:" + f'{node.statistics.total_cts_time * self.input.time_multiplier :.4f}' + " ns")
+                print("         total out time:" + f'{node.statistics.total_out_time * self.input.time_multiplier :.4f}' + " ns")
+                print("         total data time:" + f'{node.statistics.total_data_time * self.input.time_multiplier :.4f}' + " ns")
                 print(
                     "         total data time / total simulation time:" + f'{(node.statistics.total_data_time / self.time) :.4f}')
-                print("         total wait time:" + f'{node.statistics.total_wait_time * pow(10, 9) :.4f}' + " ns")
+                print("         total wait time:" + f'{node.statistics.total_wait_time * self.input.time_multiplier :.4f}' + " ns")
                 print(
                     "         total wait time / total simulation time:" + f'{(node.statistics.total_wait_time / self.time) :.4f}')
                 print(
-                    "         total time w/o tx/rx:" + f'{node.statistics.total_not_tx_rx_time * pow(10, 9) :.4f}' + " ns")
+                    "         total time w/o tx/rx:" + f'{node.statistics.total_not_tx_rx_time * self.input.time_multiplier :.4f}' + " ns")
                 print(
-                    "         total success cycle time:" + f'{node.statistics.total_success_cycle_time * pow(10, 9) :.4f}' + " ns")
+                    "         total success cycle time:" + f'{node.statistics.total_success_cycle_time * self.input.time_multiplier :.4f}' + " ns")
                 print(
                     "         total success cycle time / total simulation time:" + f'{(node.statistics.total_success_cycle_time / self.time) :.4f}')
                 print(
-                    "         total failure cycle time:" + f'{node.statistics.total_failure_cycle_time * pow(10, 9) :.4f}' + " ns")
+                    "         total failure cycle time:" + f'{node.statistics.total_failure_cycle_time * self.input.time_multiplier :.4f}' + " ns")
                 print(
                     "         total failure cycle time / total simulation time:" + f'{(node.statistics.total_failure_cycle_time / self.time) :.4f}')
                 if node.statistics.data_transmissions_count == 0:
@@ -948,7 +948,7 @@ class Simulation:
                           node.statistics.parallel_transmitting_nodes / node.statistics.data_transmissions_count - 1)
                 print("     trajectory times:")
                 for k, v in node.statistics.trajectory_times.items():
-                    print("         ", k, ": ", f'{v * pow(10, 9) :.4f}' + " ns", " (",
+                    print("         ", k, ": ", f'{v * self.input.time_multiplier :.4f}' + " ns", " (",
                           node.statistics.trajectory_cycle_count[k], "cycles)")
                 print("      - states visits - ")
                 print("         idle:", node.idle_state)

@@ -35,18 +35,20 @@ class AlohaInput:
 
         # times
         # self.tau_p_max = 0 # self.sphere_radius / self.c # sec - maximal propagation time
+        self.time_multiplier = 1 # for ns use pow(10, -9)
+
         self.Tslot = pow(10, -9)
 
-        self.Tdata = 0#(self.Ldata * 8) / self.rb
-        self.Tack = 0#(self.Lack * 8) / self.rb
-        self.Trts = pow(10, -9) #(self.Lrts * 8) / self.rb
-        self.Tcts = pow(10, -9) #(self.Lcts * 8) / self.rb
-        self.Tbeacon = 0#(self.Lbeacon * 8) / self.rb
-        self.Tbo = pow(10, -9) #(self.Lcts * 8) / self.rb
-        self.Tout = pow(10, -9) #self.Tcts
-        self.Tidle = pow(10, -9) #self.Tcts # o be set according to the Application - it could be also zero
-        self.Trft = 0
-        self.Twait = 00
+        self.Tslot = 3 * self.time_multiplier # self.Lbeacon * 8) / self.rb
+        self.Tdata = 30 * self.time_multiplier # (self.Ldata * 8) / self.rb
+        self.Tack = 3 * self.time_multiplier # (self.Lack * 8) / self.rb
+        self.Trts = 3 * self.time_multiplier # (self.Lrts * 8) / self.rb
+        self.Tcts = 3 * self.time_multiplier # (self.Lcts * 8) / self.rb
+        self.Tbo = 3 * self.time_multiplier # (self.Lcts * 8) / self.rb
+        self.Tout = self.Tdata + self.Tack #self.Trts
+        self.Tidle = 3 * self.time_multiplier
+        self.Twait = self.Tdata + self.Tack
+        self.Trft = self.Tdata + self.Tack
         self.Tmax = 12 # parameter of the mathematical model
 
         self.print()
@@ -65,17 +67,18 @@ class AlohaInput:
     def print(self):
         print("Input parameters:")
         print("     sensing - ", self.sensing)
+        print("     refrain from transmit - ", self.refrain_from_transmit)
         print("     Nretx - ", self.Nretx)
         print("     NN - ", self.NN)
         print("     p_a - ", self.p_a)
-        print("     Tdata - ", self.Tdata * pow(10, 9), " ns")
-        print("     Tack - ", self.Tack * pow(10, 9), " ns")
-        print("     Trts - ", self.Trts * pow(10, 9), " ns")
-        print("     Tcts - ", self.Tcts * pow(10, 9), " ns")
-        print("     Tbeacon - ", self.Tbeacon * pow(10, 9), " ns")
-        print("     Tbo - ", self.Tbo * pow(10, 9), " ns")
-        print("     Tout - ", self.Tout * pow(10, 9), " ns")
-        print("     Tidle - ", self.Tidle * pow(10, 9), " ns")
-        print("     Twait - ", self.Twait * pow(10, 9), " ns")
+        print("     Tdata - ", self.Tdata * self.time_multiplier)
+        print("     Tack - ", self.Tack * self.time_multiplier)
+        print("     Trts - ", self.Trts * self.time_multiplier)
+        print("     Tcts - ", self.Tcts * self.time_multiplier)
+        print("     Tbo - ", self.Tbo * self.time_multiplier)
+        print("     Tout - ", self.Tout * self.time_multiplier)
+        print("     Tidle - ", self.Tidle * self.time_multiplier)
+        print("     Twait - ", self.Twait * self.time_multiplier)
+        print("     Trft - ", self.Trts * self.time_multiplier)
         print("     Tmax - ", self.Tmax)
         print("")
