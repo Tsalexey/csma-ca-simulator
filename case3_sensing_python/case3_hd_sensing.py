@@ -56,6 +56,9 @@ class NodeStatistics:
         self.success_count = 0.0
         self.failure_count = 0.0
 
+        self.free_slots_count = 0.0
+        self.busy_slots_count = 0.0
+
         self.slots_count = 0.0
         self.idle_hits = 0.0
         self.backoff_hits = 0.0
@@ -67,12 +70,13 @@ class NodeStatistics:
         self.ack_hits = 0.0
 
         self.cycles_count = 0.0
+
 class SimulationStatistics:
     def __init__(self):
         self.probability_of_collision = 0.0
         self.probability_of_success = 0.0
         self.probability_of_failure = 0.0
-
+        self.probability_of_free_channel = 0.0
         self.probability_of_idle = 0.0
         self.probability_of_backoff = 0.0
         self.probability_of_rts = 0.0
@@ -134,6 +138,7 @@ def main():
             summary.probability_of_collision += measure.probability_of_collision
             summary.probability_of_failure += measure.probability_of_failure
             summary.probability_of_success += measure.probability_of_success
+            summary.probability_of_free_channel += measure.probability_of_free_channel
 
             summary.probability_of_idle += measure.probability_of_idle
             summary.probability_of_backoff += measure.probability_of_backoff
@@ -157,6 +162,7 @@ def main():
         summary.probability_of_collision /= len(measures)
         summary.probability_of_failure /= len(measures)
         summary.probability_of_success /= len(measures)
+        summary.probability_of_free_channel /= len(measures)
 
         summary.probability_of_idle /= len(measures)
         summary.probability_of_backoff /= len(measures)
@@ -230,6 +236,12 @@ def execute(input, results_folder):
         print_to_csv_file(states, "states_history_{0}_nodes".format(input.NN), results_folder)
 
         for node in nodes:
+
+            if check_channel(node, nodes, prev_state):
+                node.statistics.free_slots_count += 1
+            else:
+                node.statistics.busy_slots_count += 1
+
             if time == node.event_time:
                 # IDLE state
                 if node.state == NodeState.IDLE:
@@ -389,6 +401,8 @@ def execute(input, results_folder):
         simulation_statistics.probability_of_success += node.statistics.success_count / (node.statistics.success_count + node.statistics.failure_count)
         simulation_statistics.probability_of_failure += node.statistics.failure_count / (node.statistics.success_count + node.statistics.failure_count)
 
+        simulation_statistics.probability_of_free_channel += node.statistics.free_slots_count / (node.statistics.free_slots_count + node.statistics.busy_slots_count)
+
         simulation_statistics.probability_of_idle += node.statistics.idle_hits * input.Tslot / time
         simulation_statistics.probability_of_backoff += node.statistics.backoff_hits * input.Tslot / time
         simulation_statistics.probability_of_rts += node.statistics.rts_hits * input.Tslot / time
@@ -413,6 +427,7 @@ def execute(input, results_folder):
     simulation_statistics.probability_of_collision /= len(nodes)
     simulation_statistics.probability_of_success /= len(nodes)
     simulation_statistics.probability_of_failure /= len(nodes)
+    simulation_statistics.probability_of_free_channel /= len(nodes)
 
     simulation_statistics.probability_of_idle /= len(nodes)
     simulation_statistics.probability_of_backoff /= len(nodes)
@@ -448,10 +463,10 @@ def check_channel(node, nodes, prev_state):
     return True
 
 def generate_backoff(attempt, Tmax):
-    return random.randrange(1, attempt * Tmax)
+    return random.randrange(1, attempt * Tmax + 1)
 
 def generate_backoff_after_wait(attempt, Tmax):
-    return random.randrange(0, attempt * Tmax)
+    return random.randrange(0, attempt * Tmax + 1)
 
 def count_state_hits(node):
     node.statistics.slots_count += 1
