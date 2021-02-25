@@ -1,10 +1,14 @@
+import csv
+import os
+import sys
+from datetime import datetime
 import random
 from enum import Enum
-
+sys.path.append("..")
 
 class Input:
     def __init__(self):
-        self.simulation_time = 100000
+        self.simulation_time = 10000
         self.repeats = 100
         self.pa = 1.0
         self.NN = 10
@@ -51,11 +55,19 @@ class NodeStatistics:
         self.failure_count = 0.0
 
 def main():
+    results_folder = datetime.now().strftime('%Y-%m-%d_%H:%M:%S')
+    if not os.path.exists('results/' + results_folder):
+        os.makedirs('results/' + results_folder)
+
+    print("Results will be stored in " + results_folder)
+
     input = Input()
-    statistics = NodeStatistics()
+
+    for k,v in vars(input).items():
+        print_to_csv_file([k, v], "input_parameters", results_folder)
 
     nodes = []
-    for i in range(1, input.NN):
+    for i in range(1, input.NN + 1):
         node = Node(i)
         node.state = NodeState.IDLE
         node.event_time = input.Tidle
@@ -65,12 +77,15 @@ def main():
 
     time = 0
     while time <= input.simulation_time:
-        states = [time]
+
         prev_state = {}
+        states = [time]
+
         for node in nodes:
             prev_state[node.id] = node.state
             states.append(node.state.value)
-        state_history.append(states)
+
+        print_to_csv_file(states, "states_history", results_folder)
 
         for node in nodes:
             if time == node.event_time:
@@ -236,11 +251,6 @@ def main():
     print("p{collision}=" + str(pcol))
     print("p{success}=" + str(ps))
 
-
-    for row in state_history:
-        print(row)
-
-
 def check_collision(node, nodes, prev_state):
     for another_node in nodes:
         if node.id != another_node.id and prev_state[another_node.id] in [NodeState.RTS, NodeState.CTS, NodeState.DATA]:
@@ -259,6 +269,13 @@ def generate_backoff(attempt, Tmax):
 def generate_backoff_after_wait(attempt, Tmax):
     return random.randrange(0, attempt * Tmax)
 
+def print_to_csv_file(states, filename, results_folder):
+    kwargs = {'newline': ''}
+    mode = 'a'
+    fname = 'results/' + results_folder + '/' + filename +'.csv'
+    with open(fname, mode, **kwargs) as fp:
+        writer = csv.writer(fp, delimiter=';')
+        writer.writerow(states)
 
 if __name__ == '__main__':
     main()
