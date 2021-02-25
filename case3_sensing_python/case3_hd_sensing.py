@@ -9,8 +9,8 @@ sys.path.append("..")
 
 class Input:
     def __init__(self):
-        self.simulation_time = 10000
-        self.repeats = 5
+        self.simulation_time = 5000
+        self.repeats = 50
         self.pa = 1.0
         self.start_from_NN = 1
         self.NN = 10
@@ -56,11 +56,30 @@ class NodeStatistics:
         self.success_count = 0.0
         self.failure_count = 0.0
 
+        self.slots_count = 0.0
+        self.idle_hits = 0.0
+        self.backoff_hits = 0.0
+        self.rts_hits = 0.0
+        self.out_hits = 0.0
+        self.cts_hits = 0.0
+        self.wait_hits = 0.0
+        self.data_hits = 0.0
+        self.ack_hits = 0.0
+
 class SimulationStatistics:
     def __init__(self):
         self.probability_of_collision = 0.0
         self.probability_of_success = 0.0
         self.probability_of_failure = 0.0
+
+        self.probability_of_idle = 0.0
+        self.probability_of_backoff = 0.0
+        self.probability_of_rts = 0.0
+        self.probability_of_out = 0.0
+        self.probability_of_cts = 0.0
+        self.probability_of_wait = 0.0
+        self.probability_of_data = 0.0
+        self.probability_of_ack = 0.0
 
 def main():
     # define folder for saving the results
@@ -105,9 +124,27 @@ def main():
             summary.probability_of_failure += measure.probability_of_failure
             summary.probability_of_success += measure.probability_of_success
 
+            summary.probability_of_idle += measure.probability_of_idle
+            summary.probability_of_backoff += measure.probability_of_backoff
+            summary.probability_of_rts += measure.probability_of_rts
+            summary.probability_of_out += measure.probability_of_out
+            summary.probability_of_cts += measure.probability_of_cts
+            summary.probability_of_wait += measure.probability_of_wait
+            summary.probability_of_data += measure.probability_of_data
+            summary.probability_of_ack += measure.probability_of_ack
+
         summary.probability_of_collision /= len(measures)
         summary.probability_of_failure /= len(measures)
         summary.probability_of_success /= len(measures)
+
+        summary.probability_of_idle /= len(measures)
+        summary.probability_of_backoff /= len(measures)
+        summary.probability_of_rts /= len(measures)
+        summary.probability_of_out /= len(measures)
+        summary.probability_of_cts /= len(measures)
+        summary.probability_of_wait /= len(measures)
+        summary.probability_of_data /= len(measures)
+        summary.probability_of_ack /= len(measures)
 
         results[nodes_number] = summary
     t2 = time.time()
@@ -116,7 +153,7 @@ def main():
 
     # prepare first line for results description
     description = ["Node"]
-    for k,v in vars(results[1]).items():
+    for k,v in vars(results[input.NN]).items():
         description.append(k)
     print_to_csv_file(description, "results", results_folder)
 
@@ -153,6 +190,7 @@ def execute(input, results_folder):
         for node in nodes:
             prev_state[node.id] = node.state
             states.append(node.state.value)
+            count_state_hits(node)
 
         print_to_csv_file(states, "states_history_{0}_nodes".format(input.NN), results_folder)
 
@@ -316,9 +354,29 @@ def execute(input, results_folder):
         simulation_statistics.probability_of_success += node.statistics.success_count / (node.statistics.success_count + node.statistics.failure_count)
         simulation_statistics.probability_of_failure += node.statistics.failure_count / (node.statistics.success_count + node.statistics.failure_count)
 
+        simulation_statistics.probability_of_idle += node.statistics.idle_hits * input.Tslot / time
+        simulation_statistics.probability_of_backoff += node.statistics.backoff_hits * input.Tslot / time
+        simulation_statistics.probability_of_rts += node.statistics.rts_hits * input.Tslot / time
+        simulation_statistics.probability_of_out += node.statistics.out_hits * input.Tslot / time
+        simulation_statistics.probability_of_cts += node.statistics.cts_hits * input.Tslot / time
+        simulation_statistics.probability_of_wait += node.statistics.wait_hits * input.Tslot / time
+        simulation_statistics.probability_of_data += node.statistics.data_hits * input.Tslot / time
+        simulation_statistics.probability_of_ack += node.statistics.ack_hits * input.Tslot / time
+
+    #normilize by nodes count
+
     simulation_statistics.probability_of_collision /= len(nodes)
     simulation_statistics.probability_of_success /= len(nodes)
     simulation_statistics.probability_of_failure /= len(nodes)
+
+    simulation_statistics.probability_of_idle /= len(nodes)
+    simulation_statistics.probability_of_backoff /= len(nodes)
+    simulation_statistics.probability_of_rts /= len(nodes)
+    simulation_statistics.probability_of_out /= len(nodes)
+    simulation_statistics.probability_of_cts /= len(nodes)
+    simulation_statistics.probability_of_wait /= len(nodes)
+    simulation_statistics.probability_of_data /= len(nodes)
+    simulation_statistics.probability_of_ack /= len(nodes)
 
     return simulation_statistics
 
@@ -339,6 +397,25 @@ def generate_backoff(attempt, Tmax):
 
 def generate_backoff_after_wait(attempt, Tmax):
     return random.randrange(0, attempt * Tmax)
+
+def count_state_hits(node):
+    node.statistics.slots_count += 1
+    if node.state == NodeState.IDLE:
+        node.statistics.idle_hits += 1
+    elif node.state == NodeState.BACKOFF:
+        node.statistics.backoff_hits += 1
+    elif node.state == NodeState.RTS:
+        node.statistics.rts_hits += 1
+    elif node.state == NodeState.OUT:
+        node.statistics.out_hits += 1
+    elif node.state == NodeState.CTS:
+        node.statistics.cts_hits += 1
+    elif node.state == NodeState.WAIT:
+        node.statistics.wait_hits += 1
+    elif node.state == NodeState.DATA:
+        node.statistics.data_hits += 1
+    elif node.state == NodeState.ACK:
+        node.statistics.ack_hits += 1
 
 def print_to_csv_file(states, filename, results_folder):
     kwargs = {'newline': ''}
