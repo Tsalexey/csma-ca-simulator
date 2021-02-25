@@ -9,8 +9,8 @@ sys.path.append("..")
 
 class Input:
     def __init__(self):
-        self.simulation_time = 5000
-        self.repeats = 50
+        self.simulation_time = 15000
+        self.repeats = 10
         self.pa = 1.0
         self.start_from_NN = 1
         self.NN = 10
@@ -66,6 +66,7 @@ class NodeStatistics:
         self.data_hits = 0.0
         self.ack_hits = 0.0
 
+        self.cycles_count = 0.0
 class SimulationStatistics:
     def __init__(self):
         self.probability_of_collision = 0.0
@@ -80,6 +81,8 @@ class SimulationStatistics:
         self.probability_of_wait = 0.0
         self.probability_of_data = 0.0
         self.probability_of_ack = 0.0
+
+        self.time_of_cycle = 0.0
 
 def main():
     # define folder for saving the results
@@ -133,6 +136,8 @@ def main():
             summary.probability_of_data += measure.probability_of_data
             summary.probability_of_ack += measure.probability_of_ack
 
+            summary.time_of_cycle += measure.time_of_cycle
+
         summary.probability_of_collision /= len(measures)
         summary.probability_of_failure /= len(measures)
         summary.probability_of_success /= len(measures)
@@ -145,6 +150,8 @@ def main():
         summary.probability_of_wait /= len(measures)
         summary.probability_of_data /= len(measures)
         summary.probability_of_ack /= len(measures)
+
+        summary.time_of_cycle /= len(measures)
 
         results[nodes_number] = summary
     t2 = time.time()
@@ -175,11 +182,15 @@ def execute(input, results_folder):
     """
     # define nodes
     nodes = []
+    history_description = ["Slot#"]
     for i in range(1, input.NN + 1):
+        history_description.append("Node#{0}".format(i))
         node = Node(i)
         node.state = NodeState.IDLE
         node.event_time = input.Tidle
         nodes.append(node)
+
+    print_to_csv_file(history_description, "states_history_{0}_nodes".format(input.NN), results_folder)
 
     time = 0
     while time <= input.simulation_time:
@@ -363,6 +374,8 @@ def execute(input, results_folder):
         simulation_statistics.probability_of_data += node.statistics.data_hits * input.Tslot / time
         simulation_statistics.probability_of_ack += node.statistics.ack_hits * input.Tslot / time
 
+        simulation_statistics.time_of_cycle += time / node.statistics.cycles_count
+
     #normilize by nodes count
 
     simulation_statistics.probability_of_collision /= len(nodes)
@@ -377,6 +390,8 @@ def execute(input, results_folder):
     simulation_statistics.probability_of_wait /= len(nodes)
     simulation_statistics.probability_of_data /= len(nodes)
     simulation_statistics.probability_of_ack /= len(nodes)
+
+    simulation_statistics.time_of_cycle /= len(nodes)
 
     return simulation_statistics
 
@@ -402,6 +417,7 @@ def count_state_hits(node):
     node.statistics.slots_count += 1
     if node.state == NodeState.IDLE:
         node.statistics.idle_hits += 1
+        node.statistics.cycles_count += 1
     elif node.state == NodeState.BACKOFF:
         node.statistics.backoff_hits += 1
     elif node.state == NodeState.RTS:
