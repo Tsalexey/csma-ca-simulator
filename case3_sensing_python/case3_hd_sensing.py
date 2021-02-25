@@ -9,8 +9,8 @@ sys.path.append("..")
 
 class Input:
     def __init__(self):
-        self.simulation_time = 15000
-        self.repeats = 10
+        self.simulation_time = 25000
+        self.repeats = 25
         self.pa = 1.0
         self.start_from_NN = 1
         self.NN = 10
@@ -83,6 +83,14 @@ class SimulationStatistics:
         self.probability_of_ack = 0.0
 
         self.time_of_cycle = 0.0
+        self.time_of_idle = 0.0
+        self.time_of_backoff = 0.0
+        self.time_of_rts = 0.0
+        self.time_of_out = 0.0
+        self.time_of_cts = 0.0
+        self.time_of_wait = 0.0
+        self.time_of_data = 0.0
+        self.time_of_ack = 0.0
 
 def main():
     # define folder for saving the results
@@ -137,6 +145,14 @@ def main():
             summary.probability_of_ack += measure.probability_of_ack
 
             summary.time_of_cycle += measure.time_of_cycle
+            summary.time_of_idle += measure.time_of_idle
+            summary.time_of_backoff += measure.time_of_backoff
+            summary.time_of_rts += measure.time_of_rts
+            summary.time_of_out += measure.time_of_out
+            summary.time_of_cts += measure.time_of_cts
+            summary.time_of_wait += measure.time_of_wait
+            summary.time_of_data += measure.time_of_data
+            summary.time_of_ack += measure.time_of_ack
 
         summary.probability_of_collision /= len(measures)
         summary.probability_of_failure /= len(measures)
@@ -152,6 +168,14 @@ def main():
         summary.probability_of_ack /= len(measures)
 
         summary.time_of_cycle /= len(measures)
+        summary.time_of_idle /= len(measures)
+        summary.time_of_backoff /= len(measures)
+        summary.time_of_rts /= len(measures)
+        summary.time_of_out /= len(measures)
+        summary.time_of_cts /= len(measures)
+        summary.time_of_wait /= len(measures)
+        summary.time_of_data /= len(measures)
+        summary.time_of_ack /= len(measures)
 
         results[nodes_number] = summary
     t2 = time.time()
@@ -375,6 +399,14 @@ def execute(input, results_folder):
         simulation_statistics.probability_of_ack += node.statistics.ack_hits * input.Tslot / time
 
         simulation_statistics.time_of_cycle += time / node.statistics.cycles_count
+        simulation_statistics.time_of_idle += node.statistics.idle_hits * input.Tslot / node.statistics.cycles_count
+        simulation_statistics.time_of_backoff += node.statistics.backoff_hits * input.Tslot / node.statistics.cycles_count
+        simulation_statistics.time_of_rts += node.statistics.rts_hits * input.Tslot / node.statistics.cycles_count
+        simulation_statistics.time_of_out += node.statistics.out_hits * input.Tslot / node.statistics.cycles_count
+        simulation_statistics.time_of_cts += node.statistics.cts_hits * input.Tslot / node.statistics.cycles_count
+        simulation_statistics.time_of_wait += node.statistics.wait_hits * input.Tslot / node.statistics.cycles_count
+        simulation_statistics.time_of_data += node.statistics.data_hits * input.Tslot / node.statistics.cycles_count
+        simulation_statistics.time_of_ack += node.statistics.ack_hits * input.Tslot / node.statistics.cycles_count
 
     #normilize by nodes count
 
@@ -392,6 +424,14 @@ def execute(input, results_folder):
     simulation_statistics.probability_of_ack /= len(nodes)
 
     simulation_statistics.time_of_cycle /= len(nodes)
+    simulation_statistics.time_of_idle /= len(nodes)
+    simulation_statistics.time_of_backoff /= len(nodes)
+    simulation_statistics.time_of_rts /= len(nodes)
+    simulation_statistics.time_of_out /= len(nodes)
+    simulation_statistics.time_of_cts /= len(nodes)
+    simulation_statistics.time_of_wait /= len(nodes)
+    simulation_statistics.time_of_data /= len(nodes)
+    simulation_statistics.time_of_ack /= len(nodes)
 
     return simulation_statistics
 
