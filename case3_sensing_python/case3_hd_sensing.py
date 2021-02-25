@@ -1,6 +1,7 @@
 import csv
 import os
 import sys
+import time
 from datetime import datetime
 import random
 from enum import Enum
@@ -9,8 +10,9 @@ sys.path.append("..")
 class Input:
     def __init__(self):
         self.simulation_time = 10000
-        self.repeats = 50
+        self.repeats = 5
         self.pa = 1.0
+        self.start_from_NN = 1
         self.NN = 10
         self.Nretx = 3
         self.Tslot = 3
@@ -61,46 +63,86 @@ class SimulationStatistics:
         self.probability_of_failure = 0.0
 
 def main():
+    # define folder for saving the results
     results_folder = datetime.now().strftime('%Y.%m.%d_%H-%M-%S')
     if not os.path.exists('results/' + results_folder):
         os.makedirs('results/' + results_folder)
 
-    print("Results will be stored in " + results_folder)
+    print("Results will be stored in results/" + results_folder)
     print("Simulation in progress")
 
     input = Input()
 
+    # save input parameters to file
     for k,v in vars(input).items():
         print_to_csv_file([k, v], "input_parameters", results_folder)
 
-    measures = []
-    for i in range(1, input.repeats + 1):
-        print("Node {0}/{1}, Scenario {2}/{3}".format(input.NN, input.NN, i, input.repeats))
-        measures.append(execute(input, results_folder))
+    results = {}
 
-    summary = SimulationStatistics()
+    t1 = time.time()
 
-    for measure in measures:
-        summary.probability_of_collision += measure.probability_of_collision
-        summary.probability_of_failure += measure.probability_of_failure
-        summary.probability_of_success += measure.probability_of_success
+    for nodes_number in range(input.start_from_NN, input.NN + 1):
+        measures = []
+        # create temporary input for the next scenario
+        temp_input = Input()
+        # update nodes number in input data
+        temp_input.NN = nodes_number
 
-    summary.probability_of_collision /= len(measures)
-    summary.probability_of_failure /= len(measures)
-    summary.probability_of_success /= len(measures)
+        start_time = time.time()
+        for i in range(1, input.repeats + 1):
+            # execute single scenario
+            single_measure = execute(temp_input, results_folder)
+            # save statistical measures
+            measures.append(single_measure)
 
-    for k, v in vars(summary).items():
-        print(k + " - " + str(v))
+        print("Node {0}/{1}, executed in {2}".format(nodes_number, input.NN, time.time() - start_time))
+
+        summary = SimulationStatistics()
+
+        # compute mean statistics
+        for measure in measures:
+            summary.probability_of_collision += measure.probability_of_collision
+            summary.probability_of_failure += measure.probability_of_failure
+            summary.probability_of_success += measure.probability_of_success
+
+        summary.probability_of_collision /= len(measures)
+        summary.probability_of_failure /= len(measures)
+        summary.probability_of_success /= len(measures)
+
+        results[nodes_number] = summary
+    t2 = time.time()
+
+    print("Total execution time: {0}".format((t2-t1)))
+
+    # prepare first line for results description
+    description = ["Node"]
+    for k,v in vars(results[1]).items():
+        description.append(k)
+    print_to_csv_file(description, "results", results_folder)
+
+    # prepare results for the whole simulation
+    for k, v in results.items():
+        line = [k]
+        for k2, v2 in vars(v).items():
+            line.append(v2)
+        print_to_csv_file(line, "results", results_folder)
+
 
 def execute(input, results_folder):
+    """
+    This function runs a single simulation for input parameters.
+    Simulation stacktrace is saved to results_folder
+    :param input: input configuration
+    :param results_folder: folder where states history will be saved
+    :return: statistics
+    """
+    # define nodes
     nodes = []
     for i in range(1, input.NN + 1):
         node = Node(i)
         node.state = NodeState.IDLE
         node.event_time = input.Tidle
         nodes.append(node)
-
-    state_history = []
 
     time = 0
     while time <= input.simulation_time:
@@ -112,7 +154,7 @@ def execute(input, results_folder):
             prev_state[node.id] = node.state
             states.append(node.state.value)
 
-        print_to_csv_file(states, "states_history", results_folder)
+        print_to_csv_file(states, "states_history_{0}_nodes".format(input.NN), results_folder)
 
         for node in nodes:
             if time == node.event_time:
