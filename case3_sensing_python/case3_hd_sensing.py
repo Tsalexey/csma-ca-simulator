@@ -9,7 +9,7 @@ sys.path.append("..")
 class Input:
     def __init__(self):
         self.simulation_time = 10000
-        self.repeats = 100
+        self.repeats = 50
         self.pa = 1.0
         self.NN = 10
         self.Nretx = 3
@@ -54,18 +54,45 @@ class NodeStatistics:
         self.success_count = 0.0
         self.failure_count = 0.0
 
+class SimulationStatistics:
+    def __init__(self):
+        self.probability_of_collision = 0.0
+        self.probability_of_success = 0.0
+        self.probability_of_failure = 0.0
+
 def main():
-    results_folder = datetime.now().strftime('%Y-%m-%d_%H:%M:%S')
+    results_folder = datetime.now().strftime('%Y.%m.%d_%H-%M-%S')
     if not os.path.exists('results/' + results_folder):
         os.makedirs('results/' + results_folder)
 
     print("Results will be stored in " + results_folder)
+    print("Simulation in progress")
 
     input = Input()
 
     for k,v in vars(input).items():
         print_to_csv_file([k, v], "input_parameters", results_folder)
 
+    measures = []
+    for i in range(1, input.repeats + 1):
+        print("Node {0}/{1}, Scenario {2}/{3}".format(input.NN, input.NN, i, input.repeats))
+        measures.append(execute(input, results_folder))
+
+    summary = SimulationStatistics()
+
+    for measure in measures:
+        summary.probability_of_collision += measure.probability_of_collision
+        summary.probability_of_failure += measure.probability_of_failure
+        summary.probability_of_success += measure.probability_of_success
+
+    summary.probability_of_collision /= len(measures)
+    summary.probability_of_failure /= len(measures)
+    summary.probability_of_success /= len(measures)
+
+    for k, v in vars(summary).items():
+        print(k + " - " + str(v))
+
+def execute(input, results_folder):
     nodes = []
     for i in range(1, input.NN + 1):
         node = Node(i)
@@ -239,17 +266,19 @@ def main():
 
         time += input.Tslot
 
-    pcol = 0.0
-    ps = 0.0
+    # simulation finished, calculate statistics
+    simulation_statistics = SimulationStatistics()
 
     for node in nodes:
-        pcol += node.statistics.collided_rts_count / node.statistics.total_rts_count
-        ps += node.statistics.success_count / (node.statistics.success_count + node.statistics.failure_count)
+        simulation_statistics.probability_of_collision += node.statistics.collided_rts_count / node.statistics.total_rts_count
+        simulation_statistics.probability_of_success += node.statistics.success_count / (node.statistics.success_count + node.statistics.failure_count)
+        simulation_statistics.probability_of_failure += node.statistics.failure_count / (node.statistics.success_count + node.statistics.failure_count)
 
-    pcol = pcol / len(nodes)
-    ps = ps / len(nodes)
-    print("p{collision}=" + str(pcol))
-    print("p{success}=" + str(ps))
+    simulation_statistics.probability_of_collision /= len(nodes)
+    simulation_statistics.probability_of_success /= len(nodes)
+    simulation_statistics.probability_of_failure /= len(nodes)
+
+    return simulation_statistics
 
 def check_collision(node, nodes, prev_state):
     for another_node in nodes:
