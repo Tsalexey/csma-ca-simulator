@@ -245,7 +245,10 @@ def execute(input, results_folder):
             if time == node.event_time:
                 # IDLE state
                 if node.state == NodeState.IDLE:
-                    if random.random() < input.pa:
+                    if node.channel_free:
+                        node.channel_free = check_channel(node, nodes, prev_state)
+
+                    if node.channel_free and random.random() < input.pa:
                         node.attempt = 1
 
                         delay = generate_backoff(node.attempt, input.Tmax)
@@ -263,7 +266,11 @@ def execute(input, results_folder):
 
                     else:
                         node.state = NodeState.IDLE
-                        node.event_time = time + input.Tidle
+                        if node.channel_free:
+                            node.event_time = time + input.Tidle
+                        else:
+                            node.event_time = time + input.Tdata + input.Tack
+                        node.channel_free = True
                 #  BACKOFF state
                 elif node.state == NodeState.BACKOFF:
                     if node.channel_free:
@@ -362,8 +369,19 @@ def execute(input, results_folder):
                         node.has_collision = False
                         node.channel_free = True
             else:
+                # IDLE
+                if node.state == NodeState.IDLE:
+                    if node.channel_free:
+                        node.channel_free = check_channel(node, nodes, prev_state)
+
+                    if not node.channel_free:
+                        node.state = NodeState.IDLE
+                        node.event_time = time + input.Tcts
+                        node.channel_free = False
+                        node.has_collision = False
+                # DATA
                 # RTS
-                if node.state == NodeState.RTS:
+                elif node.state == NodeState.RTS:
                     if not node.has_collision:
                         node.has_collision = check_collision(node, nodes, prev_state)
                 # BACKOFF
@@ -390,6 +408,7 @@ def execute(input, results_folder):
                 elif node.state == NodeState.DATA:
                     if not node.has_collision:
                         node.has_collision = check_collision(node, nodes, prev_state)
+
 
         time += input.Tslot
 
