@@ -69,10 +69,6 @@ class NodeStatistics:
         self.data_hits = 0.0
         self.ack_hits = 0.0
 
-        self.free_channel = 0.0
-        self.busy_channel = 0.0
-        self.channel = 0.0
-
         self.cycles_count = 0.0
 
 class SimulationStatistics:
@@ -81,7 +77,6 @@ class SimulationStatistics:
         self.probability_of_success = 0.0
         self.probability_of_failure = 0.0
         self.probability_of_free_channel = 0.0
-        self.probability_free_channel = 0.0
         self.probability_of_idle = 0.0
         self.probability_of_backoff = 0.0
         self.probability_of_rts = 0.0
@@ -144,7 +139,6 @@ def main():
             summary.probability_of_failure += measure.probability_of_failure
             summary.probability_of_success += measure.probability_of_success
             summary.probability_of_free_channel += measure.probability_of_free_channel
-            summary.probability_free_channel += measure.probability_free_channel
 
             summary.probability_of_idle += measure.probability_of_idle
             summary.probability_of_backoff += measure.probability_of_backoff
@@ -169,7 +163,6 @@ def main():
         summary.probability_of_failure /= len(measures)
         summary.probability_of_success /= len(measures)
         summary.probability_of_free_channel /= len(measures)
-        summary.probability_free_channel /= len(measures)
 
         summary.probability_of_idle /= len(measures)
         summary.probability_of_backoff /= len(measures)
@@ -287,13 +280,9 @@ def execute(input, results_folder):
                         node.state = NodeState.RTS
                         node.has_collision = False
                         node.event_time = time + input.Trts
-                        node.statistics.free_channel += 1
-                        node.statistics.channel += 1
                     else:
                         node.state = NodeState.WAIT
                         node.event_time = time + input.Twait
-                        node.statistics.busy_channel += 1
-                        node.statistics.channel += 1
                 # RTS state
                 elif node.state == NodeState.RTS:
                     if not node.has_collision:
@@ -390,7 +379,6 @@ def execute(input, results_folder):
                         node.event_time = time + input.Tcts
                         node.channel_free = False
                         node.has_collision = False
-                # DATA
                 # RTS
                 elif node.state == NodeState.RTS:
                     if not node.has_collision:
@@ -405,11 +393,6 @@ def execute(input, results_folder):
                         node.event_time = time + input.Twait
                         node.channel_free = True
                         node.has_collision = False
-                        node.statistics.busy_channel += 1
-                        node.statistics.channel += 1
-                    else:
-                        node.statistics.free_channel += 1
-                        node.statistics.channel += 1
                 # OUT
                 elif node.state == NodeState.OUT:
                     if node.channel_free:
@@ -437,7 +420,6 @@ def execute(input, results_folder):
         simulation_statistics.probability_of_failure += node.statistics.failure_count / (node.statistics.success_count + node.statistics.failure_count)
 
         simulation_statistics.probability_of_free_channel += node.statistics.free_slots_count / (node.statistics.free_slots_count + node.statistics.busy_slots_count)
-        simulation_statistics.probability_free_channel += node.statistics.free_channel / (node.statistics.channel + node.statistics.busy_slots_count)
 
         simulation_statistics.probability_of_idle += node.statistics.idle_hits * input.Tslot / time
         simulation_statistics.probability_of_backoff += node.statistics.backoff_hits * input.Tslot / time
@@ -464,7 +446,6 @@ def execute(input, results_folder):
     simulation_statistics.probability_of_success /= len(nodes)
     simulation_statistics.probability_of_failure /= len(nodes)
     simulation_statistics.probability_of_free_channel /= len(nodes)
-    simulation_statistics.probability_free_channel /= len(nodes)
 
     simulation_statistics.probability_of_idle /= len(nodes)
     simulation_statistics.probability_of_backoff /= len(nodes)

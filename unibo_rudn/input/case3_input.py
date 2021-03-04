@@ -9,7 +9,7 @@ class Case3Input:
 
         self.sensing = True
         self.refrain_from_transmit = False
-        self.repeats = 100
+        self.repeats = 10
 
         self.simulation_time = 10000 # seconds
 
