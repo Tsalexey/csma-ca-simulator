@@ -481,10 +481,10 @@ def check_channel(node, nodes, prev_state):
     return True
 
 def generate_backoff(attempt, Tmax):
-    return random.randrange(1, attempt * Tmax + 1)
+    return random.randrange(1, pow(2, attempt) * Tmax + 1)
 
 def generate_backoff_after_wait(attempt, Tmax):
-    return random.randrange(0, attempt * Tmax + 1)
+    return random.randrange(0, pow(2, attempt) * Tmax + 1)
 
 def count_state_hits(node):
     node.statistics.slots_count += 1

@@ -71,10 +71,6 @@ class NodeStatistics:
         self.data_hits = 0.0
         self.ack_hits = 0.0
 
-        self.free_channel = 0.0
-        self.busy_channel = 0.0
-        self.channel = 0.0
-
         self.cycles_count = 0.0
 
 class SimulationStatistics:
@@ -83,7 +79,6 @@ class SimulationStatistics:
         self.probability_of_success = 0.0
         self.probability_of_failure = 0.0
         self.probability_of_free_channel = 0.0
-        self.probability_free_channel = 0.0
         self.probability_of_idle = 0.0
         self.probability_of_backoff = 0.0
         self.probability_of_rts = 0.0
@@ -146,7 +141,6 @@ def main():
             summary.probability_of_failure += measure.probability_of_failure
             summary.probability_of_success += measure.probability_of_success
             summary.probability_of_free_channel += measure.probability_of_free_channel
-            summary.probability_free_channel += measure.probability_free_channel
 
             summary.probability_of_idle += measure.probability_of_idle
             summary.probability_of_backoff += measure.probability_of_backoff
@@ -171,7 +165,6 @@ def main():
         summary.probability_of_failure /= len(measures)
         summary.probability_of_success /= len(measures)
         summary.probability_of_free_channel /= len(measures)
-        summary.probability_free_channel /= len(measures)
 
         summary.probability_of_idle /= len(measures)
         summary.probability_of_backoff /= len(measures)
@@ -286,11 +279,6 @@ class Simulation:
                             node.event_time = self.time + self.input.Twait
                             node.channel_free = True
                             node.has_collision = False
-                            node.statistics.busy_channel += 1
-                            node.statistics.channel += 1
-                        else:
-                            node.statistics.free_channel += 1
-                            node.statistics.channel += 1
                     elif self.node_state[node.id] == NodeState.OUT:
                         if node.channel_free:
                             node.channel_free = self.check_channel_free(node)
@@ -321,7 +309,6 @@ class Simulation:
 
             simulation_statistics.probability_of_free_channel += node.statistics.free_slots_count / (
                         node.statistics.free_slots_count + node.statistics.busy_slots_count)
-            simulation_statistics.probability_free_channel += node.statistics.free_channel / node.statistics.channel
 
             simulation_statistics.probability_of_idle += node.statistics.idle_hits * self.input.Tslot / self.time
             simulation_statistics.probability_of_backoff += node.statistics.backoff_hits * self.input.Tslot / self.time
@@ -348,7 +335,6 @@ class Simulation:
         simulation_statistics.probability_of_success /= len(self.nodes)
         simulation_statistics.probability_of_failure /= len(self.nodes)
         simulation_statistics.probability_of_free_channel /= len(self.nodes)
-        simulation_statistics.probability_free_channel /= len(self.nodes)
 
         simulation_statistics.probability_of_idle /= len(self.nodes)
         simulation_statistics.probability_of_backoff /= len(self.nodes)
@@ -431,13 +417,9 @@ class Simulation:
             node.state = NodeState.RTS
             node.has_collision = False
             node.event_time = self.time + self.input.Trts
-            node.statistics.free_channel += 1
-            node.statistics.channel += 1
         else:
             node.state = NodeState.WAIT
             node.event_time = self.time + self.input.Twait
-            node.statistics.busy_channel += 1
-            node.statistics.channel += 1
             
     def serve_rts(self, node):
         if not node.has_collision:
