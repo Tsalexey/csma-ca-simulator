@@ -9,10 +9,10 @@ sys.path.append("..")
 
 class Input:
     def __init__(self):
-        self.simulation_time = 500000
-        self.repeats = 50
+        self.simulation_time = 5000
+        self.repeats = 25
         self.pa = 1.0
-        self.start_from_NN = 7
+        self.start_from_NN = 1
         self.NN = 20
         self.Nretx = 3
         self.Tslot = 3
@@ -23,7 +23,6 @@ class Input:
         self.Tdata = 30
         self.Tack = 3
         self.Tout = self.Tdata + self.Tack
-        self.Twait = self.Tdata + self.Tack
         self.Tmax = 12
 
 class NodeState(Enum):
@@ -32,7 +31,6 @@ class NodeState(Enum):
     RTS = "r"
     OUT = "o"
     CTS = "c"
-    WAIT = "w"
     DATA = "d"
     ACK = "a"
 
@@ -44,7 +42,7 @@ class Node:
         self.attempt = 0
         self.has_rts_collision = False
         self.has_cts_collision = False
-        self.channel_free = True
+        self.has_data_collision = False
 
         self.statistics = NodeStatistics()
         self.states_history = []
@@ -55,12 +53,10 @@ class NodeStatistics:
         self.collided_count = 0.0
         self.collided_rts_count = 0.0
         self.collided_cts_count = 0.0
+        self.collided_data_count = 0.0
         self.not_collided_rts_count = 0.0
         self.success_count = 0.0
         self.failure_count = 0.0
-
-        self.free_slots_count = 0.0
-        self.busy_slots_count = 0.0
 
         self.slots_count = 0.0
         self.idle_hits = 0.0
@@ -68,7 +64,6 @@ class NodeStatistics:
         self.rts_hits = 0.0
         self.out_hits = 0.0
         self.cts_hits = 0.0
-        self.wait_hits = 0.0
         self.data_hits = 0.0
         self.ack_hits = 0.0
 
@@ -79,15 +74,14 @@ class SimulationStatistics:
         self.probability_of_collision = 0.0
         self.probability_of_rts_collision = 0.0
         self.probability_of_cts_collision = 0.0
+        self.probability_of_data_collision = 0.0
         self.probability_of_success = 0.0
         self.probability_of_failure = 0.0
-        self.probability_of_free_channel = 0.0
         self.probability_of_idle = 0.0
         self.probability_of_backoff = 0.0
         self.probability_of_rts = 0.0
         self.probability_of_out = 0.0
         self.probability_of_cts = 0.0
-        self.probability_of_wait = 0.0
         self.probability_of_data = 0.0
         self.probability_of_ack = 0.0
 
@@ -97,7 +91,6 @@ class SimulationStatistics:
         self.time_of_rts = 0.0
         self.time_of_out = 0.0
         self.time_of_cts = 0.0
-        self.time_of_wait = 0.0
         self.time_of_data = 0.0
         self.time_of_ack = 0.0
 
@@ -143,17 +136,16 @@ def main():
             summary.probability_of_collision += measure.probability_of_collision
             summary.probability_of_failure += measure.probability_of_failure
             summary.probability_of_success += measure.probability_of_success
-            summary.probability_of_free_channel += measure.probability_of_free_channel
 
             summary.probability_of_rts_collision += measure.probability_of_rts_collision
             summary.probability_of_cts_collision += measure.probability_of_cts_collision
+            summary.probability_of_data_collision += measure.probability_of_data_collision
 
             summary.probability_of_idle += measure.probability_of_idle
             summary.probability_of_backoff += measure.probability_of_backoff
             summary.probability_of_rts += measure.probability_of_rts
             summary.probability_of_out += measure.probability_of_out
             summary.probability_of_cts += measure.probability_of_cts
-            summary.probability_of_wait += measure.probability_of_wait
             summary.probability_of_data += measure.probability_of_data
             summary.probability_of_ack += measure.probability_of_ack
 
@@ -163,24 +155,22 @@ def main():
             summary.time_of_rts += measure.time_of_rts
             summary.time_of_out += measure.time_of_out
             summary.time_of_cts += measure.time_of_cts
-            summary.time_of_wait += measure.time_of_wait
             summary.time_of_data += measure.time_of_data
             summary.time_of_ack += measure.time_of_ack
 
         summary.probability_of_collision /= len(measures)
         summary.probability_of_failure /= len(measures)
         summary.probability_of_success /= len(measures)
-        summary.probability_of_free_channel /= len(measures)
 
         summary.probability_of_rts_collision /= len(measures)
         summary.probability_of_cts_collision /= len(measures)
+        summary.probability_of_data_collision /= len(measures)
 
         summary.probability_of_idle /= len(measures)
         summary.probability_of_backoff /= len(measures)
         summary.probability_of_rts /= len(measures)
         summary.probability_of_out /= len(measures)
         summary.probability_of_cts /= len(measures)
-        summary.probability_of_wait /= len(measures)
         summary.probability_of_data /= len(measures)
         summary.probability_of_ack /= len(measures)
 
@@ -190,7 +180,6 @@ def main():
         summary.time_of_rts /= len(measures)
         summary.time_of_out /= len(measures)
         summary.time_of_cts /= len(measures)
-        summary.time_of_wait /= len(measures)
         summary.time_of_data /= len(measures)
         summary.time_of_ack /= len(measures)
 
@@ -248,11 +237,6 @@ def execute(input, results_folder):
 
         for node in nodes:
 
-            if check_channel(node, nodes, prev_state):
-                node.statistics.free_slots_count += 1
-            else:
-                node.statistics.busy_slots_count += 1
-
             if time == node.event_time:
                 # IDLE state
                 if prev_state[node.id] == NodeState.IDLE:
@@ -279,27 +263,25 @@ def execute(input, results_folder):
                         node.event_time = time + input.Tidle
                 #  BACKOFF state
                 elif prev_state[node.id] == NodeState.BACKOFF:
-                    if node.channel_free:
-                        node.channel_free = check_channel(node, nodes, prev_state)
 
-                    if node.channel_free:
-                        node.state = NodeState.RTS
-                        node.has_rts_collision = False
-                        node.has_cts_collision = False
-                        node.event_time = time + input.Trts
-                    else:
-                        node.state = NodeState.WAIT
-                        node.event_time = time + input.Twait
+                    node.state = NodeState.RTS
+                    node.has_rts_collision = False
+                    node.has_cts_collision = False
+                    node.has_data_collision = False
+                    node.event_time = time + input.Trts
+
                 # RTS state
                 elif prev_state[node.id] == NodeState.RTS:
                     if not node.has_rts_collision:
                         node.has_rts_collision = check_rts_collision(node, nodes, prev_state)
                     if not node.has_cts_collision:
                         node.has_cts_collision = check_cts_collision(node, nodes, prev_state)
+                    if not node.has_data_collision:
+                        node.has_data_collision = check_data_collision(node, nodes, prev_state)
 
                     node.statistics.total_rts_count += 1.0
 
-                    if not (node.has_rts_collision or node.has_cts_collision):
+                    if not (node.has_rts_collision or node.has_cts_collision or node.has_data_collision):
                         node.state = NodeState.CTS
                         node.event_time = time + input.Tcts
 
@@ -314,83 +296,68 @@ def execute(input, results_folder):
                             node.statistics.collided_rts_count += 1.0
                         elif node.has_cts_collision:
                             node.statistics.collided_cts_count += 1.0
+                        elif node.has_data_collision:
+                            node.statistics.collided_data_count += 1.0
                 # OUT state
                 elif prev_state[node.id] == NodeState.OUT:
-                    if node.channel_free:
-                        node.channel_free = check_channel(node, nodes, prev_state)
+                    node.attempt += 1
 
-                    if node.channel_free:
-                        node.attempt += 1
+                    if node.attempt <= input.Nretx + 1:
+                        delay = generate_backoff(node.attempt, input.Tmax)
 
-                        if node.attempt <= input.Nretx + 1:
-                            delay = generate_backoff(node.attempt, input.Tmax)
-
-                            if delay == 0:
-                                node.state = NodeState.RTS
-                                node.event_time = time + input.Trts
-                                node.has_rts_collision = False
-                                node.has_cts_collision = False
-                                node.channel_free = True
-                            else:
-                                node.state = NodeState.BACKOFF
-                                node.event_time = node.event_time + delay * input.Tbo
-                                node.has_rts_collision = False
-                                node.has_cts_collision = False
-                                node.channel_free = True
-                        else:
-                            node.state = NodeState.IDLE
-                            node.event_time = time + input.Tidle
-                            node.attempt = 0
-                            node.channel_free = True
+                        if delay == 0:
+                            node.state = NodeState.RTS
+                            node.event_time = time + input.Trts
                             node.has_rts_collision = False
                             node.has_cts_collision = False
-
-                            node.statistics.failure_count += 1.0
+                            node.has_data_collision = False
+                        else:
+                            node.state = NodeState.BACKOFF
+                            node.event_time = node.event_time + delay * input.Tbo
+                            node.has_rts_collision = False
+                            node.has_cts_collision = False
+                            node.has_data_collision = False
                     else:
-                        node.state = NodeState.OUT
-                        node.event_time = time + input.Tout - input.Tcts
-                        node.channel_free = True
+                        node.state = NodeState.IDLE
+                        node.event_time = time + input.Tidle
+                        node.attempt = 0
+                        node.has_rts_collision = False
+                        node.has_cts_collision = False
+                        node.has_data_collision = False
+
+                        node.statistics.failure_count += 1.0
                 # CTS state
                 elif prev_state[node.id] == NodeState.CTS:
                     node.state = NodeState.DATA
                     node.event_time = time + input.Tdata
                     node.has_rts_collision = False
                     node.has_cts_collision = False
-                    node.channel_free = True
+                    node.has_data_collision = False
                 # DATA state
                 elif prev_state[node.id] == NodeState.DATA:
                     if not node.has_rts_collision:
                         node.has_rts_collision = check_rts_collision(node, nodes, prev_state)
                     if not node.has_cts_collision:
                         node.has_cts_collision = check_cts_collision(node, nodes, prev_state)
-                    node.state = NodeState.ACK
-                    node.event_time = time + input.Tack
+                    if not node.has_data_collision:
+                        node.has_data_collision = check_data_collision(node, nodes, prev_state)
+
+                    if not (node.has_rts_collision or node.has_cts_collision or node.has_data_collision):
+                        node.state = NodeState.ACK
+                        node.event_time = time + input.Tack
+                    else:
+                        node.state = NodeState.OUT
+                        node.event_time = time + input.Tout
                 # ACK state
                 elif prev_state[node.id] == NodeState.ACK:
                     node.state = NodeState.IDLE
                     node.event_time = time + input.Tidle
                     node.attempt = 0
-                    node.channel_free = True
                     node.has_rts_collision = False
                     node.has_cts_collision = False
+                    node.has_data_collision = False
 
                     node.statistics.success_count += 1.0
-                #  WAIT state
-                elif prev_state[node.id] == NodeState.WAIT:
-                    delay = generate_backoff_after_wait(node.attempt, input.Tmax)
-
-                    if delay == 0:
-                        node.state = NodeState.RTS
-                        node.event_time = time + input.Trts
-                        node.has_rts_collision = False
-                        node.has_cts_collision = False
-                        node.channel_free = True
-                    else:
-                        node.state = NodeState.BACKOFF
-                        node.event_time = node.event_time + delay * input.Tbo
-                        node.has_rts_collision = False
-                        node.has_cts_collision = False
-                        node.channel_free = True
             else:
                 # RTS
                 if prev_state[node.id] == NodeState.RTS:
@@ -398,34 +365,16 @@ def execute(input, results_folder):
                         node.has_rts_collision = check_rts_collision(node, nodes, prev_state)
                     if not node.has_cts_collision:
                         node.has_cts_collision = check_cts_collision(node, nodes, prev_state)
-                # BACKOFF
-                elif prev_state[node.id] == NodeState.BACKOFF:
-                    if node.channel_free:
-                        node.channel_free = check_channel(node, nodes, prev_state)
-
-                    if not node.channel_free:
-                        node.state = NodeState.WAIT
-                        node.event_time = time + input.Twait
-                        node.channel_free = True
-                        node.has_rts_collision = False
-                        node.has_cts_collision = False
-                # OUT
-                elif prev_state[node.id] == NodeState.OUT:
-                    if node.channel_free:
-                        node.channel_free = check_channel(node, nodes, prev_state)
-
-                    if not node.channel_free:
-                        node.state = NodeState.OUT
-                        node.event_time = time + input.Tcts
-                        node.channel_free = False
-                        node.has_rts_collision = False
-                        node.has_cts_collision = False
+                    if not node.has_data_collision:
+                        node.has_data_collision = check_data_collision(node, nodes, prev_state)
                 # DATA
                 elif prev_state[node.id] == NodeState.DATA:
                     if not node.has_rts_collision:
                         node.has_rts_collision = check_rts_collision(node, nodes, prev_state)
                     if not node.has_cts_collision:
                         node.has_cts_collision = check_cts_collision(node, nodes, prev_state)
+                    if not node.has_data_collision:
+                        node.has_data_collision = check_data_collision(node, nodes, prev_state)
 
         time += input.Tslot
 
@@ -436,18 +385,16 @@ def execute(input, results_folder):
         simulation_statistics.probability_of_collision += node.statistics.collided_count / node.statistics.total_rts_count if node.statistics.total_rts_count != 0 else 1
         simulation_statistics.probability_of_rts_collision += node.statistics.collided_rts_count / node.statistics.total_rts_count if node.statistics.total_rts_count != 0 else 1
         simulation_statistics.probability_of_cts_collision += node.statistics.collided_cts_count / node.statistics.total_rts_count if node.statistics.total_rts_count != 0 else 1
+        simulation_statistics.probability_of_data_collision += node.statistics.collided_data_count / node.statistics.total_rts_count if node.statistics.total_rts_count != 0 else 1
 
         simulation_statistics.probability_of_success += node.statistics.success_count / (node.statistics.success_count + node.statistics.failure_count) if (node.statistics.success_count + node.statistics.failure_count) != 0 else 1
         simulation_statistics.probability_of_failure += node.statistics.failure_count / (node.statistics.success_count + node.statistics.failure_count) if (node.statistics.success_count + node.statistics.failure_count) != 0 else 1
-
-        simulation_statistics.probability_of_free_channel += node.statistics.free_slots_count / (node.statistics.free_slots_count + node.statistics.busy_slots_count)
 
         simulation_statistics.probability_of_idle += node.statistics.idle_hits * input.Tslot / time
         simulation_statistics.probability_of_backoff += node.statistics.backoff_hits * input.Tslot / time
         simulation_statistics.probability_of_rts += node.statistics.rts_hits * input.Tslot / time
         simulation_statistics.probability_of_out += node.statistics.out_hits * input.Tslot / time
         simulation_statistics.probability_of_cts += node.statistics.cts_hits * input.Tslot / time
-        simulation_statistics.probability_of_wait += node.statistics.wait_hits * input.Tslot / time
         simulation_statistics.probability_of_data += node.statistics.data_hits * input.Tslot / time
         simulation_statistics.probability_of_ack += node.statistics.ack_hits * input.Tslot / time
 
@@ -457,7 +404,6 @@ def execute(input, results_folder):
         simulation_statistics.time_of_rts += node.statistics.rts_hits * input.Tslot / node.statistics.cycles_count
         simulation_statistics.time_of_out += node.statistics.out_hits * input.Tslot / node.statistics.cycles_count
         simulation_statistics.time_of_cts += node.statistics.cts_hits * input.Tslot / node.statistics.cycles_count
-        simulation_statistics.time_of_wait += node.statistics.wait_hits * input.Tslot / node.statistics.cycles_count
         simulation_statistics.time_of_data += node.statistics.data_hits * input.Tslot / node.statistics.cycles_count
         simulation_statistics.time_of_ack += node.statistics.ack_hits * input.Tslot / node.statistics.cycles_count
 
@@ -466,17 +412,16 @@ def execute(input, results_folder):
     simulation_statistics.probability_of_collision /= len(nodes)
     simulation_statistics.probability_of_success /= len(nodes)
     simulation_statistics.probability_of_failure /= len(nodes)
-    simulation_statistics.probability_of_free_channel /= len(nodes)
 
     simulation_statistics.probability_of_rts_collision /= len(nodes)
     simulation_statistics.probability_of_cts_collision /= len(nodes)
+    simulation_statistics.probability_of_data_collision /= len(nodes)
 
     simulation_statistics.probability_of_idle /= len(nodes)
     simulation_statistics.probability_of_backoff /= len(nodes)
     simulation_statistics.probability_of_rts /= len(nodes)
     simulation_statistics.probability_of_out /= len(nodes)
     simulation_statistics.probability_of_cts /= len(nodes)
-    simulation_statistics.probability_of_wait /= len(nodes)
     simulation_statistics.probability_of_data /= len(nodes)
     simulation_statistics.probability_of_ack /= len(nodes)
 
@@ -486,7 +431,6 @@ def execute(input, results_folder):
     simulation_statistics.time_of_rts /= len(nodes)
     simulation_statistics.time_of_out /= len(nodes)
     simulation_statistics.time_of_cts /= len(nodes)
-    simulation_statistics.time_of_wait /= len(nodes)
     simulation_statistics.time_of_data /= len(nodes)
     simulation_statistics.time_of_ack /= len(nodes)
 
@@ -510,17 +454,18 @@ def check_cts_collision(node, nodes, prev_state):
             return True
     return False
 
-def check_channel(node, nodes, prev_state):
+def check_data_collision(node, nodes, prev_state):
     for another_node in nodes:
-        if node.id != another_node.id and prev_state[another_node.id] == NodeState.CTS:
-            return False
-    return True
+        if node.id != another_node.id and prev_state[another_node.id] in [NodeState.DATA]:
+            return True
+    return False
+
 
 def generate_backoff(attempt, Tmax):
-    return random.randrange(1, pow(2, attempt) * Tmax + 1)
+    return random.randrange(1, attempt * Tmax + 1)
 
 def generate_backoff_after_wait(attempt, Tmax):
-    return random.randrange(0, pow(2, attempt) * Tmax + 1)
+    return random.randrange(0, attempt * Tmax + 1)
 
 def count_state_hits(node):
     node.statistics.slots_count += 1
@@ -535,8 +480,6 @@ def count_state_hits(node):
         node.statistics.out_hits += 1
     elif node.state == NodeState.CTS:
         node.statistics.cts_hits += 1
-    elif node.state == NodeState.WAIT:
-        node.statistics.wait_hits += 1
     elif node.state == NodeState.DATA:
         node.statistics.data_hits += 1
     elif node.state == NodeState.ACK:

@@ -416,8 +416,8 @@ def execute(input, results_folder):
 
     for node in nodes:
         simulation_statistics.probability_of_collision += node.statistics.collided_rts_count / node.statistics.total_rts_count
-        simulation_statistics.probability_of_success += node.statistics.success_count / (node.statistics.success_count + node.statistics.failure_count)
-        simulation_statistics.probability_of_failure += node.statistics.failure_count / (node.statistics.success_count + node.statistics.failure_count)
+        simulation_statistics.probability_of_success += node.statistics.success_count / (node.statistics.success_count + node.statistics.failure_count) if node.statistics.success_count + node.statistics.failure_count != 0 else 1
+        simulation_statistics.probability_of_failure += node.statistics.failure_count / (node.statistics.success_count + node.statistics.failure_count) if node.statistics.success_count + node.statistics.failure_count != 0 else 1
 
         simulation_statistics.probability_of_free_channel += node.statistics.free_slots_count / (node.statistics.free_slots_count + node.statistics.busy_slots_count)
 
@@ -470,12 +470,14 @@ def execute(input, results_folder):
 
 def check_collision(node, nodes, prev_state):
     for another_node in nodes:
+        # if node.id != another_node.id and another_node.state in [NodeState.RTS, NodeState.CTS, NodeState.DATA]:
         if node.id != another_node.id and prev_state[another_node.id] in [NodeState.RTS, NodeState.CTS, NodeState.DATA]:
             return True
     return False
 
 def check_channel(node, nodes, prev_state):
     for another_node in nodes:
+        # if node.id != another_node.id and another_node.state == NodeState.CTS:
         if node.id != another_node.id and prev_state[another_node.id] == NodeState.CTS:
             return False
     return True
