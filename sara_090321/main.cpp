@@ -32,7 +32,7 @@ long seed = -50;  //chiave per la funzione random
 
 /*-----Scenario Parameters--------------------*/
 
-#define TotScenario 200      //number of scenarios to be simulated
+#define TotScenario 100      //number of scenarios to be simulated
 #define TotPacch    1000    //number of packets to be simulated
 #define side        30     //side of the square area where nodes are located (in meters) - not used
 #define ray         15    // ray of sphere - not used
@@ -41,7 +41,7 @@ long seed = -50;  //chiave per la funzione random
 #define Pt       0.001     //transmit power - not used
 #define Node     20       //number of nodes
 #define du       1.13    //source - destionation distance in meters  - not used
-#define data     30     //data packet duration in unit of time
+#define data     3     //data packet duration in unit of time
 #define Tslot    3     //Slot duration in unit of time - Tidle - Tbeacon
 #define Tack     3
 #define Tout     data+Tack   //Tout=Tdata+Tack
@@ -282,7 +282,7 @@ int main()
         averpF = averpF / TotScenario;
         averpB = averpB / TotScenario;
 
-        fprintf(fout2, "%d;%f;%f;%f;%f%f\n", currentNodesNumber, averpS, averpC, averpI, averpF, averpB);
+        fprintf(fout2, "%d;%f;%f;%f;%f%;f\n", currentNodesNumber, averpS, averpC, averpI, averpF, averpB);
         //cout << currentNodesNumber << " node: pSuccess= " << averpS << "; pCollsion = " << averpC << "; pFree = " << ";\n" << endl;
     }
     fclose(fout1);
