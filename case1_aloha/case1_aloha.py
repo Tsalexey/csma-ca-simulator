@@ -9,8 +9,8 @@ sys.path.append("..")
 
 class Input:
     def __init__(self):
-        self.simulation_time = 1000
-        self.repeats = 100
+        self.simulation_time = 5000
+        self.repeats = 25
         self.pa = 1.0
         self.start_from_NN = 1
         self.NN = 20
@@ -18,7 +18,7 @@ class Input:
         self.Tslot = 3
         self.Tidle = 3
         self.Tbo = 3
-        self.Tdata = 30
+        self.Tdata = 3
         self.Tack = 3
         self.Tout = self.Tdata + self.Tack
         self.Tmax = 12

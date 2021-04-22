@@ -9,21 +9,21 @@ sys.path.append("..")
 
 class Input:
     def __init__(self):
-        self.simulation_time = 500000
-        self.repeats = 50
+        self.simulation_time = 100000
+        self.repeats = 10
         self.pa = 1.0
-        self.start_from_NN = 7
-        self.NN = 20
+        self.start_from_NN = 1
+        self.NN = 101
         self.Nretx = 3
         self.Tslot = 3
         self.Tidle = 3
         self.Trts = 3
         self.Tcts = 3
         self.Tbo = 3
-        self.Tdata = 30
+        self.Tdata = 3
         self.Tack = 3
-        self.Tout = self.Tdata + self.Tack
-        self.Twait = self.Tdata + self.Tack
+        self.Tout = 3#self.Tdata + self.Tack
+        self.Twait = 3#(self.Tdata + self.Tack)
         self.Tmax = 12
 
 class NodeState(Enum):
@@ -125,7 +125,9 @@ def main():
         # create temporary input for the next scenario
         temp_input = Input()
         # update nodes number in input data
-        temp_input.NN = nodes_number
+
+        temp_nodes_number = 10 * nodes_number
+        temp_input.NN = temp_nodes_number
 
         start_time = time.time()
         for i in range(1, input.repeats + 1):
@@ -134,7 +136,7 @@ def main():
             # save statistical measures
             measures.append(single_measure)
 
-        print("Node {0}/{1}, executed in {2}".format(nodes_number, input.NN, time.time() - start_time))
+        print("Node {0}/{1}, executed in {2}".format(temp_nodes_number, input.NN, time.time() - start_time))
 
         summary = SimulationStatistics()
 
@@ -194,7 +196,7 @@ def main():
         summary.time_of_data /= len(measures)
         summary.time_of_ack /= len(measures)
 
-        results[nodes_number] = summary
+        results[temp_nodes_number] = summary
     t2 = time.time()
 
     print("Total execution time: {0}".format((t2-t1)))
