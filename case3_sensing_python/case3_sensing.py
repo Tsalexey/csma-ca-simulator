@@ -9,11 +9,12 @@ sys.path.append("..")
 
 class Input:
     def __init__(self):
-        self.simulation_time = 100000
-        self.repeats = 10
+        self.simulation_time = 50000
+        self.repeats = 1
         self.pa = 1.0
-        self.start_from_NN = 1
-        self.NN = 101
+        self.start_from_NN = 0
+        self.NN = 20
+        self.step = 1
         self.Nretx = 3
         self.Tslot = 3
         self.Tidle = 3
@@ -22,9 +23,15 @@ class Input:
         self.Tbo = 3
         self.Tdata = 3
         self.Tack = 3
-        self.Tout = 3#self.Tdata + self.Tack
-        self.Twait = 3#(self.Tdata + self.Tack)
+        self.Tout = self.Tdata + self.Tack
+        self.Twait = (self.Tdata + self.Tack)
         self.Tmax = 12
+
+def generate_backoff(attempt, Tmax):
+    return random.randrange(1, attempt * Tmax + 1)
+
+def generate_backoff_after_wait(attempt, Tmax):
+    return random.randrange(0, attempt * Tmax + 1)
 
 class NodeState(Enum):
     IDLE = "i"
@@ -125,8 +132,10 @@ def main():
         # create temporary input for the next scenario
         temp_input = Input()
         # update nodes number in input data
-
-        temp_nodes_number = 10 * nodes_number
+        if nodes_number == 0:
+            temp_nodes_number = 1
+        else:
+            temp_nodes_number = input.step * nodes_number
         temp_input.NN = temp_nodes_number
 
         start_time = time.time()
@@ -136,7 +145,7 @@ def main():
             # save statistical measures
             measures.append(single_measure)
 
-        print("Node {0}/{1}, executed in {2}".format(temp_nodes_number, input.NN, time.time() - start_time))
+        print("Node {0}/{1}, executed in {2}".format(temp_nodes_number, input.NN*input.step, time.time() - start_time))
 
         summary = SimulationStatistics()
 
@@ -203,7 +212,7 @@ def main():
 
     # prepare first line for results description
     description = ["Node"]
-    for k,v in vars(results[input.NN]).items():
+    for k,v in vars(results[input.NN*input.step]).items():
         description.append(k)
     print_to_csv_file(description, "results", results_folder)
 
@@ -517,12 +526,6 @@ def check_channel(node, nodes, prev_state):
         if node.id != another_node.id and prev_state[another_node.id] == NodeState.CTS:
             return False
     return True
-
-def generate_backoff(attempt, Tmax):
-    return random.randrange(1, pow(2, attempt) * Tmax + 1)
-
-def generate_backoff_after_wait(attempt, Tmax):
-    return random.randrange(0, pow(2, attempt) * Tmax + 1)
 
 def count_state_hits(node):
     node.statistics.slots_count += 1

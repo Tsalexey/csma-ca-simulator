@@ -9,11 +9,12 @@ sys.path.append("..")
 
 class Input:
     def __init__(self):
-        self.simulation_time = 5000
-        self.repeats = 25
+        self.simulation_time = 500000
+        self.repeats = 1
         self.pa = 1.0
         self.start_from_NN = 1
         self.NN = 20
+        self.step = 1
         self.Nretx = 3
         self.Tslot = 3
         self.Tidle = 3
@@ -22,6 +23,9 @@ class Input:
         self.Tack = 3
         self.Tout = self.Tdata + self.Tack
         self.Tmax = 12
+
+def generate_backoff(attempt, Tmax):
+    return random.randrange(0, attempt * Tmax + 1)
 
 class NodeState(Enum):
     IDLE = "i"
@@ -100,7 +104,11 @@ def main():
         # create temporary input for the next scenario
         temp_input = Input()
         # update nodes number in input data
-        temp_input.NN = nodes_number
+        if nodes_number == 0:
+            temp_nodes_number = 1
+        else:
+            temp_nodes_number = input.step * nodes_number
+        temp_input.NN = temp_nodes_number
 
         start_time = time.time()
         for i in range(1, input.repeats + 1):
@@ -109,7 +117,8 @@ def main():
             # save statistical measures
             measures.append(single_measure)
 
-        print("Node {0}/{1}, executed in {2}".format(nodes_number, input.NN, time.time() - start_time))
+        print("Node {0}/{1}, executed in {2}".format(temp_nodes_number, input.NN*input.step, time.time() - start_time))
+
 
         summary = SimulationStatistics()
 
@@ -149,14 +158,14 @@ def main():
         summary.time_of_data /= len(measures)
         summary.time_of_ack /= len(measures)
 
-        results[nodes_number] = summary
+        results[temp_nodes_number] = summary
     t2 = time.time()
 
     print("Total execution time: {0}".format((t2-t1)))
 
     # prepare first line for results description
     description = ["Node"]
-    for k,v in vars(results[input.NN]).items():
+    for k,v in vars(results[input.NN*input.step]).items():
         description.append(k)
     print_to_csv_file(description, "results", results_folder)
 
@@ -276,11 +285,11 @@ def execute(input, results_folder):
                     node.has_collision = False
 
                     node.statistics.success_count += 1.0
-            # else:
-            #     # DATA
-            #     if prev_state[node.id] == NodeState.DATA:
-            #         if not node.has_collision:
-            #             node.has_collision = check_collision(node, nodes, prev_state)
+            else:
+                # DATA
+                if prev_state[node.id] == NodeState.DATA:
+                    if not node.has_collision:
+                        node.has_collision = check_collision(node, nodes, prev_state)
         time += input.Tslot
 
     # simulation finished, calculate statistics
@@ -331,12 +340,6 @@ def check_collision(node, nodes, prev_state):
         if node.id != another_node.id and prev_state[another_node.id] in [NodeState.DATA]:
             return True
     return False
-
-def generate_backoff(attempt, Tmax):
-    return random.randrange(1, attempt * Tmax + 1)
-
-def generate_backoff_after_wait(attempt, Tmax):
-    return random.randrange(0, attempt * Tmax + 1)
 
 def count_state_hits(node):
     node.statistics.slots_count += 1
